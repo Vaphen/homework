@@ -2,7 +2,6 @@
 #include "GUI.h"
 #include <gtkmm.h>
 #include <iostream>
-#include <gtkmm.h>
 
 using namespace Gtk;
 

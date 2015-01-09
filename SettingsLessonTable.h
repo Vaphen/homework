@@ -5,8 +5,8 @@
  *      Author: vaphen
  */
 
-#ifndef LESSONTABLE_H_
-#define LESSONTABLE_H_
+#ifndef SETTINGSLESSONTABLE_H_
+#define SETTINGSLESSONTABLE_H_
 
 #include <gtkmm.h>
 #include "SQLiteConnect.h"
@@ -15,11 +15,12 @@ class LessonTable : public Gtk::TreeView {
 public:
 	LessonTable();
 	virtual ~LessonTable();
+	void appendLesson(Glib::ustring);
+	void deleteSelectedLesson();
 private:
 	Gtk::TreeModelColumn<Glib::ustring> *lessonHeader;
 	Gtk::TreeModel::ColumnRecord *allHeader;
 	Glib::RefPtr<Gtk::ListStore> allLessons;
-	void appendLesson(Glib::ustring);
 };
 
-#endif /* LESSONTABLE_H_ */
+#endif /* SETTINGSLESSONTABLE_H_ */

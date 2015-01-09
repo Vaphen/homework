@@ -12,14 +12,14 @@
 
 GUI::GUI() :
 		notebook(new Gtk::Notebook()),
-		welcome_frame(new Gtk::Frame()),
-		welcome_text(new Gtk::Label(WELCOME_TEXT)),
+	//	welcome_frame(new Gtk::Frame()),
+	//	welcome_text(new Gtk::Label(WELCOME_TEXT)),
 		settings_frame(new SettingsPage(notebook)) {
 
-	welcome_frame->add(*welcome_text);
+	//welcome_frame->add(*welcome_text);
 
 	// add start page
-	notebook->append_page(*welcome_frame, NOTEBOOK_WELCOME, true);
+	//notebook->append_page(*welcome_frame, NOTEBOOK_WELCOME, true);
 
 	// add all lessons
 	std::vector<std::string> lessons = doSqlLessonRequest();
@@ -100,7 +100,7 @@ void GUI::addLessonPage(std::string newLesson) {
  */
 GUI::~GUI() {
 	delete notebook;
-	delete welcome_frame;
-	delete welcome_text;
+	//delete welcome_frame;
+	//delete welcome_text;
 	delete settings_frame;
 }

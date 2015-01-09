@@ -9,8 +9,8 @@
 #define SETTINGSPAGE_H_
 
 #include "SQLiteConnect.h"
-#include "LessonTable.h"
 #include <gtkmm.h>
+#include "SettingsLessonTable.h"
 
 class SettingsPage : public Gtk::Frame {
 public:
@@ -18,7 +18,7 @@ public:
 	virtual ~SettingsPage();
 private:
 
-	LessonTable *currentLessons;
+	LessonTable *lessonTable;
 	Gtk::Label *newLessonLabel;
 	Gtk::Entry *newLessonEdit;
 	Gtk::Button *saveNewLessonButton;
@@ -26,6 +26,7 @@ private:
 	Gtk::VBox *LessonBox;
 	void initTable();
 	void saveButtonClicked();
+	void deleteButtonClicked();
 	void showErrorDialog(std::string, std::string);
 	void showSuccessDialog(std::string, std::string);
 	SQLiteConnect connection;

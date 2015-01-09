@@ -6,6 +6,9 @@
  */
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
+
+#include <string>
+
 namespace Database {
 	static const bool SUCCESS = true;
 	static const bool ERROR = false;

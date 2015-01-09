@@ -8,10 +8,10 @@
 #include "SettingsPage.h"
 #include "constants.h"
 #include "LessonPage.h"
-#include "LessonTable.h"
 #include "GUI.h"
+#include "SettingsLessonTable.h"
 #include <gtkmm.h>
-#include <iostream>
+
 
 
 #define TABLE_LESSON_HEADER "Fach"
@@ -22,7 +22,7 @@
  * SettingsPage: Frame, which contains settings
  */
 SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
-		currentLessons(new LessonTable),
+		lessonTable(new LessonTable),
 		newLessonLabel(new Gtk::Label()),
 		newLessonEdit(new Gtk::Entry()),
 		saveNewLessonButton(new Gtk::Button("Speichern")),
@@ -30,18 +30,13 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 		LessonBox(new Gtk::VBox),
 		notebook(guiNotebook) {
 
-
-	// initialize Table
-	// initTable();
-
-
-
 	newLessonLabel->set_text("Neues Fach:");
 	saveNewLessonButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::saveButtonClicked));
-	currentLessons->set_size_request(300, 300);
-	LessonBox->pack_start(*currentLessons, Gtk::PACK_SHRINK, false, 0);
+	lessonTable->set_size_request(300, 300);
+	LessonBox->pack_start(*lessonTable, Gtk::PACK_SHRINK, false, 0);
 	Gtk::Button *deleteButton = Gtk::manage(new Gtk::Button("Löschen"));
 	LessonBox->pack_start(*deleteButton, Gtk::PACK_SHRINK, false, 0);
+	deleteButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::deleteButtonClicked));
 	Gtk::HSeparator *newSeparator = Gtk::manage(new Gtk::HSeparator);
 	newSeparator->set_size_request(300, 30);
 	LessonBox->pack_start(*newSeparator, Gtk::PACK_SHRINK, false, 0);
@@ -54,65 +49,18 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 }
 
 SettingsPage::~SettingsPage() {
-	delete currentLessons;
+	delete lessonTable;
 	delete newLessonEdit;
 	delete newLessonLabel;
 	delete saveNewLessonButton;
-	delete notebook;
+	delete mainBox;
 	delete LessonBox;
 }
 
 /**
- *	manage contents of the table in cells
+ * if the save-button is clicked, we try to connect to the database
+ * and save the input value; then, we update the notebook and the LessonTable
  */
-void SettingsPage::initTable() {
-
-/*
-	current_pages->attach(*tableLessonHeader, 0, 1, 0, 1,
-			Gtk::EXPAND, Gtk::FILL, 10, 20);
-	current_pages->attach(*tableDeleteHeader, 1, 2, 0, 1,
-			Gtk::EXPAND, Gtk::FILL, 10, 20);
-
-	SQLiteConnect connection;
-	connection.open_db(Database::LESSON_DB);
-	std::vector<std::string> lessons = connection.getLessons();
-	connection.close_db();
-	int lessonRow = 1;
-	for(std::string &lesson : lessons) {
-		Gtk::Label *lessonLabel = Gtk::manage(new Gtk::Label(lesson));
-		Gtk::Button *lessonDeleteButton = Gtk::manage(new Gtk::Button("X"));
-		lessonDeleteButton->set_size_request(20, 20);
-		current_pages->attach(*lessonLabel, 0, 1, lessonRow, lessonRow + 1,
-				Gtk::EXPAND, Gtk::FILL, 20, 0);
-		current_pages->attach(*lessonDeleteButton, 1, 2, lessonRow, lessonRow + 1,
-						Gtk::EXPAND, Gtk::FILL, 20, 0);
-		lessonRow++;
-	}
-	lessonRow++;
-
-	Gtk::Button *settingsDeleteButton = Gtk::manage(new Gtk::Button("X"));
-	Gtk::Label *settingsLabel = Gtk::manage(new Gtk::Label(TABLE_SETTINGS_POINT));
-
-	settingsDeleteButton->set_size_request(20, 20);
-	settingsDeleteButton->set_state(Gtk::STATE_INSENSITIVE);
-	current_pages->attach(*settingsLabel, 0, 1, lessonRow, lessonRow + 1,
-					Gtk::EXPAND, Gtk::FILL, 0, 0);
-	current_pages->attach(*settingsDeleteButton, 1, 2, lessonRow, lessonRow + 1,
-				Gtk::EXPAND, Gtk::FILL, 0, 0);
-	lessonRow++;
-	// new Lesson Dialog
-	newLessonLabel->set_markup("<b>Neues Fach anlegen:</b>");
-	Gtk::VBox *newLessonBox = Gtk::manage(new Gtk::VBox);
-	Gtk::HBox *newLessonTotalBox = Gtk::manage(new Gtk::HBox);
-	newLessonBox->add(*newLessonLabel);
-	newLessonBox->add(*newLessonEdit);
-	newLessonTotalBox->add(*newLessonBox);
-	newLessonTotalBox->add(*saveNewLessonButton);
-	current_pages->attach(*newLessonTotalBox, 0, 2, lessonRow, lessonRow + 1,
-					Gtk::EXPAND, Gtk::FILL, 0, 40);
-	*/
-}
-
 void SettingsPage::saveButtonClicked() {
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
@@ -126,7 +74,7 @@ void SettingsPage::saveButtonClicked() {
 		LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson));
 		notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
 		notebook->show_all();
-
+		lessonTable->appendLesson(newLesson);
 		showSuccessDialog("Speichern erfolgreich", "Das neue Fach wurde der Liste hinzugefügt.");
 	} catch (ERRORS &error) {
 		switch(error) {
@@ -149,6 +97,15 @@ void SettingsPage::saveButtonClicked() {
 		}
 	}
 	this->connection.close_db();
+}
+
+
+/**
+ * Delete-Button clicked
+ */
+void SettingsPage::deleteButtonClicked() {
+	lessonTable->deleteSelectedLesson();
+	//notebook->remove_page();
 }
 
 /*

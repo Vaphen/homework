@@ -5,7 +5,8 @@
  *      Author: vaphen
  */
 
-#include "LessonTable.h"
+#include "SettingsLessonTable.h"
+
 #include "SQLiteConnect.h"
 #include "constants.h"
 
@@ -36,3 +37,8 @@ void LessonTable::appendLesson(Glib::ustring lessonName) {
 	row[*lessonHeader] = lessonName;
 }
 
+void LessonTable::deleteSelectedLesson() {
+	Glib::RefPtr<Gtk::TreeSelection> selection = get_selection();
+	Gtk::TreeModel::iterator selectedRow = selection->get_selected();
+	allLessons->erase(selectedRow);
+}
