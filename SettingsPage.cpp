@@ -10,7 +10,9 @@
 #include "LessonPage.h"
 #include "GUI.h"
 #include "SettingsLessonTable.h"
+#include "SQLiteConnect.h"
 #include <gtkmm.h>
+#include <iostream>
 
 
 
@@ -44,8 +46,10 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 	LessonBox->pack_start(*newLessonEdit, Gtk::PACK_SHRINK, false, 0);
 	LessonBox->pack_start(*saveNewLessonButton, Gtk::PACK_SHRINK, false, 0);
 	// add the table
-	mainBox->pack_start(*LessonBox, Gtk::PACK_SHRINK, false, 0);
-	this->add(*mainBox);
+	mainBox->pack_start(*LessonBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
+	Gtk::VBox *expandBox = new Gtk::VBox;
+	expandBox->pack_start(*mainBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
+	this->add(*expandBox);
 }
 
 SettingsPage::~SettingsPage() {
@@ -64,10 +68,9 @@ SettingsPage::~SettingsPage() {
 void SettingsPage::saveButtonClicked() {
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
-		showErrorDialog("Fehlendes Fach", "Das Textfeld 'Fach' darf nicht leer sein.");
+		Dialogs::showErrorDialog("Fehlendes Fach", "Das Textfeld 'Fach' darf nicht leer sein.");
 		return;
 	}
-	this->connection.open_db(Database::LESSON_DB);
 	try {
 		this->connection.addNewLesson(newLesson);
 		newLessonEdit->set_text("");
@@ -77,26 +80,8 @@ void SettingsPage::saveButtonClicked() {
 		lessonTable->appendLesson(newLesson);
 		showSuccessDialog("Speichern erfolgreich", "Das neue Fach wurde der Liste hinzugefügt.");
 	} catch (ERRORS &error) {
-		switch(error) {
-			case ERRORS::ERROR_DB_NOT_OPEN:
-				showErrorDialog("Verbindung zur Datenbank konnte nicht hergestellt werden.",
-								"Bitte überprüfen Sie die Berechtigungen des Programms.");
-				break;
-			case ERRORS::ERROR_DB_NOT_PREPARABLE:
-				showErrorDialog("Die Datenbankanfrage konnte nicht vorbereitet werden.",
-								"Möglicherweise gibt es einen Fehler in dem Abfrage-Query.");
-				break;
-			case ERRORS::ERROR_QUERY_EXECUTION:
-				showErrorDialog("Die Datenbankabfrage konnte nicht ausgeführt werden.",
-								"Möglicherweise gibt es einen Fehler in dem Abfrage-Query oder die Datenbank existiert nicht.");
-				break;
-			default:
-				showErrorDialog("Ein unbekannter Fehler ist aufgetreten.",
-								"Sorry, das hätte nicht passieren dürfen.");
-				break;
-		}
+		Dialogs::showErrorDialog(error);
 	}
-	this->connection.close_db();
 }
 
 
@@ -104,18 +89,44 @@ void SettingsPage::saveButtonClicked() {
  * Delete-Button clicked
  */
 void SettingsPage::deleteButtonClicked() {
-	lessonTable->deleteSelectedLesson();
-	//notebook->remove_page();
-}
+	Glib::ustring selectedLesson = lessonTable->getSelectedLesson();
+	// nothing has been selected
+	if(selectedLesson == "")
+		return;
 
-/*
- * TODO: this function is redundant with same function in GUI.cpp. Make it better.
- */
-void SettingsPage::showErrorDialog(std::string title, std::string message) {
-	Gtk::MessageDialog dialog(title, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-	dialog.set_title("Ein Fehler ist aufgetreten.");
-	dialog.set_secondary_text(message);
-	dialog.run();
+	/**
+	 * connect to the Database and try to delete the lesson
+	 */
+	SQLiteConnect connection;
+	std::vector<std::string> lessons = {};
+
+	try {
+		lessons = connection.getLessons();
+		connection.deleteLesson(std::string(selectedLesson));
+	} catch (ERRORS &error) {
+		Dialogs::showErrorDialog(error);
+		return;
+	}
+
+
+	// if sql-delete was successfull, we can delete it from the table
+	lessonTable->deleteSelectedLesson();
+
+	/*
+	 * there is no way to delete notebook-page by its label.
+	 * we need to iterate through all lessons to check if it's
+	 * the deleted one
+	 */
+	for(int i = 0; i < lessons.size(); i++) {
+		std::cout << lessons.at(i) << "|" << selectedLesson << std::endl;
+		std::cout << lessons.size() << std::endl;
+		if(lessons.at(i) == selectedLesson) {
+			notebook->remove_page(i);
+			break;
+		}
+	}
+
+	notebook->show_all();
 }
 
 /*

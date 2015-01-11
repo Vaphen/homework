@@ -14,7 +14,7 @@ GUI::GUI() :
 		notebook(new Gtk::Notebook()),
 	//	welcome_frame(new Gtk::Frame()),
 	//	welcome_text(new Gtk::Label(WELCOME_TEXT)),
-		settings_frame(new SettingsPage(notebook)) {
+		settings_frame(nullptr) {
 
 	//welcome_frame->add(*welcome_text);
 
@@ -26,6 +26,10 @@ GUI::GUI() :
 	for(std::string &lesson : lessons) {
 		addLessonPage(lesson);
 	}
+
+	// could not use initialization list because if theres a sql-error,
+	// it shows it twice. thats why its initialized here.
+	settings_frame = new SettingsPage(notebook);
 
 	// add settings page
 	notebook->append_page(*settings_frame, NOTEBOOK_SETTINGS, false);
@@ -53,38 +57,13 @@ void GUI::showErrorDialog(std::string title, std::string message) {
  * Shows an errordialog if an error occures and exits the program
  */
 std::vector<std::string> GUI::doSqlLessonRequest() {
-	if(this->connection.open_db(Database::LESSON_DB) == Database::ERROR) {
-		showErrorDialog("Verbindung zur Datenbank konnte nicht hergestellt werden.",
-						"Bitte überprüfen Sie die Berechtigungen des Programms.");
-		exit(0);
-	}
-
 	std::vector<std::string> lessons;
 	try {
-		lessons = this->connection.getLessons();
+		lessons = connection.getLessons();
 	} catch (ERRORS &error) {
-		switch(error) {
-			case ERRORS::ERROR_DB_NOT_OPEN:
-				showErrorDialog("Verbindung zur Datenbank konnte nicht hergestellt werden.",
-								"Bitte überprüfen Sie die Berechtigungen des Programms.");
-				break;
-			case ERRORS::ERROR_DB_NOT_PREPARABLE:
-				showErrorDialog("Die Datenbankanfrage konnte nicht vorbereitet werden.",
-								"Möglicherweise gibt es einen Fehler in dem Abfrage-Query.");
-				break;
-			case ERRORS::ERROR_QUERY_EXECUTION:
-				showErrorDialog("Die Datenbankabfrage konnte nicht ausgeführt werden.",
-								"Möglicherweise gibt es einen Fehler in dem Abfrage-Query oder die Datenbank existiert nicht.");
-				break;
-			default:
-				showErrorDialog("Ein unbekannter Fehler ist aufgetreten.",
-								"Sorry, das hätte nicht passieren dürfen.");
-				break;
-		}
-		this->connection.close_db();
+		Dialogs::showErrorDialog(error);
 		exit(0);
 	}
-	this->connection.close_db();
 	return lessons;
 }
 

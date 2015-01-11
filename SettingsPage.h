@@ -27,7 +27,6 @@ private:
 	void initTable();
 	void saveButtonClicked();
 	void deleteButtonClicked();
-	void showErrorDialog(std::string, std::string);
 	void showSuccessDialog(std::string, std::string);
 	SQLiteConnect connection;
 	Gtk::Notebook *notebook;

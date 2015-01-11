@@ -17,14 +17,15 @@ class SQLiteConnect {
 public:
 	SQLiteConnect();
 	virtual ~SQLiteConnect();
-	bool open_db(std::string);
-	void close_db();
+
 	void addNewLesson(std::string);
+	void deleteLesson(std::string);
 	std::vector<std::string> getLessons();
 private:
 	sqlite3 *database;
 	sqlite3_stmt *queryStatement;
-	bool isDbOpen;
+	bool open_db(std::string);
+	void close_db();
 };
 
 #endif /* SQLITECONNECT_H_ */
