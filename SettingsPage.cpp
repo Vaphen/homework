@@ -30,7 +30,8 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 		saveNewLessonButton(new Gtk::Button("Speichern")),
 		mainBox(new Gtk::HBox()),
 		LessonBox(new Gtk::VBox),
-		notebook(guiNotebook) {
+		expandBox(new Gtk::VBox),
+		notebook(guiNotebook){
 
 	newLessonLabel->set_text("Neues Fach:");
 	saveNewLessonButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::saveButtonClicked));
@@ -47,7 +48,6 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 	LessonBox->pack_start(*saveNewLessonButton, Gtk::PACK_SHRINK, false, 0);
 	// add the table
 	mainBox->pack_start(*LessonBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
-	Gtk::VBox *expandBox = new Gtk::VBox;
 	expandBox->pack_start(*mainBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
 	this->add(*expandBox);
 }
@@ -59,6 +59,7 @@ SettingsPage::~SettingsPage() {
 	delete saveNewLessonButton;
 	delete mainBox;
 	delete LessonBox;
+	delete expandBox;
 }
 
 /**
@@ -73,6 +74,7 @@ void SettingsPage::saveButtonClicked() {
 	}
 	try {
 		this->connection.addNewLesson(newLesson);
+		this->connection.createSpecificLessonTable(newLesson);
 		newLessonEdit->set_text("");
 		LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson));
 		notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
@@ -103,6 +105,7 @@ void SettingsPage::deleteButtonClicked() {
 	try {
 		lessons = connection.getLessons();
 		connection.deleteLesson(std::string(selectedLesson));
+		connection.deleteSpecificLessonTable(std::string(selectedLesson));
 	} catch (ERRORS &error) {
 		Dialogs::showErrorDialog(error);
 		return;

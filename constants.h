@@ -17,6 +17,9 @@ namespace Database {
 	static const bool SUCCESS = true;
 	static const bool ERROR = false;
 	static std::string LESSON_DB = "faecher.db";
+	static std::string SPECIFIC_LESSON_UNTIL_COLUMN = "until";
+	static std::string SPECIFIC_LESSON_REACHED_POINTS = "points_reached";
+	static std::string SPECIFIC_LESSON_TOTAL_POINTS = "points_total";
 	static std::string LESSON_TABLE = "lesson";
 	static std::string LESSON_TABLE_LESSON_COLUMN = "lesson";
 };

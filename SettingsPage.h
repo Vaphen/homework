@@ -24,6 +24,7 @@ private:
 	Gtk::Button *saveNewLessonButton;
 	Gtk::HBox *mainBox;
 	Gtk::VBox *LessonBox;
+	Gtk::VBox *expandBox;
 	void initTable();
 	void saveButtonClicked();
 	void deleteButtonClicked();

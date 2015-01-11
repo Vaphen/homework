@@ -59,6 +59,8 @@ void GUI::showErrorDialog(std::string title, std::string message) {
 std::vector<std::string> GUI::doSqlLessonRequest() {
 	std::vector<std::string> lessons;
 	try {
+		// create table if not exists (just on startup)
+		connection.createAllLessonDb();
 		lessons = connection.getLessons();
 	} catch (ERRORS &error) {
 		Dialogs::showErrorDialog(error);
