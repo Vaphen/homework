@@ -12,6 +12,10 @@
 #include <vector>
 #include <sqlite3.h>
 
+
+/**
+ * TODO: rename this file + header.
+ */
 SQLiteConnect::SQLiteConnect() :
 		database(nullptr),
 		queryStatement(nullptr) {
@@ -46,7 +50,11 @@ void SQLiteConnect::createSpecificLessonTable(std::string lessonName) {
 							  Database::SPECIFIC_LESSON_REACHED_POINTS +
 							  " INTEGER, " +
 							  Database::SPECIFIC_LESSON_TOTAL_POINTS +
-							  " INTEGER);";
+							  " INTEGER, " +
+							  Database::SPECIFIC_LESSON_FINISHED +
+							  " BOOLEAN, " +
+							  Database::SPECIFIC_LESSON_COMMENT +
+							  " TEXT);";
 	try {
 		executeQuery(createQuery);
 	}catch(ERRORS &error) {
@@ -104,8 +112,7 @@ void SQLiteConnect::createAllLessonDb() {
 /**
  * @param dbName: the name of the database; usually given in constants.h
  * checks if the db exists. if not, it creates one.
- * returns Database-errors if an error occures
- * TODO: change return to throw and make more precise exceptions (like addNewLesson function)
+ * returns Database::ERROR if an error occures
  */
 bool SQLiteConnect::open_db(std::string dbName) {
 	return (sqlite3_open(dbName.c_str(), &database) != SQLITE_OK) ?
@@ -131,6 +138,27 @@ void SQLiteConnect::addNewLesson(std::string lessonName) {
 	std::string insertQuery = "INSERT INTO " + Database::LESSON_TABLE +
 						" VALUES (NULL, '" +
 						lessonName + "');";
+
+	if(sqlite3_prepare(database, insertQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
+		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	}
+
+	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
+		throw ERRORS::ERROR_QUERY_EXECUTION;
+	}
+
+	sqlite3_finalize(queryStatement);
+	close_db();
+}
+
+void SQLiteConnect::addNewExercise(std::string lessonName, std::string finishDate) {
+	if(open_db(Database::LESSON_DB) == Database::ERROR)
+		throw ERRORS::ERROR_OPEN_DB;
+
+	std::cout << lessonName << ":" << finishDate << std::endl;
+	std::string insertQuery = "INSERT INTO " + lessonName +
+						" VALUES (NULL, date('now'), NULL, NULL, 0, '');";
+	std::cout << insertQuery << std::endl;
 
 	if(sqlite3_prepare(database, insertQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
 		throw ERRORS::ERROR_DB_NOT_PREPARABLE;

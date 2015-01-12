@@ -12,6 +12,7 @@
 #define EXERCISE_UNTIL_LABEL_TEXT "zu erledigen bis:"
 #define SAVE_BUTTON_TEXT "Aufgabe speichern"
 
+#include "SQLiteConnect.h"
 #include <gtkmm.h>
 
 class LessonPage : public Gtk::Frame {
@@ -19,12 +20,15 @@ public:
 	LessonPage(std::string);
 	virtual ~LessonPage();
 private:
-	std::string pageTitle;
+	std::string curLesson;
 	Gtk::Table *exerciseTable;
 	Gtk::Label *newExerciseLabel;
 	Gtk::Label *exerciseUntilLabel;
 	Gtk::Entry *exerciseUntilEntry;
 	Gtk::Button *saveNewExerciseButton;
+	SQLiteConnect connection;
+
+	void saveButtonClicked();
 };
 
 #endif /* LESSONPAGE_H_ */

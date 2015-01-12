@@ -23,6 +23,7 @@ public:
 	void createAllLessonDb();
 	void createSpecificLessonTable(std::string);
 	void deleteSpecificLessonTable(std::string);
+	void addNewExercise(std::string, std::string);
 	std::vector<std::string> getLessons();
 private:
 	sqlite3 *database;
