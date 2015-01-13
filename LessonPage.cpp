@@ -9,19 +9,50 @@
 #include "constants.h"
 #include <iostream>
 #include <gtkmm.h>
+#include <string>
 
 LessonPage::LessonPage(std::string pageTitle) :
 		curLesson(pageTitle),
+		mainBox(new Gtk::VBox),
 		exerciseTable(new Gtk::Table),
-		newExerciseLabel(new Gtk::Label(NEW_EXERCISE_LABEL_TEXT)),
-		exerciseUntilLabel(new Gtk::Label(EXERCISE_UNTIL_LABEL_TEXT)),
-		exerciseUntilEntry(new Gtk::Entry),
-		saveNewExerciseButton(new Gtk::Button(SAVE_BUTTON_TEXT)) {
+		newExerciseFrame(new Gtk::Frame),
+		newExerciseBox(new Gtk::HBox){
 	set_label("Fach: " + curLesson);
 
-	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveButtonClicked));
+	initializeExerciseTable();
 
+	initializeNewExerciseBox();
 
+	mainBox->pack_start(*exerciseTable, Gtk::PACK_EXPAND_WIDGET, 0);
+	mainBox->pack_start(*newExerciseFrame, Gtk::PACK_EXPAND_PADDING, 0);
+
+	this->add(*mainBox);
+}
+
+LessonPage::~LessonPage() {
+	delete exerciseTable;
+	delete mainBox;
+	delete newExerciseFrame;
+	delete newExerciseBox;
+}
+
+void LessonPage::initializeNewExerciseBox() {
+	Gtk::Label *exerciseUntilLabel = Gtk::manage(new Gtk::Label(EXERCISE_UNTIL_LABEL_TEXT));
+	Gtk::Entry *exerciseUntilEntry = Gtk::manage(new Gtk::Entry);
+	Gtk::Button *saveNewExerciseButton = Gtk::manage(new Gtk::Button(SAVE_BUTTON_TEXT));
+
+	newExerciseBox->pack_start(*exerciseUntilLabel, Gtk::PACK_SHRINK, 0);
+	newExerciseBox->pack_start(*exerciseUntilEntry, Gtk::PACK_SHRINK, 0);
+	newExerciseBox->pack_start(*saveNewExerciseButton, Gtk::PACK_SHRINK, 0);
+
+	saveNewExerciseButton->signal_clicked().connect(sigc::bind<Gtk::Entry*>(
+			sigc::mem_fun(*this, &LessonPage::saveButtonClicked), exerciseUntilEntry));
+
+	newExerciseFrame->set_label(NEW_EXERCISE_LABEL_TEXT);
+	newExerciseFrame->add(*newExerciseBox);
+}
+
+void LessonPage::initializeExerciseTable() {
 	try {
 		exercises = connection.getExercises(curLesson);
 	}catch(ERRORS &error) {
@@ -50,36 +81,13 @@ LessonPage::LessonPage(std::string pageTitle) :
 		exerciseTable->attach(*commentLabel, 4, 5, 0, 1, Gtk::EXPAND, Gtk::FILL);
 
 		for(int cols = 0; cols < exercises.size(); cols++) {
-			std::cout << "in first loop" << exercises.at(0).size() << std::endl;
 			// rows has to start by one because of first row is used by heading-labels
 			for(int rows = 1; rows < exercises.at(cols).size() + 1; rows++) {
 				attachExerciseToTable(rows, cols);
 			}
 		}
 	}
-
-
-
-
-
-	exerciseTable->attach(*newExerciseLabel, 0, 4, numOfRows, numOfRows + 1, Gtk::FILL, Gtk::FILL);
-	exerciseTable->attach(*exerciseUntilLabel, 0, 2, numOfRows + 1, numOfRows + 2, Gtk::FILL, Gtk::FILL);
-	exerciseTable->attach(*exerciseUntilEntry, 2, 4, numOfRows + 1, numOfRows + 2, Gtk::FILL, Gtk::FILL);
-	exerciseTable->attach(*saveNewExerciseButton, 0, 4, numOfRows + 2, numOfRows + 3, Gtk::FILL, Gtk::FILL);
 	exerciseTable->show_all();
-	try {
-	connection.getExercises(pageTitle);
-	} catch(ERRORS &error) {
-		Dialogs::showErrorDialog(error);
-	}
-	this->add(*exerciseTable);
-}
-
-LessonPage::~LessonPage() {
-	delete exerciseTable;
-	delete newExerciseLabel;
-	delete exerciseUntilLabel;
-	delete saveNewExerciseButton;
 }
 
 /**
@@ -97,37 +105,50 @@ void LessonPage::attachExerciseToTable(int rowNum, int colNum) {
 		}
 		case COLUMN_ID::REACHED_POINTS: {
 			Gtk::Entry *reachedPointsEntry = Gtk::manage(new Gtk::Entry);
+			reachedPointsEntry->set_size_request(50, 30);
 			reachedPointsEntry->set_text(exercises.at(COLUMN_ID::REACHED_POINTS).at(curRowIndex));
 			exerciseTable->attach(*reachedPointsEntry, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
 			break;
 		}
 		case COLUMN_ID::TOTAL_POINTS: {
 			Gtk::Entry *totalPointsEntry = Gtk::manage(new Gtk::Entry);
+			totalPointsEntry->set_size_request(50, 30);
 			totalPointsEntry->set_text(exercises.at(COLUMN_ID::TOTAL_POINTS).at(curRowIndex));
 			exerciseTable->attach(*totalPointsEntry, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
 			break;
 		}
 		case COLUMN_ID::EXERCISE_FINISHED: {
 			Gtk::CheckButton *exerciseFinishedButton = Gtk::manage(new Gtk::CheckButton);
+			if(exercises.at(COLUMN_ID::EXERCISE_FINISHED).at(curRowIndex) == "1")
+				exerciseFinishedButton->set_active(true);
+
 			exerciseTable->attach(*exerciseFinishedButton, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
 			break;
 		}
 		case COLUMN_ID::EXERCISE_COMMENT: {
-			Gtk::Entry *commentEntry = Gtk::manage(new Gtk::Entry);
-			commentEntry->set_text(exercises.at(COLUMN_ID::EXERCISE_COMMENT).at(curRowIndex));
+			Gtk::TextView *commentEntry = Gtk::manage(new Gtk::TextView);
+			Glib::RefPtr<Gtk::TextBuffer> defaultText = Gtk::TextBuffer::create();
+
+			defaultText->set_text(exercises.at(COLUMN_ID::EXERCISE_COMMENT).at(curRowIndex));
+			commentEntry->set_size_request(130, 70);
+			commentEntry->set_border_width(1);
+			commentEntry->set_justification(Gtk::JUSTIFY_FILL);
+			commentEntry->set_buffer(defaultText);
 			exerciseTable->attach(*commentEntry, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
 			break;
 		}
 	}
 }
 
-void LessonPage::saveButtonClicked() {
+void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
+	std::cout << "text:" << exerciseUntilEntry->get_text() << std::endl;
 	if(exerciseUntilEntry->get_text() == "") {
 		Dialogs::showErrorDialog("Das Feld 'bis' darf nicht leer sein.",
 								 "Bitte füllen Sie das Feld aus.");
+		return;
 	}
 	try {
-		connection.addNewExercise(curLesson, "12.20.1031");
+		connection.addNewExercise(curLesson, exerciseUntilEntry->get_text());
 	} catch(ERRORS &error) {
 		Dialogs::showErrorDialog(error);
 	}

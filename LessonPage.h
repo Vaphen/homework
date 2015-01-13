@@ -21,16 +21,19 @@ public:
 	virtual ~LessonPage();
 private:
 	std::string curLesson;
-	Gtk::Table *exerciseTable;
-	Gtk::Label *newExerciseLabel;
-	Gtk::Label *exerciseUntilLabel;
-	Gtk::Entry *exerciseUntilEntry;
-	Gtk::Button *saveNewExerciseButton;
-	SQLiteConnect connection;
 	std::vector<std::vector<std::string>> exercises;
 
-	void saveButtonClicked();
+	SQLiteConnect connection;
+
+	Gtk::VBox *mainBox;
+	Gtk::Table *exerciseTable;
+	Gtk::Frame *newExerciseFrame;
+	Gtk::HBox *newExerciseBox;
+
+	void saveButtonClicked(Gtk::Entry*);
 	void attachExerciseToTable(int, int);
+	void initializeNewExerciseBox();
+	void initializeExerciseTable();
 };
 
 #endif /* LESSONPAGE_H_ */
