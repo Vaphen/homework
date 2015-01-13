@@ -27,8 +27,10 @@ private:
 	Gtk::Entry *exerciseUntilEntry;
 	Gtk::Button *saveNewExerciseButton;
 	SQLiteConnect connection;
+	std::vector<std::vector<std::string>> exercises;
 
 	void saveButtonClicked();
+	void attachExerciseToTable(int, int);
 };
 
 #endif /* LESSONPAGE_H_ */

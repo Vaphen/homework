@@ -13,6 +13,22 @@
 
 enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION };
 
+namespace TABLE_LABELS {
+	static const std::string UNTIL = "<b>Aufgabe zu erledigen bis</b>";
+	static const std::string REACHED_POINTS = "<b>Erreichte Punkte</b>";
+	static const std::string TOTAL_POINTS = "<b>Maximale Punktzahl</b>";
+	static const std::string EXERCISE_FINISHED = "<b>Erledigt</b>";
+	static const std::string EXERCISE_COMMENT = "<b>Kommentar</b>";
+}
+
+namespace COLUMN_ID {
+	static const int UNTIL = 0;
+	static const int REACHED_POINTS = 1;
+	static const int TOTAL_POINTS = 2;
+	static const int EXERCISE_FINISHED = 3;
+	static const int EXERCISE_COMMENT = 4;
+};
+
 namespace Database {
 	static const bool SUCCESS = true;
 	static const bool ERROR = false;
