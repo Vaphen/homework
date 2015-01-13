@@ -198,6 +198,45 @@ void SQLiteConnect::deleteLesson(std::string lessonName) {
 	close_db();
 }
 
+std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string lessonName) {
+
+	if(open_db(Database::LESSON_DB) == Database::ERROR)
+		throw ERRORS::ERROR_OPEN_DB;
+
+	std::string selectQuery = "SELECT * FROM " +
+							  lessonName + ";";
+
+	if(sqlite3_prepare(database, selectQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
+		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	}
+
+	int res = 0;
+	std::vector<std::vector<std::string>> lessons;
+
+	// initialize the vector for 4 columns
+	for(int i = 0; i < 4; i++)
+	    lessons.push_back(std::vector< std::string >());
+
+
+
+	while((res = sqlite3_step(queryStatement)) != SQLITE_DONE)
+	{
+	    for( int i = 1; i < 5; i++ ) {
+	    	if((char*)sqlite3_column_text(queryStatement, i) != nullptr) {
+	    		lessons.at(i - 1).push_back(std::string((char *)sqlite3_column_text(queryStatement, i)));
+	    	}
+	    }
+	}
+
+	if(res == SQLITE_ERROR) {
+		throw ERRORS::ERROR_QUERY_EXECUTION;
+	}
+
+	sqlite3_finalize(queryStatement);
+	close_db();
+	return lessons;
+}
+
 /**
  * returns all lessons given in the Database
  */

@@ -21,11 +21,30 @@ LessonPage::LessonPage(std::string pageTitle) :
 
 	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveButtonClicked));
 
-	exerciseTable->attach(*newExerciseLabel, 0, 4, 0, 1, Gtk::FILL, Gtk::FILL);
-	exerciseTable->attach(*exerciseUntilLabel, 0, 2, 1, 2, Gtk::FILL, Gtk::FILL);
-	exerciseTable->attach(*exerciseUntilEntry, 2, 4, 1, 2, Gtk::FILL, Gtk::FILL);
-	exerciseTable->attach(*saveNewExerciseButton, 0, 4, 2, 3, Gtk::FILL, Gtk::FILL);
+	std::vector<std::vector<std::string>> lessons;
+	try {
+		lessons = connection.getExercises(curLesson);
+	}catch(ERRORS &error) {
+		Dialogs::showErrorDialog(error);
+	}
+
+	for(int cols = 0; cols < lessons.size(); cols++) {
+		for(int rows = 0; rows < lessons.at(cols).size(); rows++) {
+			Gtk::Label *untilLabel = Gtk::manage(new Gtk::Label(lessons.at(cols).at(rows)));
+			exerciseTable->attach(*untilLabel, cols, cols + 1, rows, rows + 1, Gtk::EXPAND, Gtk::EXPAND);
+		}
+	}
+	int numOfRows = (lessons.size() > 0) ? lessons.at(0).size() : 0;
+	exerciseTable->attach(*newExerciseLabel, 0, 4, numOfRows, numOfRows + 1, Gtk::FILL, Gtk::FILL);
+	exerciseTable->attach(*exerciseUntilLabel, 0, 2, numOfRows + 1, numOfRows + 2, Gtk::FILL, Gtk::FILL);
+	exerciseTable->attach(*exerciseUntilEntry, 2, 4, numOfRows + 1, numOfRows + 2, Gtk::FILL, Gtk::FILL);
+	exerciseTable->attach(*saveNewExerciseButton, 0, 4, numOfRows + 2, numOfRows + 3, Gtk::FILL, Gtk::FILL);
 	exerciseTable->show_all();
+	try {
+	connection.getExercises(pageTitle);
+	} catch(ERRORS &error) {
+		Dialogs::showErrorDialog(error);
+	}
 	this->add(*exerciseTable);
 }
 
