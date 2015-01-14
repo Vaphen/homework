@@ -1,5 +1,5 @@
 //main.cpp
-#include "GUI.h"
+#include "gui/GUI.h"
 #include <gtkmm.h>
 #include <iostream>
 
