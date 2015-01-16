@@ -91,12 +91,13 @@ void LessonPage::initializeExerciseTable() {
 		 * TODO: check, if a class of type Gtk::Label with static label-counter isnt better for
 		 * this loop (or at all).
 		 */
-		for(std::vector<std::string> curRow : exercises) {
-			allRows.push_back(curRow);
+		for(int i = 0; i < exercises.at(i).size(); i++) {
+			LessonTableRow newLessonRow(exercises.at(i));
+			allRows.push_back(newLessonRow);
 		}
 
 		// rows has to start by one because of first row is used by heading-labels
-		for(int rows = 1; rows < allRows.size() + 1; rows++) {
+		for(int rows = 1; rows < exercises.at(0).size() + 1; rows++) {
 			exerciseTable->attach(*allRows.at(rows - 1).getUntilLabel(), 0, 1, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
 			exerciseTable->attach(*allRows.at(rows - 1).getReachedPointsEntry(), 1, 2, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
 			exerciseTable->attach(*allRows.at(rows - 1).getTotalPointsEntry(), 2, 3, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);

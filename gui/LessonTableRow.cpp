@@ -10,32 +10,22 @@
 #include <string>
 #include <gtkmm.h>
 #include <sstream>
+#include <iostream>
 
+/**
+ * TODO: rename column, its row
+ */
 LessonTableRow::LessonTableRow(std::vector<std::string> column) {
-	for(int i = 0; i < column.size(); i++) {
-		switch(i) {
-		case COLUMN_ID::ID:
-			idInSqlDB = atoi(column.at(i).c_str());
-			break;
-		case COLUMN_ID::UNTIL:
-			toDoUntil = column.at(i);
-			break;
-		case COLUMN_ID::REACHED_POINTS:
-			reachedPoints = atoi(column.at(i).c_str());
-			break;
-		case COLUMN_ID::TOTAL_POINTS:
-			totalPoints = atoi(column.at(i).c_str());
-			break;
-		case COLUMN_ID::EXERCISE_FINISHED:
-			exerciseFinished = (column.at(i) == "1") ? true : false;
-			break;
-		case COLUMN_ID::EXERCISE_COMMENT:
-			exerciseComment = column.at(i);
-			break;
-		default:
-			throw ERRORS::ERROR_CREATE_COLUMN;
-		}
-	}
+	for(std::string col : column)
+		std::cout << col << "-";
+	std::cout << std::endl;
+	/*idInSqlDB = atoi(column.at(COLUMN_ID::ID).c_str());
+	toDoUntil = column.at(COLUMN_ID::UNTIL);
+	reachedPoints = atoi(column.at(COLUMN_ID::REACHED_POINTS).c_str());
+	totalPoints = atoi(column.at(COLUMN_ID::TOTAL_POINTS).c_str());
+	exerciseFinished = (column.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
+	exerciseComment = column.at(COLUMN_ID::EXERCISE_COMMENT);*/
+
 	initializeWidgets();
 }
 
