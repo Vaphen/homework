@@ -13,6 +13,7 @@
 #define SAVE_BUTTON_TEXT "Aufgabe speichern"
 
 #include "../sql/SQLiteConnect.h"
+#include "LessonTableRow.h"
 #include <gtkmm.h>
 
 class LessonPage : public Gtk::Frame {
@@ -22,6 +23,7 @@ public:
 private:
 	std::string curLesson;
 	std::vector<std::vector<std::string>> exercises;
+	std::vector<LessonTableRow> allRows;
 
 	SQLiteConnect connection;
 
@@ -30,10 +32,13 @@ private:
 	Gtk::Frame *newExerciseFrame;
 	Gtk::HBox *newExerciseBox;
 
+	Gtk::Button* getDeleteButton();
+
 	void saveButtonClicked(Gtk::Entry*);
-	void attachExerciseToTable(int, int);
+	void deleteButtonClicked(int, Gtk::Button*);
 	void initializeNewExerciseBox();
 	void initializeExerciseTable();
+	void addRowToTable();
 };
 
 #endif /* LESSONPAGE_H_ */

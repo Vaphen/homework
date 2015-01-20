@@ -9,11 +9,13 @@
 #define GUI_LESSONTABLEROW_H_
 
 #include <gtkmm.h>
+#include <functional>
 
 
 class LessonTableRow {
 public:
 	LessonTableRow(std::vector<std::string>);
+	LessonTableRow(std::string, int);
 	~LessonTableRow();
 
 	Gtk::Label* getUntilLabel();
@@ -21,6 +23,8 @@ public:
 	Gtk::Entry* getTotalPointsEntry();
 	Gtk::CheckButton* getExerciseFinishedButton();
 	Gtk::TextView* getCommentTextView();
+	int getID();
+
 private:
 	int idInSqlDB;
 	std::string toDoUntil;
@@ -36,6 +40,7 @@ private:
 	Gtk::TextView *commentTextView;
 
 	void initializeWidgets();
+
 };
 
 #endif /* GUI_LESSONTABLEROW_H_ */

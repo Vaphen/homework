@@ -11,6 +11,7 @@
 #include <iostream>
 #include <gtkmm.h>
 #include <string>
+#include <functional>
 
 LessonPage::LessonPage(std::string pageTitle) :
 		curLesson(pageTitle),
@@ -62,6 +63,7 @@ void LessonPage::initializeExerciseTable() {
 
 
 	int numOfRows = (exercises.size() > 0) ? exercises.at(0).size() : 0;
+	// just add the table if at least 1 exercise exists
 	if(numOfRows != 0) {
 		Gtk::Label *untilLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *reachedPointsLabel = Gtk::manage(new Gtk::Label);
@@ -85,93 +87,23 @@ void LessonPage::initializeExerciseTable() {
 		exerciseTable->attach(*deleteLabel, 5, 6, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 
 
-
-		std::vector<LessonTableRow> allRows;
 		/**
 		 * TODO: check, if a class of type Gtk::Label with static label-counter isnt better for
 		 * this loop (or at all).
 		 */
-		for(int i = 0; i < exercises.at(i).size(); i++) {
-			LessonTableRow newLessonRow(exercises.at(i));
+		for(int row = 0; row < numOfRows; row++) {
+			// because rows are columns and other way round, we need to do it like this
+			// transform the string-matrix
+			std::vector<std::string> curRow;
+			for(int column = 0; column < exercises.size(); column++) {
+				curRow.push_back(exercises.at(column).at(row));
+			}
+			LessonTableRow newLessonRow(curRow);
 			allRows.push_back(newLessonRow);
-		}
-
-		// rows has to start by one because of first row is used by heading-labels
-		for(int rows = 1; rows < exercises.at(0).size() + 1; rows++) {
-			exerciseTable->attach(*allRows.at(rows - 1).getUntilLabel(), 0, 1, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
-			exerciseTable->attach(*allRows.at(rows - 1).getReachedPointsEntry(), 1, 2, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
-			exerciseTable->attach(*allRows.at(rows - 1).getTotalPointsEntry(), 2, 3, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
-			exerciseTable->attach(*allRows.at(rows - 1).getExerciseFinishedButton(), 3, 4, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
-			exerciseTable->attach(*allRows.at(rows - 1).getCommentTextView(), 4, 5, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
-
-
-
-			Gtk::Button *deleteButton = new Gtk::Button;
-			/**
-			 * TODO: make this a better path solution (with constants)
-			 */
-			Gtk::Image  *deleteIcon = Gtk::manage(new Gtk::Image("src/delete.png"));
-			deleteButton->set_image(*deleteIcon);
-			deleteButton->set_size_request(50, 50);
-			deleteButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
-			exerciseTable->attach(*deleteButton, 5, 6, rows, rows + 1, Gtk::EXPAND, Gtk::FILL);
+			addRowToTable();
 		}
 	}
 	exerciseTable->show_all();
-}
-
-/**
- * attaches a new entry to the table in the given position
- * @param rowNum: number of Row in which should be inserted
- * @param colNum: number of Col in which should be inserted
- */
-void LessonPage::attachExerciseToTable(int rowNum, int colNum) {
-	int curRowIndex = rowNum - 1;
-	switch(colNum) {
-		case COLUMN_ID::UNTIL: {
-			Gtk::Label *untilLabel = Gtk::manage(new Gtk::Label(exercises.at(COLUMN_ID::UNTIL).at(curRowIndex)));
-			exerciseTable->attach(*untilLabel, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
-			break;
-		}
-		case COLUMN_ID::REACHED_POINTS: {
-			Gtk::Entry *reachedPointsEntry = Gtk::manage(new Gtk::Entry);
-			reachedPointsEntry->set_size_request(50, 30);
-			reachedPointsEntry->set_text(exercises.at(COLUMN_ID::REACHED_POINTS).at(curRowIndex));
-			exerciseTable->attach(*reachedPointsEntry, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
-			break;
-		}
-		case COLUMN_ID::TOTAL_POINTS: {
-			Gtk::Entry *totalPointsEntry = Gtk::manage(new Gtk::Entry);
-			totalPointsEntry->set_size_request(50, 30);
-			totalPointsEntry->set_text(exercises.at(COLUMN_ID::TOTAL_POINTS).at(curRowIndex));
-			exerciseTable->attach(*totalPointsEntry, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
-			break;
-		}
-		case COLUMN_ID::EXERCISE_FINISHED: {
-			Gtk::CheckButton *exerciseFinishedButton = Gtk::manage(new Gtk::CheckButton);
-			if(exercises.at(COLUMN_ID::EXERCISE_FINISHED).at(curRowIndex) == "1")
-				exerciseFinishedButton->set_active(true);
-
-			exerciseTable->attach(*exerciseFinishedButton, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
-			break;
-		}
-		case COLUMN_ID::EXERCISE_COMMENT: {
-			Gtk::TextView *commentEntry = Gtk::manage(new Gtk::TextView);
-			Glib::RefPtr<Gtk::TextBuffer> defaultText = Gtk::TextBuffer::create();
-
-			defaultText->set_text(exercises.at(COLUMN_ID::EXERCISE_COMMENT).at(curRowIndex));
-			commentEntry->set_size_request(130, 50);
-			commentEntry->set_border_width(1);
-			commentEntry->set_justification(Gtk::JUSTIFY_FILL);
-			commentEntry->set_buffer(defaultText);
-			exerciseTable->attach(*commentEntry, colNum, colNum + 1, rowNum, rowNum + 1, Gtk::EXPAND, Gtk::FILL);
-			break;
-		}
-		default:
-			Dialogs::showErrorDialog("Es ist ein unbekannter Fehler aufgetreten.",
-									 "Eine Spalte konnte nicht zur Aufgabentabelle hinzugefügt werden.");
-			return;
-	}
 }
 
 /**
@@ -179,16 +111,66 @@ void LessonPage::attachExerciseToTable(int rowNum, int colNum) {
  * @param exerciseUntilEntry entrybox with date, until it must be finished
  */
 void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
-	std::cout << "text:" << exerciseUntilEntry->get_text() << std::endl;
-	if(exerciseUntilEntry->get_text() == "") {
+	if(exerciseUntilEntry->get_text() == "" || !isValidDate(exerciseUntilEntry->get_text())) {
 		Dialogs::showErrorDialog("Das Feld 'bis' darf nicht leer sein.",
 								 "Bitte füllen Sie das Feld aus.");
 		return;
 	}
 	try {
 		connection.addNewExercise(curLesson, exerciseUntilEntry->get_text());
+		LessonTableRow newRow(exerciseUntilEntry->get_text(), allRows.back().getID());
+		allRows.push_back(newRow);
+		addRowToTable();
 	} catch(ERRORS &error) {
 		Dialogs::showErrorDialog(error);
 	}
 }
+
+/**
+ * returns a delete-button with delete icon. button is connected
+ * with deleteButtonClicked function, binded to id of its row and
+ * to a pointer to the widget itself, just for deleting it by clicking
+ * on it
+ */
+Gtk::Button* LessonPage::getDeleteButton() {
+	Gtk::Image *deleteIcon = Gtk::manage(new Gtk::Image(DELETE_ICO));
+	Gtk::Button *deleteButton = Gtk::manage(new Gtk::Button);
+	deleteButton->set_image(*deleteIcon);
+	deleteButton->set_size_request(50, 50);
+	deleteButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
+	deleteButton->signal_clicked().connect(sigc::bind<int, Gtk::Button*>(
+				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), allRows.back().getID(), deleteButton));
+	return deleteButton;
+}
+
+/**
+ * @param exerciseId the id of the row which the button should delete
+ * @param *deleteButton pointer to the widget itself that we can delete it
+ */
+void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) {
+	for(int i = 0; i < allRows.size(); i++) {
+		if(allRows.at(i).getID() == exerciseId) {
+			exerciseTable->remove(*allRows.at(i).getCommentTextView());
+			exerciseTable->remove(*allRows.at(i).getExerciseFinishedButton());
+			exerciseTable->remove(*allRows.at(i).getReachedPointsEntry());
+			exerciseTable->remove(*allRows.at(i).getTotalPointsEntry());
+			exerciseTable->remove(*allRows.at(i).getUntilLabel());
+			exerciseTable->remove(*deleteButton);
+			allRows.erase(allRows.begin() + i);
+			exerciseTable->show_all();
+			return;
+		}
+	}
+}
+
+void LessonPage::addRowToTable() {
+	exerciseTable->attach(*allRows.back().getUntilLabel(), 0, 1, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getReachedPointsEntry(), 1, 2, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getTotalPointsEntry(), 2, 3, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getExerciseFinishedButton(), 3, 4, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getCommentTextView(), 4, 5, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(getDeleteButton(), 5, 6, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->show_all();
+}
+
 

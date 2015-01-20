@@ -1,10 +1,14 @@
 NAME = homework
 CC = g++
-CFLAGS = -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4`
+CFLAGS = -ggdb -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4`
+
+OBJ_DIR = ./obj
 
 default: $(NAME)
 
 FILES = main SQLiteConnect GUI LessonPage SettingsLessonTable SettingsPage LessonTableRow
+
+all: gui.o sql.o main.o	$(NAME)
 
 $(NAME):
 	@echo "Building..."

@@ -6,26 +6,42 @@
  */
 
 #include "LessonTableRow.h"
+#include "LessonPage.h"
 #include "../constants/constants.h"
 #include <string>
 #include <gtkmm.h>
 #include <sstream>
 #include <iostream>
+#include <functional>
 
 /**
- * TODO: rename column, its row
+ * default constructor; called to create an row-object from sql-database
  */
-LessonTableRow::LessonTableRow(std::vector<std::string> column) {
-	for(std::string col : column)
-		std::cout << col << "-";
-	std::cout << std::endl;
-	/*idInSqlDB = atoi(column.at(COLUMN_ID::ID).c_str());
-	toDoUntil = column.at(COLUMN_ID::UNTIL);
-	reachedPoints = atoi(column.at(COLUMN_ID::REACHED_POINTS).c_str());
-	totalPoints = atoi(column.at(COLUMN_ID::TOTAL_POINTS).c_str());
-	exerciseFinished = (column.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
-	exerciseComment = column.at(COLUMN_ID::EXERCISE_COMMENT);*/
+LessonTableRow::LessonTableRow(std::vector<std::string> row) {
+	idInSqlDB = atoi(row.at(COLUMN_ID::ID).c_str());
+	toDoUntil = row.at(COLUMN_ID::UNTIL);
+	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
+	totalPoints = atoi(row.at(COLUMN_ID::TOTAL_POINTS).c_str());
+	exerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
+	exerciseComment = row.at(COLUMN_ID::EXERCISE_COMMENT);
 
+	initializeWidgets();
+}
+
+/**
+ * This constructor should only be called if a new exercise has been added
+ * all values are set to 0, except the until-value and the id-value
+ */
+LessonTableRow::LessonTableRow(std::string until, int id) {
+	/**
+	 * TODO: id is not 0!!!!!!!!!
+	 */
+	idInSqlDB = id;
+	toDoUntil = until;
+	reachedPoints = 0;
+	totalPoints = 0;
+	exerciseFinished = false;
+	exerciseComment = "";
 	initializeWidgets();
 }
 
@@ -44,6 +60,7 @@ void LessonTableRow::initializeWidgets() {
 	reachedPointsEntry->set_text(intToString.str());
 
 	totalPointsEntry->set_size_request(50, 30);
+	intToString.str("");
 	intToString << totalPoints;
 	totalPointsEntry->set_text(intToString.str());
 
@@ -75,6 +92,10 @@ Gtk::CheckButton* LessonTableRow::getExerciseFinishedButton() {
 
 Gtk::TextView* LessonTableRow::getCommentTextView() {
 	return commentTextView;
+}
+
+int LessonTableRow::getID() {
+	return idInSqlDB;
 }
 
 LessonTableRow::~LessonTableRow() {
