@@ -33,9 +33,6 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) {
  * all values are set to 0, except the until-value and the id-value
  */
 LessonTableRow::LessonTableRow(std::string until, int id) {
-	/**
-	 * TODO: id is not 0!!!!!!!!!
-	 */
 	idInSqlDB = id;
 	toDoUntil = until;
 	reachedPoints = 0;
@@ -49,6 +46,8 @@ void LessonTableRow::initializeWidgets() {
 	untilLabel = Gtk::manage(new Gtk::Label(toDoUntil));
 	reachedPointsEntry = Gtk::manage(new Gtk::Entry);
 	totalPointsEntry = Gtk::manage(new Gtk::Entry);
+	openFolderButton = Gtk::manage(new Gtk::Button);
+	openFolderButtonImage = Gtk::manage(new Gtk::Image(OPENDIR_ICO));
 	exerciseFinishedButton = Gtk::manage(new Gtk::CheckButton);
 	commentTextView = Gtk::manage(new Gtk::TextView);
 
@@ -63,6 +62,10 @@ void LessonTableRow::initializeWidgets() {
 	intToString.str("");
 	intToString << totalPoints;
 	totalPointsEntry->set_text(intToString.str());
+
+	openFolderButton->set_image(*openFolderButtonImage);
+	openFolderButton->set_size_request(50, 50);
+	openFolderButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
 
 	exerciseFinishedButton->set_active(exerciseFinished);
 
@@ -84,6 +87,10 @@ Gtk::Entry* LessonTableRow::getReachedPointsEntry() {
 
 Gtk::Entry* LessonTableRow::getTotalPointsEntry() {
 	return totalPointsEntry;
+}
+
+Gtk::Button* LessonTableRow::getOpenFolderButton() {
+	return openFolderButton;
 }
 
 Gtk::CheckButton* LessonTableRow::getExerciseFinishedButton() {

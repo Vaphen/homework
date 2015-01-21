@@ -31,7 +31,7 @@ private:
 	Gtk::Table *exerciseTable;
 	Gtk::Frame *newExerciseFrame;
 	Gtk::HBox *newExerciseBox;
-
+	Gtk::ScrolledWindow *tableScroller;
 	Gtk::Button* getDeleteButton();
 
 	void saveButtonClicked(Gtk::Entry*);

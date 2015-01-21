@@ -18,15 +18,18 @@ LessonPage::LessonPage(std::string pageTitle) :
 		mainBox(new Gtk::VBox),
 		exerciseTable(new Gtk::Table),
 		newExerciseFrame(new Gtk::Frame),
-		newExerciseBox(new Gtk::HBox){
+		newExerciseBox(new Gtk::HBox),
+		tableScroller(new Gtk::ScrolledWindow){
 	set_label("Fach: " + curLesson);
 
 	initializeExerciseTable();
 
 	initializeNewExerciseBox();
 
-	mainBox->pack_start(*exerciseTable, Gtk::PACK_EXPAND_WIDGET, 0);
-	mainBox->pack_start(*newExerciseFrame, Gtk::PACK_EXPAND_PADDING, 0);
+	tableScroller->add(*exerciseTable);
+	tableScroller->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+	mainBox->pack_start(*tableScroller, Gtk::PACK_EXPAND_WIDGET, 0);
+	mainBox->pack_start(*newExerciseFrame, Gtk::PACK_SHRINK, 0);
 
 	this->add(*mainBox);
 }
@@ -36,6 +39,7 @@ LessonPage::~LessonPage() {
 	delete mainBox;
 	delete newExerciseFrame;
 	delete newExerciseBox;
+	delete tableScroller;
 }
 
 void LessonPage::initializeNewExerciseBox() {
@@ -68,6 +72,7 @@ void LessonPage::initializeExerciseTable() {
 		Gtk::Label *untilLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *reachedPointsLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *totalPointsLabel = Gtk::manage(new Gtk::Label);
+		Gtk::Label *openDirLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *finishedLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *commentLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *deleteLabel = Gtk::manage(new Gtk::Label);
@@ -75,6 +80,7 @@ void LessonPage::initializeExerciseTable() {
 		untilLabel->set_markup(TABLE_LABELS::UNTIL);
 		reachedPointsLabel->set_markup(TABLE_LABELS::REACHED_POINTS);
 		totalPointsLabel->set_markup(TABLE_LABELS::TOTAL_POINTS);
+		openDirLabel->set_markup(TABLE_LABELS::OPEN_DIR);
 		finishedLabel->set_markup(TABLE_LABELS::EXERCISE_FINISHED);
 		commentLabel->set_markup(TABLE_LABELS::EXERCISE_COMMENT);
 		deleteLabel->set_markup(TABLE_LABELS::DELETE_EXERCISE);
@@ -82,9 +88,10 @@ void LessonPage::initializeExerciseTable() {
 		exerciseTable->attach(*untilLabel, 0, 1, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 		exerciseTable->attach(*reachedPointsLabel, 1, 2, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 		exerciseTable->attach(*totalPointsLabel, 2, 3, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
-		exerciseTable->attach(*finishedLabel, 3, 4, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
-		exerciseTable->attach(*commentLabel, 4, 5, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
-		exerciseTable->attach(*deleteLabel, 5, 6, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
+		exerciseTable->attach(*openDirLabel, 3, 4, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
+		exerciseTable->attach(*finishedLabel, 4, 5, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
+		exerciseTable->attach(*commentLabel, 5, 6, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
+		exerciseTable->attach(*deleteLabel, 6, 7, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 
 
 		/**
@@ -118,7 +125,7 @@ void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
 	}
 	try {
 		connection.addNewExercise(curLesson, exerciseUntilEntry->get_text());
-		LessonTableRow newRow(exerciseUntilEntry->get_text(), allRows.back().getID());
+		LessonTableRow newRow(exerciseUntilEntry->get_text(), allRows.back().getID() + 1);
 		allRows.push_back(newRow);
 		addRowToTable();
 	} catch(ERRORS &error) {
@@ -150,10 +157,17 @@ Gtk::Button* LessonPage::getDeleteButton() {
 void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) {
 	for(int i = 0; i < allRows.size(); i++) {
 		if(allRows.at(i).getID() == exerciseId) {
+			try {
+				connection.deleteExercise(this->curLesson, allRows.at(i).getID());
+			} catch(ERRORS &error) {
+				Dialogs::showErrorDialog(error);
+				return;
+			}
 			exerciseTable->remove(*allRows.at(i).getCommentTextView());
 			exerciseTable->remove(*allRows.at(i).getExerciseFinishedButton());
 			exerciseTable->remove(*allRows.at(i).getReachedPointsEntry());
 			exerciseTable->remove(*allRows.at(i).getTotalPointsEntry());
+			exerciseTable->remove(*allRows.at(i).getOpenFolderButton());
 			exerciseTable->remove(*allRows.at(i).getUntilLabel());
 			exerciseTable->remove(*deleteButton);
 			allRows.erase(allRows.begin() + i);
@@ -167,9 +181,10 @@ void LessonPage::addRowToTable() {
 	exerciseTable->attach(*allRows.back().getUntilLabel(), 0, 1, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back().getReachedPointsEntry(), 1, 2, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back().getTotalPointsEntry(), 2, 3, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getExerciseFinishedButton(), 3, 4, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getCommentTextView(), 4, 5, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(getDeleteButton(), 5, 6, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getOpenFolderButton(), 3, 4, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getExerciseFinishedButton(), 4, 5, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getCommentTextView(), 5, 6, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*getDeleteButton(), 6, 7, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->show_all();
 }
 

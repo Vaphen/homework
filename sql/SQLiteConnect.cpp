@@ -151,14 +151,17 @@ void SQLiteConnect::addNewLesson(std::string lessonName) {
 	close_db();
 }
 
+/**
+ * adds a new exercise to a specific lesson table
+ * @param lessonName the name of the lesson the exercise belongs to
+ * @param finishDate date when the exercise must be finished
+ */
 void SQLiteConnect::addNewExercise(std::string lessonName, std::string finishDate) {
 	if(open_db(Database::LESSON_DB) == Database::ERROR)
 		throw ERRORS::ERROR_OPEN_DB;
 
-	std::cout << lessonName << ":" << finishDate << std::endl;
 	std::string insertQuery = "INSERT INTO " + lessonName +
 						" VALUES (NULL, date('now'), NULL, NULL, 0, '');";
-	std::cout << insertQuery << std::endl;
 
 	if(sqlite3_prepare(database, insertQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
 		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
@@ -170,6 +173,33 @@ void SQLiteConnect::addNewExercise(std::string lessonName, std::string finishDat
 
 	sqlite3_finalize(queryStatement);
 	close_db();
+}
+
+/**
+ * deletes an exercise from a specific lessonTable by its exerciseId
+ * @param lessonName name of the Lesson the exercise belongs to
+ * @param exerciseId id of the exercise which should be deleted
+ */
+void SQLiteConnect::deleteExercise(std::string lessonName, int exerciseId) {
+	if(open_db(Database::LESSON_DB) == Database::ERROR)
+		throw ERRORS::ERROR_OPEN_DB;
+
+	std::string deleteQuery = "DELETE FROM " +
+							  lessonName +
+							  " WHERE id='" +
+							  std::to_string(exerciseId) + "';";
+
+	if(sqlite3_prepare(database, deleteQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
+		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	}
+
+	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
+		throw ERRORS::ERROR_QUERY_EXECUTION;
+	}
+
+	sqlite3_finalize(queryStatement);
+	close_db();
+
 }
 
 /**

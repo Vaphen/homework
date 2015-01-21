@@ -8,6 +8,7 @@
 #define CONSTANTS_H_
 
 #define DELETE_ICO "./src/delete.png"
+#define OPENDIR_ICO "./src/openDir.png"
 
 #include <string>
 #include <ctime>
@@ -27,6 +28,7 @@ namespace TABLE_LABELS {
 	static const std::string UNTIL = "<b>Aufgabe zu erledigen bis</b>";
 	static const std::string REACHED_POINTS = "<b>Erreichte Punkte</b>";
 	static const std::string TOTAL_POINTS = "<b>Maximale Punktzahl</b>";
+	static const std::string OPEN_DIR = "<b>Verzeichnis öffnen</b>";
 	static const std::string EXERCISE_FINISHED = "<b>Erledigt</b>";
 	static const std::string EXERCISE_COMMENT = "<b>Kommentar</b>";
 	static const std::string DELETE_EXERCISE = "<b>Löschen</b>";
