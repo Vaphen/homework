@@ -124,7 +124,7 @@ void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
 		return;
 	}
 	try {
-		connection.addNewExercise(curLesson, exerciseUntilEntry->get_text());
+		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/");
 		LessonTableRow newRow(exerciseUntilEntry->get_text(), allRows.back().getID() + 1);
 		allRows.push_back(newRow);
 		addRowToTable();

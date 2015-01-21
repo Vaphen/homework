@@ -43,17 +43,20 @@ void SQLiteConnect::deleteSpecificLessonTable(std::string lessonName) {
  */
 void SQLiteConnect::createSpecificLessonTable(std::string lessonName) {
 	std::string createQuery = "CREATE TABLE IF NOT EXISTS " +
-							  lessonName +
-							  "(id INTEGER PRIMARY KEY, " +
-							  Database::SPECIFIC_LESSON_UNTIL_COLUMN +
+							  lessonName + "(" +
+							  std::string(Database::COLUMN["ID"]) +
+							  " INTEGER PRIMARY KEY, " +
+							  Database::COLUMN["TO_DO_UNTIL"] +
 							  " DATETIME, " +
-							  Database::SPECIFIC_LESSON_REACHED_POINTS +
+							  Database::COLUMN["REACHED_POINTS"] +
 							  " INTEGER, " +
-							  Database::SPECIFIC_LESSON_TOTAL_POINTS +
+							  Database::COLUMN["TOTAL_POINTS"] +
 							  " INTEGER, " +
-							  Database::SPECIFIC_LESSON_FINISHED +
+							  Database::COLUMN["FOLDER_PATH"] +
+							  " TEXT, " +
+							  Database::COLUMN["IS_FINISHED"] +
 							  " BOOLEAN, " +
-							  Database::SPECIFIC_LESSON_COMMENT +
+							  Database::COLUMN["LESSON_COMMENT"] +
 							  " TEXT);";
 	try {
 		executeQuery(createQuery);
@@ -154,14 +157,14 @@ void SQLiteConnect::addNewLesson(std::string lessonName) {
 /**
  * adds a new exercise to a specific lesson table
  * @param lessonName the name of the lesson the exercise belongs to
- * @param finishDate date when the exercise must be finished
+ * @param folderPath path to the folder which contains the files which belong to the exercise
  */
-void SQLiteConnect::addNewExercise(std::string lessonName, std::string finishDate) {
+void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPath) {
 	if(open_db(Database::LESSON_DB) == Database::ERROR)
 		throw ERRORS::ERROR_OPEN_DB;
 
 	std::string insertQuery = "INSERT INTO " + lessonName +
-						" VALUES (NULL, date('now'), NULL, NULL, 0, '');";
+						" VALUES (NULL, date('now'), NULL, NULL, '" + folderPath + "', 0, '');";
 
 	if(sqlite3_prepare(database, insertQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
 		throw ERRORS::ERROR_DB_NOT_PREPARABLE;

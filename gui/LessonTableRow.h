@@ -31,6 +31,7 @@ private:
 	std::string toDoUntil;
 	unsigned int reachedPoints;
 	unsigned int totalPoints;
+	std::string folderPath;
 	bool exerciseFinished;
 	std::string exerciseComment;
 
@@ -43,6 +44,7 @@ private:
 	Gtk::TextView *commentTextView;
 
 	void initializeWidgets();
+	void openFolderButtonClicked();
 
 };
 

@@ -12,7 +12,7 @@
 #include <gtkmm.h>
 #include <sstream>
 #include <iostream>
-#include <functional>
+#include <thread>
 
 /**
  * default constructor; called to create an row-object from sql-database
@@ -22,6 +22,7 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) {
 	toDoUntil = row.at(COLUMN_ID::UNTIL);
 	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
 	totalPoints = atoi(row.at(COLUMN_ID::TOTAL_POINTS).c_str());
+	folderPath = row.at(COLUMN_ID::DIR_PATH);
 	exerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
 	exerciseComment = row.at(COLUMN_ID::EXERCISE_COMMENT);
 
@@ -33,10 +34,14 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) {
  * all values are set to 0, except the until-value and the id-value
  */
 LessonTableRow::LessonTableRow(std::string until, int id) {
+	/**
+	 * TODO: add folderPath to this function and set it(as parameter etc.)
+	 */
 	idInSqlDB = id;
 	toDoUntil = until;
 	reachedPoints = 0;
 	totalPoints = 0;
+	folderPath = "";
 	exerciseFinished = false;
 	exerciseComment = "";
 	initializeWidgets();
@@ -66,6 +71,7 @@ void LessonTableRow::initializeWidgets() {
 	openFolderButton->set_image(*openFolderButtonImage);
 	openFolderButton->set_size_request(50, 50);
 	openFolderButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
+	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openFolderButtonClicked));
 
 	exerciseFinishedButton->set_active(exerciseFinished);
 
@@ -103,6 +109,15 @@ Gtk::TextView* LessonTableRow::getCommentTextView() {
 
 int LessonTableRow::getID() {
 	return idInSqlDB;
+}
+
+void LessonTableRow::openFolderButtonClicked() {
+
+	std::thread ownThread([](){
+		// just for test-issues. must be changed
+		system(std::string(std::string(FILEMANAGER) + " --no-desktop " + std::string(FOLDER_PATH) + "PSE/").c_str());
+	});
+	ownThread.detach();
 }
 
 LessonTableRow::~LessonTableRow() {
