@@ -112,10 +112,9 @@ int LessonTableRow::getID() {
 }
 
 void LessonTableRow::openFolderButtonClicked() {
-
 	std::thread ownThread([](){
 		// just for test-issues. must be changed
-		system(std::string(std::string(FILEMANAGER) + " --no-desktop " + std::string(FOLDER_PATH) + "PSE/").c_str());
+		system(std::string(std::string(FILEMANAGER) + " " + std::string(FOLDER_PATH) + "PSE/").c_str());
 	});
 	ownThread.detach();
 }

@@ -11,7 +11,7 @@
 #define OPENDIR_ICO "./src/openDir.png"
 
 #ifdef __unix__
-	#define FILEMANAGER "nautilus"
+	#define FILEMANAGER "xdg-open"
 	#define FOLDER_PATH "./uni/"
 #elif defined(_WIN32) || defined(WIN32)
 	#define FILEMANAGER "explorer"

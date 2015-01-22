@@ -5,6 +5,7 @@
 #include "SettingsPage.h"
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
+#include "../folderOperations/BasicFileOps.h"
 
 #include <gtkmm.h>
 #include <iostream>
@@ -33,7 +34,7 @@ GUI::GUI() :
 
 	// add settings page
 	notebook->append_page(*settings_frame, NOTEBOOK_SETTINGS, false);
-
+	BasicFileOps fileManager;
 	set_title(WINDOW_TITLE);
 	add(*notebook);
 	show_all();

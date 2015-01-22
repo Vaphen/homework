@@ -246,15 +246,15 @@ std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string le
 	int res = 0;
 	std::vector<std::vector<std::string>> lessons;
 
-	// initialize the vector for 6 columns
-	for(int i = 0; i < 6; i++)
+	// initialize the vector with the amount of columns
+	for(int i = 0; i < Database::COLUMN.size(); i++)
 	    lessons.push_back(std::vector< std::string >());
 
 
 
 	while((res = sqlite3_step(queryStatement)) != SQLITE_DONE)
 	{
-	    for( int i = 0; i < 6; i++ ) {
+	    for( int i = 0; i < Database::COLUMN.size(); i++ ) {
 	    	if((char*)sqlite3_column_text(queryStatement, i) != nullptr) {
 	    		// if an entry exists, push it back
 	    		lessons.at(i).push_back(std::string((char *)sqlite3_column_text(queryStatement, i)));
