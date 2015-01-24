@@ -19,16 +19,23 @@ public:
 private:
 
 	LessonTable *lessonTable;
+	Gtk::HSeparator *separatorToNewLessonButtons;
 	Gtk::Label *newLessonLabel;
 	Gtk::Entry *newLessonEdit;
 	Gtk::Button *saveNewLessonButton;
+	Gtk::Button *deleteLessonButton;
+	Gtk::HSeparator *separatorToSavePath;
+	Gtk::Label *fileDirPathLabel;
+	Gtk::Entry *fileDirPathEdit;
+	Gtk::Button *saveFileDirPathButton;
 	Gtk::HBox *mainBox;
-	Gtk::VBox *LessonBox;
+	Gtk::VBox *settingsVBox;
 	Gtk::VBox *expandBox;
+	void initWidgets();
 	void initTable();
-	void saveButtonClicked();
+	void saveNewLessonButtonClicked();
+	void saveFileDirPathButtonClicked();
 	void deleteButtonClicked();
-	void showSuccessDialog(std::string, std::string);
 	SQLiteConnect connection;
 	Gtk::Notebook *notebook;
 };

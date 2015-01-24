@@ -5,6 +5,8 @@
 #include "SettingsPage.h"
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
+#include "../constants/HelpDialogs.h"
+#include "../constants/Labels.h"
 #include "../folderOperations/BasicFileOps.h"
 
 #include <gtkmm.h>
@@ -13,14 +15,7 @@
 
 GUI::GUI() :
 		notebook(new Gtk::Notebook()),
-	//	welcome_frame(new Gtk::Frame()),
-	//	welcome_text(new Gtk::Label(WELCOME_TEXT)),
 		settings_frame(nullptr) {
-
-	//welcome_frame->add(*welcome_text);
-
-	// add start page
-	//notebook->append_page(*welcome_frame, NOTEBOOK_WELCOME, true);
 
 	// add all lessons
 	std::vector<std::string> lessons = doSqlLessonRequest();
@@ -33,24 +28,12 @@ GUI::GUI() :
 	settings_frame = new SettingsPage(notebook);
 
 	// add settings page
-	notebook->append_page(*settings_frame, NOTEBOOK_SETTINGS, false);
+	notebook->append_page(*settings_frame, GuiLabels::SETTINGS, false);
 	BasicFileOps fileManager;
 	set_title(WINDOW_TITLE);
 	add(*notebook);
 	show_all();
 	maximize();
-}
-
-/*
- * shows an Dialog with infoicon
- * @param title: titel
- * @param message: nachricht
- */
-void GUI::showErrorDialog(std::string title, std::string message) {
-	Gtk::MessageDialog dialog(title, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-	dialog.set_title("Ein Fehler ist aufgetreten.");
-	dialog.set_secondary_text(message);
-	dialog.run();
 }
 
 /*
@@ -64,7 +47,7 @@ std::vector<std::string> GUI::doSqlLessonRequest() {
 		connection.createAllLessonDb();
 		lessons = connection.getLessons();
 	} catch (ERRORS &error) {
-		Dialogs::showErrorDialog(error);
+		HelpDialogs::showErrorDialog(error);
 		exit(0);
 	}
 	return lessons;
@@ -82,7 +65,5 @@ void GUI::addLessonPage(std::string newLesson) {
  */
 GUI::~GUI() {
 	delete notebook;
-	//delete welcome_frame;
-	//delete welcome_text;
 	delete settings_frame;
 }

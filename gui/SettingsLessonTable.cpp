@@ -10,6 +10,7 @@
 
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
+#include "../constants/HelpDialogs.h"
 
 LessonTable::LessonTable() :
 		lessonHeader(new Gtk::TreeModelColumn<Glib::ustring>),
@@ -22,7 +23,7 @@ LessonTable::LessonTable() :
 	try {
 		lessons = connection.getLessons();
 	}catch(ERRORS &error) {
-		Dialogs::showErrorDialog(error);
+		HelpDialogs::showErrorDialog(error);
 	}
 
 	for(std::string &lesson : lessons) {

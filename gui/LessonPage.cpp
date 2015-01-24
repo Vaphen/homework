@@ -7,6 +7,8 @@
 
 #include "LessonPage.h"
 #include "../constants/constants.h"
+#include "../constants/HelpDialogs.h"
+#include "../constants/Labels.h"
 #include "LessonTableRow.h"
 #include <iostream>
 #include <gtkmm.h>
@@ -20,7 +22,7 @@ LessonPage::LessonPage(std::string pageTitle) :
 		newExerciseFrame(new Gtk::Frame),
 		newExerciseBox(new Gtk::HBox),
 		tableScroller(new Gtk::ScrolledWindow){
-	set_label("Fach: " + curLesson);
+	set_label(LessonPageLabels::FRAME_HEADER + curLesson);
 
 	initializeExerciseTable();
 
@@ -30,7 +32,6 @@ LessonPage::LessonPage(std::string pageTitle) :
 	tableScroller->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	mainBox->pack_start(*tableScroller, Gtk::PACK_EXPAND_WIDGET, 0);
 	mainBox->pack_start(*newExerciseFrame, Gtk::PACK_SHRINK, 0);
-
 	this->add(*mainBox);
 }
 
@@ -47,6 +48,8 @@ void LessonPage::initializeNewExerciseBox() {
 	Gtk::Entry *exerciseUntilEntry = Gtk::manage(new Gtk::Entry);
 	Gtk::Button *saveNewExerciseButton = Gtk::manage(new Gtk::Button(SAVE_BUTTON_TEXT));
 
+	exerciseUntilEntry->set_max_length(10);
+
 	newExerciseBox->pack_start(*exerciseUntilLabel, Gtk::PACK_SHRINK, 0);
 	newExerciseBox->pack_start(*exerciseUntilEntry, Gtk::PACK_SHRINK, 0);
 	newExerciseBox->pack_start(*saveNewExerciseButton, Gtk::PACK_SHRINK, 0);
@@ -62,7 +65,7 @@ void LessonPage::initializeExerciseTable() {
 	try {
 		exercises = connection.getExercises(curLesson);
 	}catch(ERRORS &error) {
-		Dialogs::showErrorDialog(error);
+		HelpDialogs::showErrorDialog(error);
 	}
 
 
@@ -77,13 +80,13 @@ void LessonPage::initializeExerciseTable() {
 		Gtk::Label *commentLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *deleteLabel = Gtk::manage(new Gtk::Label);
 
-		untilLabel->set_markup(TABLE_LABELS::UNTIL);
-		reachedPointsLabel->set_markup(TABLE_LABELS::REACHED_POINTS);
-		totalPointsLabel->set_markup(TABLE_LABELS::TOTAL_POINTS);
-		openDirLabel->set_markup(TABLE_LABELS::OPEN_DIR);
-		finishedLabel->set_markup(TABLE_LABELS::EXERCISE_FINISHED);
-		commentLabel->set_markup(TABLE_LABELS::EXERCISE_COMMENT);
-		deleteLabel->set_markup(TABLE_LABELS::DELETE_EXERCISE);
+		untilLabel->set_markup(LessonPageLabels::UNTIL);
+		reachedPointsLabel->set_markup(LessonPageLabels::REACHED_POINTS);
+		totalPointsLabel->set_markup(LessonPageLabels::TOTAL_POINTS);
+		openDirLabel->set_markup(LessonPageLabels::OPEN_DIR);
+		finishedLabel->set_markup(LessonPageLabels::EXERCISE_FINISHED);
+		commentLabel->set_markup(LessonPageLabels::EXERCISE_COMMENT);
+		deleteLabel->set_markup(LessonPageLabels::DELETE_EXERCISE);
 
 		exerciseTable->attach(*untilLabel, 0, 1, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 		exerciseTable->attach(*reachedPointsLabel, 1, 2, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
@@ -119,7 +122,7 @@ void LessonPage::initializeExerciseTable() {
  */
 void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
 	if(exerciseUntilEntry->get_text() == "" || !isValidDate(exerciseUntilEntry->get_text())) {
-		Dialogs::showErrorDialog("Das Feld 'bis' darf nicht leer sein.",
+		HelpDialogs::showErrorDialog("Das Feld 'bis' darf nicht leer sein.",
 								 "Bitte füllen Sie das Feld aus.");
 		return;
 	}
@@ -129,7 +132,7 @@ void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
 		allRows.push_back(newRow);
 		addRowToTable();
 	} catch(ERRORS &error) {
-		Dialogs::showErrorDialog(error);
+		HelpDialogs::showErrorDialog(error);
 	}
 }
 
@@ -155,12 +158,15 @@ Gtk::Button* LessonPage::getDeleteButton() {
  * @param *deleteButton pointer to the widget itself that we can delete it
  */
 void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) {
+	if(HelpDialogs::showConfirmDialog(HelpDialogs::CONFIRM_DELETION,
+			HelpDialogs::CONFIRM_DELETION_SUBTEXT) != HelpDialogs::CONFIRMED)
+		return;
 	for(int i = 0; i < allRows.size(); i++) {
 		if(allRows.at(i).getID() == exerciseId) {
 			try {
 				connection.deleteExercise(this->curLesson, allRows.at(i).getID());
 			} catch(ERRORS &error) {
-				Dialogs::showErrorDialog(error);
+				HelpDialogs::showErrorDialog(error);
 				return;
 			}
 			exerciseTable->remove(*allRows.at(i).getCommentTextView());

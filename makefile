@@ -1,45 +1,57 @@
-NAME = homework
-CC = g++
-CFLAGS = -ggdb -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4`
+NAME := homework
+CC := g++
+CFLAGS := -ggdb -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4`
 
-OBJ_DIR = ./obj
+C_SRCS := $(shell find -name "*.cpp")
+C_OBJS := $(subst ./,obj/,$(addsuffix .o,$(basename $(C_SRCS)))) 
 
 default: $(NAME)
 
-FILES = main SQLiteConnect GUI LessonPage SettingsLessonTable SettingsPage LessonTableRow
+all: $(C_OBJS)
 
-all: gui.o sql.o main.o	$(NAME)
-
-$(NAME):
+$(NAME): $(C_OBJS)
 	@echo "Building..."
-	$(CC) $(CFLAGS) -o $(NAME) $(foreach var,$(FILES),$(var).o)
+	@echo $(C_SRCS)
+	$(CC) $(CFLAGS) -o $@ $?
 
-LessonPage.o: ./gui/LessonPage.cpp ./gui/LessonPage.h
-	$(CC) $(CFLAGS) -c ./gui/LessonPage.cpp ./gui/LessonPage.h
+obj/%.o: %.cpp
+	$(CC) $(CFLAGS) -c -o $@ $?
 
-SettingsLessonTable.o: ./gui/SettingsLessonTable.cpp ./gui/SettingsLessonTable.h
-	$(CC) $(CFLAGS) -c ./gui/SettingsLessonTable.cpp ./gui/SettingsLessonTable.h
+#LessonPage.o: ./gui/LessonPage.cpp ./gui/LessonPage.h
+#	$(CC) $(CFLAGS) -c ./gui/LessonPage.cpp ./gui/LessonPage.h
 
-SettingsPage.o: ./gui/SettingsPage.cpp ./gui/SettingsPage.h
-	$(CC) $(CFLAGS) -c ./gui/SettingsPage.cpp ./gui/SettingsPage.h
+#SettingsLessonTable.o: ./gui/SettingsLessonTable.cpp ./gui/SettingsLessonTable.h
+#	$(CC) $(CFLAGS) -c ./gui/SettingsLessonTable.cpp ./gui/SettingsLessonTable.h
 
-LessonTableRow.o: ./gui/LessonTableRow.cpp ./gui/LessonTableRow.h
-	$(CC) $(CFLAGS) -c ./gui/LessonTableRow.cpp ./gui/LessonTableRow.h
+#SettingsPage.o: ./gui/SettingsPage.cpp ./gui/SettingsPage.h
+#	$(CC) $(CFLAGS) -c ./gui/SettingsPage.cpp ./gui/SettingsPage.h
 
-SQLiteConnect.o: ./sql/SQLiteConnect.cpp ./sql/SQLiteConnect.h
-	$(CC) $(CFLAGS) -c ./sql/SQLiteConnect.cpp ./sql/SQLiteConnect.h
+#LessonTableRow.o: ./gui/LessonTableRow.cpp ./gui/LessonTableRow.h
+#	$(CC) $(CFLAGS) -c ./gui/LessonTableRow.cpp ./gui/LessonTableRow.h
 
-constants.o: ./constants/constants.h
-	$(CC) $(CFLAGS) -c ./constants/constants.h
+#SQLiteConnect.o: ./sql/SQLiteConnect.cpp ./sql/SQLiteConnect.h
+#	$(CC) $(CFLAGS) -c ./sql/SQLiteConnect.cpp ./sql/SQLiteConnect.h
 
-main.o: ./main.cpp
-	$(CC) $(CFLAGS) -c ./main.cpp
+#constants.o: HelpDialogs.o Labels.o ./constants/constants.h 
+#	$(CC) $(CFLAGS) -c ./constants/constants.h ./
 
-gui.o: ./gui/*.cpp ./gui/*.h
-	$(CC) $(CFLAGS) -c ./gui/*.cpp ./gui/*.h
+#HelpDialogs.o: ./constants/HelpDialogs.h
+#	$(CC) $(CFLAGS) -c ./constants/HelpDialogs.h
 
-sql.o: ./sql/*.cpp ./sql/*.h
-	$(CC) $(CFLAGS) -c ./sql/*.cpp ./sql/*.h
+#Labels.o: ./constants/Labels.h
+#	$(CC) $(CFLAGS) -c ./constants/Labels.h
+
+#main.o: ./main.cpp
+#	$(CC) $(CFLAGS) -c ./main.cpp
+
+#gui.o: ./gui/*.cpp ./gui/*.h
+#	$(CC) $(CFLAGS) -c ./gui/*.cpp ./gui/*.h
+
+#sql.o: ./sql/*.cpp ./sql/*.h
+#	$(CC) $(CFLAGS) -c ./sql/*.cpp ./sql/*.h
+
+#BasicFileOps.o: ./folderOperations/BasicFileOps.cpp ./folderOperations/BasicFileOps.h
+#	$(CC) $(CFLAGS) -c ./folderOperations/BasicFileOps.cpp ./folderOperations/BasicFileOps.h
 
 clean:
-	rm $(NAME) *.o *.~
+	rm $(NAME) $(C_OBJS)

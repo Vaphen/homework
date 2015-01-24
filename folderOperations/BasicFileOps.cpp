@@ -6,11 +6,11 @@
  */
 
 #include "BasicFileOps.h"
-#include "constants.h"
-#include <sys/stat.h>
+#include "../constants/constants.h"
+#include <dirent.h>
 
 BasicFileOps::BasicFileOps() {
-	mkdir(FOLD_PATH);
+
 }
 
 BasicFileOps::~BasicFileOps() {

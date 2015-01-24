@@ -20,6 +20,7 @@
 
 #include <string>
 #include <ctime>
+#include <iostream>
 #include <map>
 #include <gtkmm.h>
 
@@ -35,15 +36,6 @@ static bool isValidDate(std::string dateAsString) {
 	return strptime(dateAsString.c_str(), "%d.%m.%y", &timeinfo_now);
 }
 
-namespace TABLE_LABELS {
-	static const std::string UNTIL = "<b>Aufgabe zu erledigen bis</b>";
-	static const std::string REACHED_POINTS = "<b>Erreichte Punkte</b>";
-	static const std::string TOTAL_POINTS = "<b>Maximale Punktzahl</b>";
-	static const std::string OPEN_DIR = "<b>Verzeichnis öffnen</b>";
-	static const std::string EXERCISE_FINISHED = "<b>Erledigt</b>";
-	static const std::string EXERCISE_COMMENT = "<b>Kommentar</b>";
-	static const std::string DELETE_EXERCISE = "<b>Löschen</b>";
-}
 
 namespace COLUMN_ID {
 /**
@@ -75,55 +67,5 @@ namespace Database {
 	static const std::string LESSON_TABLE = "lesson";
 	static const std::string LESSON_TABLE_LESSON_COLUMN = "lesson";
 };
-
-namespace Dialogs {
-	/**
-	 * shows an error-dialog that gives out an sql-error
-	 * @param error: enum Error-message. thrown by SQLiteConnect
-	 */
-	static void showErrorDialog(ERRORS& error) {
-		std::string title = "";
-		std::string message = "";
-
-		switch(error) {
-			case ERRORS::ERROR_OPEN_DB:
-				title = "Verbindung zur Datenbank konnte nicht hergestellt werden.";
-				message = "Bitte überprüfen Sie die Berechtigungen des Programms.";
-				break;
-			case ERRORS::ERROR_DB_NOT_PREPARABLE:
-				title = "Die Datenbankanfrage konnte nicht vorbereitet werden.";
-				message = "Möglicherweise gibt es einen Fehler in dem Abfrage-Query.";
-				break;
-			case ERRORS::ERROR_QUERY_EXECUTION:
-				title = "Die Datenbankabfrage konnte nicht ausgeführt werden.";
-				message = "Möglicherweise gibt es einen Fehler in dem Abfrage-Query oder die Datenbank existiert nicht.";
-				break;
-			case ERRORS::ERROR_CREATE_COLUMN:
-				title = "Eine Spalte konnte nicht gelesen werden.";
-				message = "Es scheint einen Fehler in der Datenbank zu geben.";
-				break;
-			default:
-				title = "Ein unbekannter Fehler ist aufgetreten.";
-				message = "Sorry, das hätte nicht passieren dürfen.";
-		}
-
-		Gtk::MessageDialog dialog(title, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-		dialog.set_title("Ein Fehler ist aufgetreten.");
-		dialog.set_secondary_text(message);
-		dialog.run();
-	}
-
-	/**
-	 * shows individual error-dialog.
-	 * @param title: title of the message-box
-	 * @param message: message of the message-box
-	 */
-	static void showErrorDialog(std::string title, std::string message) {
-		Gtk::MessageDialog dialog(title, false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-		dialog.set_title("Ein Fehler ist aufgetreten.");
-		dialog.set_secondary_text(message);
-		dialog.run();
-	}
-}
 
 #endif /* CONSTANTS_H_ */
