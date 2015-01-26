@@ -21,21 +21,12 @@
 #include <string>
 #include <ctime>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <gtkmm.h>
 
 
 enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION, ERROR_CREATE_COLUMN };
-
-
-static bool isValidDate(std::string dateAsString) {
-	// TODO: fix this function. it doesnt work
-	// format: dd.mm.yyyy
-	if(dateAsString.size() != 10) return false;
-	struct tm timeinfo_now;
-	return strptime(dateAsString.c_str(), "%d.%m.%y", &timeinfo_now);
-}
-
 
 namespace COLUMN_ID {
 /**

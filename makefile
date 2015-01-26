@@ -4,6 +4,7 @@ CFLAGS := -ggdb -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4`
 
 C_SRCS := $(shell find -name "*.cpp")
 C_OBJS := $(subst ./,obj/,$(addsuffix .o,$(basename $(C_SRCS)))) 
+C_PREH := $(shell find -name "*.h.gch")
 
 default: $(NAME)
 
@@ -12,7 +13,7 @@ all: $(C_OBJS)
 $(NAME): $(C_OBJS)
 	@echo "Building..."
 	@echo $(C_SRCS)
-	$(CC) $(CFLAGS) -o $@ $?
+	$(CC) $(CFLAGS) -o $@ $^
 
 obj/%.o: %.cpp
 	$(CC) $(CFLAGS) -c -o $@ $?
@@ -54,4 +55,4 @@ obj/%.o: %.cpp
 #	$(CC) $(CFLAGS) -c ./folderOperations/BasicFileOps.cpp ./folderOperations/BasicFileOps.h
 
 clean:
-	rm $(NAME) $(C_OBJS)
+	rm $(NAME) $(C_OBJS) $(C_PREH)

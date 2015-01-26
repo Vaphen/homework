@@ -7,22 +7,22 @@
 
 #include "LessonPage.h"
 #include "../constants/constants.h"
-#include "../constants/HelpDialogs.h"
 #include "../constants/Labels.h"
+#include "../helpers/HelpDialogs.h"
+#include "../helpers/TimeConvert.h"
 #include "LessonTableRow.h"
 #include <iostream>
 #include <gtkmm.h>
 #include <string>
-#include <functional>
+#include <sstream>
 
 LessonPage::LessonPage(std::string pageTitle) :
-		curLesson(pageTitle),
-		mainBox(new Gtk::VBox),
-		exerciseTable(new Gtk::Table),
-		newExerciseFrame(new Gtk::Frame),
-		newExerciseBox(new Gtk::HBox),
-		tableScroller(new Gtk::ScrolledWindow){
+		curLesson(pageTitle) {
 	set_label(LessonPageLabels::FRAME_HEADER + curLesson);
+
+	initializeWidgets();
+
+	initializeTableMenueBar();
 
 	initializeExerciseTable();
 
@@ -36,26 +36,67 @@ LessonPage::LessonPage(std::string pageTitle) :
 }
 
 LessonPage::~LessonPage() {
-	delete exerciseTable;
-	delete mainBox;
-	delete newExerciseFrame;
-	delete newExerciseBox;
-	delete tableScroller;
+
+}
+
+void LessonPage::initializeWidgets() {
+	mainBox = Gtk::manage(new Gtk::VBox);
+	tableOptionsBox = Gtk::manage(new Gtk::HBox);
+	exerciseTable = Gtk::manage(new Gtk::Table);
+	newExerciseFrame = Gtk::manage(new Gtk::Frame);
+	newExerciseBox = Gtk::manage(new Gtk::HBox);
+	tableScroller = Gtk::manage(new Gtk::ScrolledWindow);
+	saveChangingsButton = Gtk::manage(new Gtk::Button(LessonPageLabels::SAVE_CHANGINGS_BUTTON));
+	resetButton = Gtk::manage(new Gtk::Button(LessonPageLabels::RESET_BUTTON));
+}
+
+void LessonPage::initializeTableMenueBar() {
+	Gtk::HBox *centerBox = Gtk::manage(new Gtk::HBox);
+	tableOptionsBox->pack_end(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
+	tableOptionsBox->pack_end(*resetButton, Gtk::PACK_SHRINK, 10);
+	centerBox->pack_start(*tableOptionsBox, Gtk::PACK_EXPAND_PADDING);
+	mainBox->pack_start(*centerBox, Gtk::PACK_SHRINK, 10);
 }
 
 void LessonPage::initializeNewExerciseBox() {
-	Gtk::Label *exerciseUntilLabel = Gtk::manage(new Gtk::Label(EXERCISE_UNTIL_LABEL_TEXT));
-	Gtk::Entry *exerciseUntilEntry = Gtk::manage(new Gtk::Entry);
-	Gtk::Button *saveNewExerciseButton = Gtk::manage(new Gtk::Button(SAVE_BUTTON_TEXT));
+	exerciseUntilLabel = Gtk::manage(new Gtk::Label(EXERCISE_UNTIL_LABEL_TEXT));
+	exerciseUntilDaySpin = Gtk::manage(new Gtk::SpinButton);
+	exerciseUntilMonthSpin = Gtk::manage(new Gtk::SpinButton);
+	exerciseUntilYearSpin = Gtk::manage(new Gtk::SpinButton);
+	saveNewExerciseButton = Gtk::manage(new Gtk::Button(SAVE_BUTTON_TEXT));
 
-	exerciseUntilEntry->set_max_length(10);
+	TimeConvert timeOps;
 
-	newExerciseBox->pack_start(*exerciseUntilLabel, Gtk::PACK_SHRINK, 0);
-	newExerciseBox->pack_start(*exerciseUntilEntry, Gtk::PACK_SHRINK, 0);
-	newExerciseBox->pack_start(*saveNewExerciseButton, Gtk::PACK_SHRINK, 0);
+	exerciseUntilDaySpin->set_max_length(2);
+	exerciseUntilDaySpin->set_editable(false);
+	exerciseUntilDaySpin->set_range(1, timeOps.getDaysInMonth(timeOps.getCurMonth(), timeOps.getCurYear()));
+	exerciseUntilDaySpin->set_increments(1, 1);
+	exerciseUntilDaySpin->set_wrap(true);
+	exerciseUntilDaySpin->set_value(timeOps.getCurDay());
 
-	saveNewExerciseButton->signal_clicked().connect(sigc::bind<Gtk::Entry*>(
-			sigc::mem_fun(*this, &LessonPage::saveButtonClicked), exerciseUntilEntry));
+	exerciseUntilMonthSpin->set_max_length(2);
+	exerciseUntilMonthSpin->set_editable(false);
+	exerciseUntilMonthSpin->set_range(1, 12);
+	exerciseUntilMonthSpin->set_increments(1, 1);
+	exerciseUntilMonthSpin->set_wrap(true);
+	exerciseUntilMonthSpin->set_value(timeOps.getCurMonth());
+	exerciseUntilMonthSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonPage::newExerciseDateChanged));
+
+	exerciseUntilYearSpin->set_max_length(4);
+	exerciseUntilYearSpin->set_editable(false);
+	exerciseUntilYearSpin->set_range(timeOps.getCurYear(), timeOps.getCurYear() + 100);
+	exerciseUntilYearSpin->set_increments(1, 1);
+	exerciseUntilYearSpin->set_value(timeOps.getCurYear());
+	exerciseUntilYearSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonPage::newExerciseDateChanged));
+
+	exerciseUntilLabel->set_padding(10, 10);
+
+	newExerciseBox->pack_start(*exerciseUntilLabel, Gtk::PACK_START, 0);
+	newExerciseBox->pack_start(*exerciseUntilDaySpin, Gtk::PACK_START, 0);
+	newExerciseBox->pack_start(*exerciseUntilMonthSpin, Gtk::PACK_START, 0);
+	newExerciseBox->pack_start(*exerciseUntilYearSpin, Gtk::PACK_START, 0);
+	newExerciseBox->pack_start(*saveNewExerciseButton, Gtk::PACK_START, 0);
+	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveButtonClicked));
 
 	newExerciseFrame->set_label(NEW_EXERCISE_LABEL_TEXT);
 	newExerciseFrame->add(*newExerciseBox);
@@ -120,15 +161,13 @@ void LessonPage::initializeExerciseTable() {
  * add exercise to the SQL-DB: triggered if button is clicked
  * @param exerciseUntilEntry entrybox with date, until it must be finished
  */
-void LessonPage::saveButtonClicked(Gtk::Entry *exerciseUntilEntry) {
-	if(exerciseUntilEntry->get_text() == "" || !isValidDate(exerciseUntilEntry->get_text())) {
-		HelpDialogs::showErrorDialog("Das Feld 'bis' darf nicht leer sein.",
-								 "Bitte füllen Sie das Feld aus.");
-		return;
-	}
+void LessonPage::saveButtonClicked() {
 	try {
-		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/");
-		LessonTableRow newRow(exerciseUntilEntry->get_text(), allRows.back().getID() + 1);
+		TimeConvert timeOpts(exerciseUntilDaySpin->get_value(),
+				exerciseUntilMonthSpin->get_value(),
+				exerciseUntilYearSpin->get_value());
+		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/", timeOpts.getEnglishDateFormat());
+		LessonTableRow newRow(timeOpts.getGermanDateFormat(), allRows.back().getID() + 1);
 		allRows.push_back(newRow);
 		addRowToTable();
 	} catch(ERRORS &error) {
@@ -171,8 +210,8 @@ void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) 
 			}
 			exerciseTable->remove(*allRows.at(i).getCommentTextView());
 			exerciseTable->remove(*allRows.at(i).getExerciseFinishedButton());
-			exerciseTable->remove(*allRows.at(i).getReachedPointsEntry());
-			exerciseTable->remove(*allRows.at(i).getTotalPointsEntry());
+			exerciseTable->remove(*allRows.at(i).getReachedPointsSpin());
+			exerciseTable->remove(*allRows.at(i).getTotalPointsSpin());
 			exerciseTable->remove(*allRows.at(i).getOpenFolderButton());
 			exerciseTable->remove(*allRows.at(i).getUntilLabel());
 			exerciseTable->remove(*deleteButton);
@@ -183,14 +222,25 @@ void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) 
 	}
 }
 
+void LessonPage::newExerciseDateChanged() {
+	TimeConvert timeOpts;
+	int newMonth, newYear;
+	std::istringstream(exerciseUntilMonthSpin->get_text()) >> newMonth;
+	std::istringstream(exerciseUntilYearSpin->get_text()) >> newYear;
+	exerciseUntilDaySpin->set_range(1, timeOpts.getDaysInMonth(newMonth, newYear));
+}
+
 void LessonPage::addRowToTable() {
-	exerciseTable->attach(*allRows.back().getUntilLabel(), 0, 1, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getReachedPointsEntry(), 1, 2, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getTotalPointsEntry(), 2, 3, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getOpenFolderButton(), 3, 4, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getExerciseFinishedButton(), 4, 5, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getCommentTextView(), 5, 6, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*getDeleteButton(), 6, 7, allRows.size() + 1, allRows.size() + 2, Gtk::EXPAND, Gtk::FILL);
+	unsigned int rows, cols;
+	exerciseTable->get_size(rows, cols);
+
+	exerciseTable->attach(*allRows.back().getUntilLabel(), 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getReachedPointsSpin(), 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getTotalPointsSpin(), 2, 3, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getOpenFolderButton(), 3, 4, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getExerciseFinishedButton(), 4, 5, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back().getCommentTextView(), 5, 6, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*getDeleteButton(), 6, 7, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->show_all();
 }
 

@@ -5,8 +5,8 @@
 #include "SettingsPage.h"
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
-#include "../constants/HelpDialogs.h"
 #include "../constants/Labels.h"
+#include "../helpers/HelpDialogs.h"
 #include "../folderOperations/BasicFileOps.h"
 
 #include <gtkmm.h>

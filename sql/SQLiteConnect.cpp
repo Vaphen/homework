@@ -12,21 +12,26 @@
 #include <vector>
 #include <sqlite3.h>
 
-
-/**
+/*
+ * TODO: change saved date to unix timestamp
  * TODO: rename this file + header.
  */
+
+/// Initialize the database and the queryStatement with nullptr
 SQLiteConnect::SQLiteConnect() :
 		database(nullptr),
 		queryStatement(nullptr) {
 }
 
+/// Close the connection if it's still open.
 SQLiteConnect::~SQLiteConnect() {
 	sqlite3_close(database);
 }
 
+/// Delets the table of a lesson
 /**
- * deletes from Database::LESSON_DB the table with the name of the given lesson
+ * @param lessonName name of the table that should be deleted.
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::deleteSpecificLessonTable(std::string lessonName) {
 	std::string deleteQuery = "DROP TABLE IF EXISTS " + lessonName;
@@ -37,9 +42,10 @@ void SQLiteConnect::deleteSpecificLessonTable(std::string lessonName) {
 	}
 }
 
+/// Creates a new lesson table
 /**
- * creates to Database::LESSON_DB a new table with the name of the given lesson
- * @param lessonName: the name of the lesson (the new db name).
+ * @param lessonName name of the table that should be created
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::createSpecificLessonTable(std::string lessonName) {
 	std::string createQuery = "CREATE TABLE IF NOT EXISTS " +
@@ -47,7 +53,7 @@ void SQLiteConnect::createSpecificLessonTable(std::string lessonName) {
 							  std::string(Database::COLUMN["ID"]) +
 							  " INTEGER PRIMARY KEY, " +
 							  Database::COLUMN["TO_DO_UNTIL"] +
-							  " DATETIME, " +
+							  " TIME, " +
 							  Database::COLUMN["REACHED_POINTS"] +
 							  " INTEGER, " +
 							  Database::COLUMN["TOTAL_POINTS"] +
@@ -65,9 +71,12 @@ void SQLiteConnect::createSpecificLessonTable(std::string lessonName) {
 	}
 }
 
+/// Executes the given query
 /**
- * executes the given query
- * @param query: a sqlite create, delete or drop query
+ * The given query must be a not-returning-query (e.g. Drop, Insert, etc.)
+ * Do not use returning querys like 'Select', etc.
+ * @param query: a sqlite query
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::executeQuery(std::string query) {
 	if(open_db(Database::LESSON_DB) != Database::SUCCESS) {
@@ -86,9 +95,12 @@ void SQLiteConnect::executeQuery(std::string query) {
 	close_db();
 }
 
+
+/// Creates a new Table for all saved Lessons
 /**
- * creates the lesson db with predefined db-structurer
- * @param lessonDB-Name
+ * If the table does'nt exists, it creates a new one.
+ * If it exists, nothing happens.
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::createAllLessonDb() {
 	std::string createQuery = "CREATE TABLE IF NOT EXISTS " +
@@ -96,141 +108,115 @@ void SQLiteConnect::createAllLessonDb() {
 									  "(id INTEGER PRIMARY KEY, " +
 									  Database::LESSON_TABLE_LESSON_COLUMN +
 									  " TEXT);";
-	if(open_db(Database::LESSON_DB) != Database::SUCCESS) {
-		throw ERRORS::ERROR_OPEN_DB;
+	try {
+		executeQuery(createQuery);
+	}catch(ERRORS &error) {
+		throw error;
 	}
-
-	if(sqlite3_prepare_v2(database, createQuery.c_str(), -1, &queryStatement, 0) != SQLITE_OK) {
-		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
-	}
-
-	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
-		throw ERRORS::ERROR_QUERY_EXECUTION;
-	}
-
-	sqlite3_finalize(queryStatement);
-	close_db();
 }
 
+
+/// Opens a database connection
 /**
- * @param dbName: the name of the database; usually given in constants.h
- * checks if the db exists. if not, it creates one.
- * returns Database::ERROR if an error occures
+ * If the database does'nt exists, it creates a new one.
+ * @param dbName Name of the database; usually given in constants.h
+ * @returns Database::ERROR or Database::Success
  */
 bool SQLiteConnect::open_db(std::string dbName) {
 	return (sqlite3_open(dbName.c_str(), &database) != SQLITE_OK) ?
 		Database::ERROR :  Database::SUCCESS;
 }
 
-/*
- * closes a database connection
- */
+/// Closes a database connection
 void SQLiteConnect::close_db() {
 	sqlite3_close(database);
 }
 
+/// Writes a new lesson to 'lesson' table
 /**
- * @param lessonName: name (string) of the lesson which should be added
- * writes a new lesson to the db
- * throws db-errors if an error occures
+ * @param lessonName name of the lesson which should be added
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::addNewLesson(std::string lessonName) {
-	if(open_db(Database::LESSON_DB) == Database::ERROR)
-		throw ERRORS::ERROR_OPEN_DB;
-
 	std::string insertQuery = "INSERT INTO " + Database::LESSON_TABLE +
 						" VALUES (NULL, '" +
 						lessonName + "');";
-
-	if(sqlite3_prepare(database, insertQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
-		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	try {
+		executeQuery(insertQuery);
+	}catch(ERRORS &error) {
+		throw error;
 	}
-
-	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
-		throw ERRORS::ERROR_QUERY_EXECUTION;
-	}
-
-	sqlite3_finalize(queryStatement);
-	close_db();
 }
 
+// Writes a new exercise to a specific lesson table
 /**
- * adds a new exercise to a specific lesson table
- * @param lessonName the name of the lesson the exercise belongs to
- * @param folderPath path to the folder which contains the files which belong to the exercise
+ * @param lessonName name of the lesson the exercise belongs to
+ * @param folderPath path to the folder which contains the files belonging to the exercise
+ * @param date the date until the exercise should be finished given as english-formatted date (YYYY-MM-DD)
+ * @throws ERRORS a SQL-execution error
  */
-void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPath) {
-	if(open_db(Database::LESSON_DB) == Database::ERROR)
-		throw ERRORS::ERROR_OPEN_DB;
+void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPath, std::string date) {
+	std::string insertQuery = "INSERT INTO " + lessonName + " VALUES (" +
+							  "NULL, " +
+							  "strftime('%d.%m.%Y', '" + date + "'), " +
+							  "NULL, " + ""
+							  "NULL, " +
+							  "'" + folderPath + "', " +
+							  "0, " +
+							  "'');";
 
-	std::string insertQuery = "INSERT INTO " + lessonName +
-						" VALUES (NULL, date('now'), NULL, NULL, '" + folderPath + "', 0, '');";
-
-	if(sqlite3_prepare(database, insertQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
-		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	try {
+		executeQuery(insertQuery);
+	}catch(ERRORS &error) {
+		throw error;
 	}
-
-	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
-		throw ERRORS::ERROR_QUERY_EXECUTION;
-	}
-
-	sqlite3_finalize(queryStatement);
-	close_db();
 }
 
+/// Deletes an exercise from a specific lessonTable by its exerciseId
 /**
- * deletes an exercise from a specific lessonTable by its exerciseId
  * @param lessonName name of the Lesson the exercise belongs to
  * @param exerciseId id of the exercise which should be deleted
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::deleteExercise(std::string lessonName, int exerciseId) {
-	if(open_db(Database::LESSON_DB) == Database::ERROR)
-		throw ERRORS::ERROR_OPEN_DB;
-
 	std::string deleteQuery = "DELETE FROM " +
 							  lessonName +
 							  " WHERE id='" +
 							  std::to_string(exerciseId) + "';";
-
-	if(sqlite3_prepare(database, deleteQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
-		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	try {
+		executeQuery(deleteQuery);
+	}catch(ERRORS &error) {
+		throw error;
 	}
-
-	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
-		throw ERRORS::ERROR_QUERY_EXECUTION;
-	}
-
-	sqlite3_finalize(queryStatement);
-	close_db();
-
 }
 
+/// Deletes the table of a given lessons
 /**
- * @param lessonName: name (string) of the lesson which should be deleted
- * this method deletes an entry (if existant) from the Database.
+ * @param lessonName name of the lesson which should be deleted
+ * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::deleteLesson(std::string lessonName) {
-	if(open_db(Database::LESSON_DB) == Database::ERROR)
-		throw ERRORS::ERROR_OPEN_DB;
-
 	std::string deleteQuery = "DELETE FROM " +
 							  Database::LESSON_TABLE +
 							  " WHERE lesson='" +
 							  lessonName +
 							  "';";
-
-	if(sqlite3_prepare(database, deleteQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
-		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	try {
+		executeQuery(deleteQuery);
+	} catch(ERRORS &error) {
+		throw error;
 	}
-
-	if(sqlite3_step(queryStatement) != SQLITE_DONE) {
-		throw ERRORS::ERROR_QUERY_EXECUTION;
-	}
-
-	sqlite3_finalize(queryStatement);
-	close_db();
 }
 
+/// Read all important informations from a specific lesson table
+/**
+ * The outer vector is the column of the table. The inner vector
+ * contains the row.
+ * @param lessonName name of the lesson table
+ * @throws ERRORS a SQL-execution error
+ * @returns a 2-dimensional vector that contains all exercises and
+ * their informations like id, until, reached points, total points, etc.
+ */
 std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string lessonName) {
 
 	if(open_db(Database::LESSON_DB) == Database::ERROR)
@@ -258,7 +244,6 @@ std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string le
 	    	if((char*)sqlite3_column_text(queryStatement, i) != nullptr) {
 	    		// if an entry exists, push it back
 	    		lessons.at(i).push_back(std::string((char *)sqlite3_column_text(queryStatement, i)));
-	    		std::cout << i << ":" << (char *)sqlite3_column_text(queryStatement, i) << std::endl;
 	    	}else{
 	    		//if not, we have to push back an empty string
 	    		lessons.at(i).push_back("");
@@ -275,8 +260,10 @@ std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string le
 	return lessons;
 }
 
+/// Read all lessons out of the all-lesson table
 /**
- * returns all lessons given in the Database
+ * @throws ERRORS a SQL-execution error
+ * @returns vector containing all lessons
  */
 std::vector<std::string> SQLiteConnect::getLessons() {
 
@@ -315,4 +302,3 @@ std::vector<std::string> SQLiteConnect::getLessons() {
 	close_db();
 	return lessons;
 }
-

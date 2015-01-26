@@ -10,7 +10,8 @@
 
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
-#include "../constants/HelpDialogs.h"
+#include "../constants/Labels.h"
+#include "../helpers/HelpDialogs.h"
 
 LessonTable::LessonTable() :
 		lessonHeader(new Gtk::TreeModelColumn<Glib::ustring>),
@@ -29,7 +30,7 @@ LessonTable::LessonTable() :
 	for(std::string &lesson : lessons) {
 		appendLesson(lesson);
 	}
-	append_column("Fächer", *lessonHeader);
+	append_column(SettingsLessonTableLabels::TABLE_HEADING, *lessonHeader);
 	show_all_children();
 }
 

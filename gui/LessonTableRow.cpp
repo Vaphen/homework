@@ -10,14 +10,14 @@
 #include "../constants/constants.h"
 #include <string>
 #include <gtkmm.h>
-#include <sstream>
 #include <iostream>
 #include <thread>
 
 /**
  * default constructor; called to create an row-object from sql-database
  */
-LessonTableRow::LessonTableRow(std::vector<std::string> row) {
+LessonTableRow::LessonTableRow(std::vector<std::string> row) :
+		stateChanged(false) {
 	idInSqlDB = atoi(row.at(COLUMN_ID::ID).c_str());
 	toDoUntil = row.at(COLUMN_ID::UNTIL);
 	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
@@ -49,24 +49,29 @@ LessonTableRow::LessonTableRow(std::string until, int id) {
 
 void LessonTableRow::initializeWidgets() {
 	untilLabel = Gtk::manage(new Gtk::Label(toDoUntil));
-	reachedPointsEntry = Gtk::manage(new Gtk::Entry);
-	totalPointsEntry = Gtk::manage(new Gtk::Entry);
+	reachedPointsSpin = Gtk::manage(new Gtk::SpinButton);
+	totalPointsSpin = Gtk::manage(new Gtk::SpinButton);
 	openFolderButton = Gtk::manage(new Gtk::Button);
 	openFolderButtonImage = Gtk::manage(new Gtk::Image(OPENDIR_ICO));
 	exerciseFinishedButton = Gtk::manage(new Gtk::CheckButton);
 	commentTextView = Gtk::manage(new Gtk::TextView);
 
-	// needed to convert given integer values (reached points, etc) to string
-	std::stringstream intToString;
+	reachedPointsSpin->set_size_request(80, 33);
+	reachedPointsSpin->set_max_length(4);
+	reachedPointsSpin->set_value(reachedPoints);
+	reachedPointsSpin->set_increments(1, 1);
+	reachedPointsSpin->set_range(0, 1000);
+	reachedPointsSpin->set_editable(false);
+	reachedPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 
-	reachedPointsEntry->set_size_request(50, 30);
-	intToString << reachedPoints;
-	reachedPointsEntry->set_text(intToString.str());
 
-	totalPointsEntry->set_size_request(50, 30);
-	intToString.str("");
-	intToString << totalPoints;
-	totalPointsEntry->set_text(intToString.str());
+	totalPointsSpin->set_size_request(80, 33);
+	totalPointsSpin->set_max_length(4);
+	totalPointsSpin->set_value(totalPoints);
+	totalPointsSpin->set_increments(1, 1);
+	totalPointsSpin->set_range(0, 1000);
+	totalPointsSpin->set_editable(false);
+	totalPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 
 	openFolderButton->set_image(*openFolderButtonImage);
 	openFolderButton->set_size_request(50, 50);
@@ -74,6 +79,7 @@ void LessonTableRow::initializeWidgets() {
 	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openFolderButtonClicked));
 
 	exerciseFinishedButton->set_active(exerciseFinished);
+	exerciseFinishedButton->signal_toggled().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 
 	Glib::RefPtr<Gtk::TextBuffer> defaultText = Gtk::TextBuffer::create();
 	defaultText->set_text(exerciseComment);
@@ -81,18 +87,19 @@ void LessonTableRow::initializeWidgets() {
 	commentTextView->set_border_width(1);
 	commentTextView->set_justification(Gtk::JUSTIFY_FILL);
 	commentTextView->set_buffer(defaultText);
+	commentTextView->signal_grab_focus().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 }
 
 Gtk::Label* LessonTableRow::getUntilLabel() {
 	return untilLabel;
 }
 
-Gtk::Entry* LessonTableRow::getReachedPointsEntry() {
-	return reachedPointsEntry;
+Gtk::SpinButton* LessonTableRow::getReachedPointsSpin() {
+	return reachedPointsSpin;
 }
 
-Gtk::Entry* LessonTableRow::getTotalPointsEntry() {
-	return totalPointsEntry;
+Gtk::SpinButton* LessonTableRow::getTotalPointsSpin() {
+	return totalPointsSpin;
 }
 
 Gtk::Button* LessonTableRow::getOpenFolderButton() {
@@ -117,6 +124,10 @@ void LessonTableRow::openFolderButtonClicked() {
 		system(std::string(std::string(FILEMANAGER) + " " + std::string(FOLDER_PATH) + "PSE/").c_str());
 	});
 	ownThread.detach();
+}
+
+void LessonTableRow::changeState() {
+	stateChanged = true;
 }
 
 LessonTableRow::~LessonTableRow() {

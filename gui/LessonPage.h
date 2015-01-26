@@ -28,14 +28,28 @@ private:
 	SQLiteConnect connection;
 
 	Gtk::VBox *mainBox;
+	Gtk::HBox *tableOptionsBox;
 	Gtk::Table *exerciseTable;
 	Gtk::Frame *newExerciseFrame;
 	Gtk::HBox *newExerciseBox;
 	Gtk::ScrolledWindow *tableScroller;
 	Gtk::Button* getDeleteButton();
 
-	void saveButtonClicked(Gtk::Entry*);
+	Gtk::Button *saveChangingsButton;
+	Gtk::Button *resetButton;
+
+
+	Gtk::Label *exerciseUntilLabel;
+	Gtk::SpinButton *exerciseUntilDaySpin;
+	Gtk::SpinButton *exerciseUntilMonthSpin;
+	Gtk::SpinButton *exerciseUntilYearSpin;
+	Gtk::Button *saveNewExerciseButton;
+
+	void saveButtonClicked();
 	void deleteButtonClicked(int, Gtk::Button*);
+	void newExerciseDateChanged();
+	void initializeWidgets();
+	void initializeTableMenueBar();
 	void initializeNewExerciseBox();
 	void initializeExerciseTable();
 	void addRowToTable();

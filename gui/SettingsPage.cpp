@@ -7,8 +7,8 @@
 
 #include "SettingsPage.h"
 #include "../constants/constants.h"
-#include "../constants/HelpDialogs.h"
 #include "../constants/Labels.h"
+#include "../helpers/HelpDialogs.h"
 #include "LessonPage.h"
 /**
  * TODO: why gui.h is included? there must be a better solution
@@ -90,7 +90,8 @@ void SettingsPage::initWidgets() {
 void SettingsPage::saveNewLessonButtonClicked() {
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
-		HelpDialogs::showErrorDialog("Fehlendes Fach", "Das Textfeld 'Fach' darf nicht leer sein.");
+		HelpDialogs::showErrorDialog(SettingsPageLabels::NEW_LESSON_ERROR_TITLE,
+				SettingsPageLabels::NEW_LESSON_ERROR_MESSAGE);
 		return;
 	}
 	try {
@@ -101,7 +102,8 @@ void SettingsPage::saveNewLessonButtonClicked() {
 		notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
 		notebook->show_all();
 		lessonTable->appendLesson(newLesson);
-		HelpDialogs::showSuccessDialog("Speichern erfolgreich", "Das neue Fach wurde der Liste hinzugefügt.");
+		HelpDialogs::showSuccessDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
+				SettingsPageLabels::SAVING_SUCCESS_MESSAGE);
 	} catch (ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 	}
@@ -142,8 +144,6 @@ void SettingsPage::deleteButtonClicked() {
 	 * the deleted one
 	 */
 	for(int i = 0; i < lessons.size(); i++) {
-		std::cout << lessons.at(i) << "|" << selectedLesson << std::endl;
-		std::cout << lessons.size() << std::endl;
 		if(lessons.at(i) == selectedLesson) {
 			notebook->remove_page(i);
 			break;

@@ -8,7 +8,7 @@
 #ifndef CONSTANTS_HELPDIALOGS_H_
 #define CONSTANTS_HELPDIALOGS_H_
 
-#include "constants.h"
+#include "../constants/constants.h"
 
 namespace HelpDialogs {
 	const static bool CONFIRMED = true;
