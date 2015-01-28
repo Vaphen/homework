@@ -9,8 +9,7 @@
 #define GUI_LESSONTABLEROW_H_
 
 #include <gtkmm.h>
-#include <functional>
-
+#include <memory>
 
 class LessonTableRow {
 public:
@@ -24,15 +23,20 @@ public:
 	Gtk::Button* getOpenFolderButton();
 	Gtk::CheckButton* getExerciseFinishedButton();
 	Gtk::TextView* getCommentTextView();
+	bool getStateChanged() const;
+	unsigned int getReachedPoints() const;
+	unsigned int getTotalPoints() const;
+	bool getIsExerciseFinished() const;
+	void setStateChanged(bool);
+	std::string getComment() const;
 	int getID();
-
 private:
 	int idInSqlDB;
 	std::string toDoUntil;
 	unsigned int reachedPoints;
 	unsigned int totalPoints;
 	std::string folderPath;
-	bool exerciseFinished;
+	bool isExerciseFinished;
 	std::string exerciseComment;
 	bool stateChanged; /**< if it's true, we need to write it to sql db */
 
@@ -48,6 +52,7 @@ private:
 	void initializeWidgets();
 	void openFolderButtonClicked();
 	void changeState();
+
 };
 
 #endif /* GUI_LESSONTABLEROW_H_ */

@@ -16,6 +16,16 @@
 #include <string>
 #include <sstream>
 
+/*
+ * TODO: shorten this class... e.g. outsource the exerciseTable
+ */
+
+/// Constructor for a new Notebook-lesson-page
+/**
+ * Initializes all child-widgets, the menuebar, the exercisetable and the
+ * new exercise box
+ * @param pageTitle the title of the new Frame (visible in top left corner)
+ */
 LessonPage::LessonPage(std::string pageTitle) :
 		curLesson(pageTitle) {
 	set_label(LessonPageLabels::FRAME_HEADER + curLesson);
@@ -35,10 +45,14 @@ LessonPage::LessonPage(std::string pageTitle) :
 	this->add(*mainBox);
 }
 
+/// Destructor that frees dynamically allocated pointers
 LessonPage::~LessonPage() {
-
+	for(int i = 0; i < allRows.size(); i++) {
+		delete allRows.at(i);
+	}
 }
 
+/// Initializes all widget-pointers with gtk garbage collector (no need to destroy them manually)
 void LessonPage::initializeWidgets() {
 	mainBox = Gtk::manage(new Gtk::VBox);
 	tableOptionsBox = Gtk::manage(new Gtk::HBox);
@@ -50,14 +64,17 @@ void LessonPage::initializeWidgets() {
 	resetButton = Gtk::manage(new Gtk::Button(LessonPageLabels::RESET_BUTTON));
 }
 
+/// Initialize all widgets of the menuebar and add them to the main-frame
 void LessonPage::initializeTableMenueBar() {
 	Gtk::HBox *centerBox = Gtk::manage(new Gtk::HBox);
+	resetButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::resetRowsClicked));
 	tableOptionsBox->pack_end(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
 	tableOptionsBox->pack_end(*resetButton, Gtk::PACK_SHRINK, 10);
 	centerBox->pack_start(*tableOptionsBox, Gtk::PACK_EXPAND_PADDING);
 	mainBox->pack_start(*centerBox, Gtk::PACK_SHRINK, 10);
 }
 
+/// Initialize new exercise box and add it to the bottom of the page
 void LessonPage::initializeNewExerciseBox() {
 	exerciseUntilLabel = Gtk::manage(new Gtk::Label(EXERCISE_UNTIL_LABEL_TEXT));
 	exerciseUntilDaySpin = Gtk::manage(new Gtk::SpinButton);
@@ -102,6 +119,10 @@ void LessonPage::initializeNewExerciseBox() {
 	newExerciseFrame->add(*newExerciseBox);
 }
 
+/// Initializes the exercise table with exercise-rows.
+/**
+ * If an error occurs, it shows an error-dialog.
+ */
 void LessonPage::initializeExerciseTable() {
 	try {
 		exercises = connection.getExercises(curLesson);
@@ -149,7 +170,7 @@ void LessonPage::initializeExerciseTable() {
 			for(int column = 0; column < exercises.size(); column++) {
 				curRow.push_back(exercises.at(column).at(row));
 			}
-			LessonTableRow newLessonRow(curRow);
+			LessonTableRow *newLessonRow = new LessonTableRow(curRow);
 			allRows.push_back(newLessonRow);
 			addRowToTable();
 		}
@@ -157,9 +178,10 @@ void LessonPage::initializeExerciseTable() {
 	exerciseTable->show_all();
 }
 
+/// Add a new exercise to the SQL-DB and the exercise table.
 /**
- * add exercise to the SQL-DB: triggered if button is clicked
- * @param exerciseUntilEntry entrybox with date, until it must be finished
+ * Triggered when the saveNewExerciseButton is clicked.
+ * If an error occurs, it shows an error-dialog.
  */
 void LessonPage::saveButtonClicked() {
 	try {
@@ -167,7 +189,7 @@ void LessonPage::saveButtonClicked() {
 				exerciseUntilMonthSpin->get_value(),
 				exerciseUntilYearSpin->get_value());
 		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/", timeOpts.getEnglishDateFormat());
-		LessonTableRow newRow(timeOpts.getGermanDateFormat(), allRows.back().getID() + 1);
+		LessonTableRow *newRow = new LessonTableRow(timeOpts.getGermanDateFormat(), allRows.back()->getID() + 1);
 		allRows.push_back(newRow);
 		addRowToTable();
 	} catch(ERRORS &error) {
@@ -175,11 +197,11 @@ void LessonPage::saveButtonClicked() {
 	}
 }
 
+/// Allocates a new delete-button which can be added to each row of the exercise table.
 /**
- * returns a delete-button with delete icon. button is connected
- * with deleteButtonClicked function, binded to id of its row and
- * to a pointer to the widget itself, just for deleting it by clicking
- * on it
+ * The returned button is connected to the deleteButtonClicked function, binded to the id of its row
+ * and to a pointer to the widget itself, just for deleting it after event was triggered.
+ * @returns a delete-button with delete icon.
  */
 Gtk::Button* LessonPage::getDeleteButton() {
 	Gtk::Image *deleteIcon = Gtk::manage(new Gtk::Image(DELETE_ICO));
@@ -188,32 +210,35 @@ Gtk::Button* LessonPage::getDeleteButton() {
 	deleteButton->set_size_request(50, 50);
 	deleteButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
 	deleteButton->signal_clicked().connect(sigc::bind<int, Gtk::Button*>(
-				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), allRows.back().getID(), deleteButton));
+				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), allRows.back()->getID(), deleteButton));
 	return deleteButton;
 }
 
+/// Event triggered by a delete button
 /**
- * @param exerciseId the id of the row which the button should delete
- * @param *deleteButton pointer to the widget itself that we can delete it
+ * It shows a confirm-dialog that needs to be approved before the exercise will be deleted.
+ * Parameters were binded to this function by the getDeleteButton() function.
+ * @param exerciseId the (sql)id of the row which should be deleted
+ * @param *deleteButton pointer to the widget itself so that it can delete itself
  */
 void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) {
 	if(HelpDialogs::showConfirmDialog(HelpDialogs::CONFIRM_DELETION,
 			HelpDialogs::CONFIRM_DELETION_SUBTEXT) != HelpDialogs::CONFIRMED)
 		return;
 	for(int i = 0; i < allRows.size(); i++) {
-		if(allRows.at(i).getID() == exerciseId) {
+		if(allRows.at(i)->getID() == exerciseId) {
 			try {
-				connection.deleteExercise(this->curLesson, allRows.at(i).getID());
+				connection.deleteExercise(this->curLesson, allRows.at(i)->getID());
 			} catch(ERRORS &error) {
 				HelpDialogs::showErrorDialog(error);
 				return;
 			}
-			exerciseTable->remove(*allRows.at(i).getCommentTextView());
-			exerciseTable->remove(*allRows.at(i).getExerciseFinishedButton());
-			exerciseTable->remove(*allRows.at(i).getReachedPointsSpin());
-			exerciseTable->remove(*allRows.at(i).getTotalPointsSpin());
-			exerciseTable->remove(*allRows.at(i).getOpenFolderButton());
-			exerciseTable->remove(*allRows.at(i).getUntilLabel());
+			exerciseTable->remove(*allRows.at(i)->getCommentTextView());
+			exerciseTable->remove(*allRows.at(i)->getExerciseFinishedButton());
+			exerciseTable->remove(*allRows.at(i)->getReachedPointsSpin());
+			exerciseTable->remove(*allRows.at(i)->getTotalPointsSpin());
+			exerciseTable->remove(*allRows.at(i)->getOpenFolderButton());
+			exerciseTable->remove(*allRows.at(i)->getUntilLabel());
 			exerciseTable->remove(*deleteButton);
 			allRows.erase(allRows.begin() + i);
 			exerciseTable->show_all();
@@ -222,24 +247,53 @@ void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) 
 	}
 }
 
+/// Event triggered by the resetButton
+/**
+ * It resets all changed rows with their native (old) values
+ */
+void LessonPage::resetRowsClicked() {
+	for(LessonTableRow *curRow : allRows) {
+		if(curRow->getStateChanged()) {
+			std::cout << curRow->getID() << std::endl;
+			curRow->getReachedPointsSpin()->set_value(curRow->getReachedPoints());
+			curRow->getTotalPointsSpin()->set_value(curRow->getTotalPoints());
+			curRow->getExerciseFinishedButton()->set_active(curRow->getIsExerciseFinished());
+			Glib::RefPtr<Gtk::TextBuffer> oldText = Gtk::TextBuffer::create();
+			oldText->set_text(curRow->getComment());
+			curRow->getCommentTextView()->set_buffer(oldText);
+			curRow->setStateChanged(false);
+		}
+	}
+}
+
+/// Event triggered by changing the newExerciseDateSpins
+/**
+ * If the selected year respectively month has more or less days than the current one
+ * the daySpinBox is updated to an appropriate value.
+ */
 void LessonPage::newExerciseDateChanged() {
 	TimeConvert timeOpts;
-	int newMonth, newYear;
+	unsigned int newMonth, newYear;
 	std::istringstream(exerciseUntilMonthSpin->get_text()) >> newMonth;
 	std::istringstream(exerciseUntilYearSpin->get_text()) >> newYear;
 	exerciseUntilDaySpin->set_range(1, timeOpts.getDaysInMonth(newMonth, newYear));
 }
 
+/// Adds a new row to the end of the exercise table
+/**
+ * This function takes the last element out of the allRows vector and
+ * adds it at the end of the exercise table.
+ */
 void LessonPage::addRowToTable() {
 	unsigned int rows, cols;
 	exerciseTable->get_size(rows, cols);
 
-	exerciseTable->attach(*allRows.back().getUntilLabel(), 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getReachedPointsSpin(), 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getTotalPointsSpin(), 2, 3, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getOpenFolderButton(), 3, 4, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getExerciseFinishedButton(), 4, 5, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back().getCommentTextView(), 5, 6, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getUntilLabel(), 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getReachedPointsSpin(), 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getTotalPointsSpin(), 2, 3, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getOpenFolderButton(), 3, 4, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getExerciseFinishedButton(), 4, 5, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getCommentTextView(), 5, 6, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*getDeleteButton(), 6, 7, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->show_all();
 }

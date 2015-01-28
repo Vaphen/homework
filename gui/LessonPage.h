@@ -22,8 +22,8 @@ public:
 	virtual ~LessonPage();
 private:
 	std::string curLesson;
-	std::vector<std::vector<std::string>> exercises;
-	std::vector<LessonTableRow> allRows;
+	std::vector<LessonTableRow*> allRows;
+	std::vector<std::vector<std::string> > exercises;
 
 	SQLiteConnect connection;
 
@@ -45,6 +45,7 @@ private:
 	Gtk::SpinButton *exerciseUntilYearSpin;
 	Gtk::Button *saveNewExerciseButton;
 
+	void resetRowsClicked();
 	void saveButtonClicked();
 	void deleteButtonClicked(int, Gtk::Button*);
 	void newExerciseDateChanged();

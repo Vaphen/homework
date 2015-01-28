@@ -14,6 +14,10 @@
 #include <thread>
 
 /**
+ * TODO: chageState doesnt work!!
+ */
+
+/**
  * default constructor; called to create an row-object from sql-database
  */
 LessonTableRow::LessonTableRow(std::vector<std::string> row) :
@@ -23,7 +27,7 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
 	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
 	totalPoints = atoi(row.at(COLUMN_ID::TOTAL_POINTS).c_str());
 	folderPath = row.at(COLUMN_ID::DIR_PATH);
-	exerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
+	isExerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
 	exerciseComment = row.at(COLUMN_ID::EXERCISE_COMMENT);
 
 	initializeWidgets();
@@ -33,7 +37,8 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
  * This constructor should only be called if a new exercise has been added
  * all values are set to 0, except the until-value and the id-value
  */
-LessonTableRow::LessonTableRow(std::string until, int id) {
+LessonTableRow::LessonTableRow(std::string until, int id) :
+			stateChanged(false) {
 	/**
 	 * TODO: add folderPath to this function and set it(as parameter etc.)
 	 */
@@ -42,7 +47,7 @@ LessonTableRow::LessonTableRow(std::string until, int id) {
 	reachedPoints = 0;
 	totalPoints = 0;
 	folderPath = "";
-	exerciseFinished = false;
+	isExerciseFinished = false;
 	exerciseComment = "";
 	initializeWidgets();
 }
@@ -62,8 +67,8 @@ void LessonTableRow::initializeWidgets() {
 	reachedPointsSpin->set_increments(1, 1);
 	reachedPointsSpin->set_range(0, 1000);
 	reachedPointsSpin->set_editable(false);
+	reachedPointsSpin->set_value(reachedPoints);
 	reachedPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
-
 
 	totalPointsSpin->set_size_request(80, 33);
 	totalPointsSpin->set_max_length(4);
@@ -71,6 +76,7 @@ void LessonTableRow::initializeWidgets() {
 	totalPointsSpin->set_increments(1, 1);
 	totalPointsSpin->set_range(0, 1000);
 	totalPointsSpin->set_editable(false);
+	totalPointsSpin->set_value(totalPoints);
 	totalPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 
 	openFolderButton->set_image(*openFolderButtonImage);
@@ -78,7 +84,7 @@ void LessonTableRow::initializeWidgets() {
 	openFolderButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
 	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openFolderButtonClicked));
 
-	exerciseFinishedButton->set_active(exerciseFinished);
+	exerciseFinishedButton->set_active(isExerciseFinished);
 	exerciseFinishedButton->signal_toggled().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 
 	Glib::RefPtr<Gtk::TextBuffer> defaultText = Gtk::TextBuffer::create();
@@ -118,6 +124,30 @@ int LessonTableRow::getID() {
 	return idInSqlDB;
 }
 
+unsigned int LessonTableRow::getReachedPoints() const {
+	return reachedPoints;
+}
+
+unsigned int LessonTableRow::getTotalPoints() const {
+	return totalPoints;
+}
+
+bool LessonTableRow::getIsExerciseFinished() const {
+	return isExerciseFinished;
+}
+
+std::string LessonTableRow::getComment() const {
+	return exerciseComment;
+}
+
+bool LessonTableRow::getStateChanged() const {
+	return stateChanged;
+}
+
+void LessonTableRow::setStateChanged(bool state) {
+	stateChanged = state;
+}
+
 void LessonTableRow::openFolderButtonClicked() {
 	std::thread ownThread([](){
 		// just for test-issues. must be changed
@@ -130,7 +160,5 @@ void LessonTableRow::changeState() {
 	stateChanged = true;
 }
 
-LessonTableRow::~LessonTableRow() {
-
-}
+LessonTableRow::~LessonTableRow() { }
 
