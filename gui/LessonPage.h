@@ -30,6 +30,7 @@ private:
 	Gtk::VBox *mainBox;
 	Gtk::HBox *tableOptionsBox;
 	Gtk::Table *exerciseTable;
+	Gtk::Label *nothingAddedYetLabel;
 	Gtk::Frame *newExerciseFrame;
 	Gtk::HBox *newExerciseBox;
 	Gtk::ScrolledWindow *tableScroller;
@@ -37,7 +38,6 @@ private:
 
 	Gtk::Button *saveChangingsButton;
 	Gtk::Button *resetButton;
-
 
 	Gtk::Label *exerciseUntilLabel;
 	Gtk::SpinButton *exerciseUntilDaySpin;

@@ -17,6 +17,7 @@
 #include <sstream>
 
 /*
+ * TODO: addRow() and initializeTable() outcommented parts for nothingaddedyetlabel: not working: fix it
  * TODO: shorten this class... e.g. outsource the exerciseTable
  */
 
@@ -57,6 +58,8 @@ void LessonPage::initializeWidgets() {
 	mainBox = Gtk::manage(new Gtk::VBox);
 	tableOptionsBox = Gtk::manage(new Gtk::HBox);
 	exerciseTable = Gtk::manage(new Gtk::Table);
+	// nothing added yet label is initialized in initializeExerciseTable because it is deleted
+	// if a first row was added. If the last row was deleted we have to reinitialize it
 	newExerciseFrame = Gtk::manage(new Gtk::Frame);
 	newExerciseBox = Gtk::manage(new Gtk::HBox);
 	tableScroller = Gtk::manage(new Gtk::ScrolledWindow);
@@ -130,10 +133,6 @@ void LessonPage::initializeExerciseTable() {
 		HelpDialogs::showErrorDialog(error);
 	}
 
-
-	int numOfRows = (exercises.size() > 0) ? exercises.at(0).size() : 0;
-	// just add the table if at least 1 exercise exists
-	if(numOfRows != 0) {
 		Gtk::Label *untilLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *reachedPointsLabel = Gtk::manage(new Gtk::Label);
 		Gtk::Label *totalPointsLabel = Gtk::manage(new Gtk::Label);
@@ -158,6 +157,15 @@ void LessonPage::initializeExerciseTable() {
 		exerciseTable->attach(*commentLabel, 5, 6, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 		exerciseTable->attach(*deleteLabel, 6, 7, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 
+		int numOfRows = (exercises.size() > 0) ? exercises.at(0).size() : 0;
+	/*	if(numOfRows == 0) {
+			nothingAddedYetLabel = Gtk::manage(new Gtk::Label);
+			Pango::FontDescription fdesc;
+			fdesc.set_size(15 * PANGO_SCALE);
+			nothingAddedYetLabel->modify_font(fdesc);
+			nothingAddedYetLabel->set_markup("<b><u>Dieses Fach enthält noch keine Aufgaben.</u></b>");
+			exerciseTable->attach(*nothingAddedYetLabel, 3, 4, 1, 2, Gtk::EXPAND, Gtk::FILL, 20, 40);
+		}*/
 
 		/**
 		 * TODO: check, if a class of type Gtk::Label with static label-counter isnt better for
@@ -174,7 +182,7 @@ void LessonPage::initializeExerciseTable() {
 			allRows.push_back(newLessonRow);
 			addRowToTable();
 		}
-	}
+
 	exerciseTable->show_all();
 }
 
@@ -189,7 +197,9 @@ void LessonPage::saveButtonClicked() {
 				exerciseUntilMonthSpin->get_value(),
 				exerciseUntilYearSpin->get_value());
 		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/", timeOpts.getEnglishDateFormat());
-		LessonTableRow *newRow = new LessonTableRow(timeOpts.getGermanDateFormat(), allRows.back()->getID() + 1);
+		LessonTableRow *newRow = new LessonTableRow(timeOpts.getGermanDateFormat(), [this] () {
+			return (allRows.size() == 0) ? 1 : allRows.back()->getID() + 1;
+		}());
 		allRows.push_back(newRow);
 		addRowToTable();
 	} catch(ERRORS &error) {
@@ -287,6 +297,12 @@ void LessonPage::newExerciseDateChanged() {
 void LessonPage::addRowToTable() {
 	unsigned int rows, cols;
 	exerciseTable->get_size(rows, cols);
+
+	// delete the label because a first row was added right now
+	//if(nothingAddedYetLabel != nullptr) {
+	//	exerciseTable->remove(*nothingAddedYetLabel);
+		//delete nothingAddedYetLabel;
+	//}
 
 	exerciseTable->attach(*allRows.back()->getUntilLabel(), 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back()->getReachedPointsSpin(), 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);

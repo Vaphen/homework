@@ -10,10 +10,6 @@
 #include "../constants/Labels.h"
 #include "../helpers/HelpDialogs.h"
 #include "LessonPage.h"
-/**
- * TODO: why gui.h is included? there must be a better solution
- */
-#include "GUI.h"
 #include "SettingsLessonTable.h"
 #include "../sql/SQLiteConnect.h"
 #include <gtkmm.h>
@@ -102,7 +98,7 @@ void SettingsPage::saveNewLessonButtonClicked() {
 		notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
 		notebook->show_all();
 		lessonTable->appendLesson(newLesson);
-		HelpDialogs::showSuccessDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
+		HelpDialogs::showInfoDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
 				SettingsPageLabels::SAVING_SUCCESS_MESSAGE);
 	} catch (ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
@@ -114,6 +110,15 @@ void SettingsPage::saveNewLessonButtonClicked() {
  * Delete-Button clicked
  */
 void SettingsPage::deleteButtonClicked() {
+	if(lessonTable->getSelectedLesson() == "") {
+		HelpDialogs::showInfoDialog("Kein Fach ausgewählt", "Das zu löschende Fach muss zuerst selektiert werden.");
+		return;
+	}
+	if(HelpDialogs::showConfirmDialog(HelpDialogs::CONFIRM_DELETION,
+			HelpDialogs::CONFIRM_LESSON_DELETION_SUBTEXT) != HelpDialogs::CONFIRMED) {
+		return;
+	}
+
 	Glib::ustring selectedLesson = lessonTable->getSelectedLesson();
 	// nothing has been selected
 	if(selectedLesson == "")

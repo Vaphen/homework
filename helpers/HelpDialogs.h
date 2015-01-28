@@ -14,6 +14,7 @@ namespace HelpDialogs {
 	const static bool CONFIRMED = true;
 	const static std::string CONFIRM_DELETION = "Löschen bestätigen";
 	const static std::string CONFIRM_DELETION_SUBTEXT = "Wollen sie die ausgewählte Aufgabe wirklich löschen?";
+	const static std::string CONFIRM_LESSON_DELETION_SUBTEXT = "Soll das markierte Fach inklusive aller Aufgabenblätter, erreichter Punkte etc. gelöscht werden?";
 
 	/**
 	 * shows individual error-dialog.
@@ -76,7 +77,7 @@ namespace HelpDialogs {
 	 * @param message: message of the messagedialog
 	 * Shows a dialog with a success-image
 	 */
-	static void showSuccessDialog(std::string const &title, std::string const& message) {
+	static void showInfoDialog(std::string const &title, std::string const& message) {
 		Gtk::MessageDialog dialog(title, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
 		dialog.set_title(title);
 		dialog.set_secondary_text(message);
