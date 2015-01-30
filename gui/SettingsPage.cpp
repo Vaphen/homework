@@ -28,8 +28,6 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 
 	// set settings to settingsPage frame
 	set_border_width(10);
-	ConfigFileParser configParser;
-
 
 	// set additional options
 	lessonTable->set_size_request(300, 300);
@@ -55,11 +53,10 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 	environmentSettingsVBox->set_border_width(10);
 	environmentSettingsFrame->set_border_width(10);
 	// environmentSettingsFrame initialization
+	initializeEnvironmentSettings();
 	environmentSettingsVBox->pack_start(*fileDirPathLabel, Gtk::PACK_SHRINK, false, 0);;
 	environmentSettingsVBox->pack_start(*fileDirPathEdit, Gtk::PACK_SHRINK, false, 0);
 	environmentSettingsVBox->pack_start(*saveFileDirPathButton, Gtk::PACK_SHRINK, false, 0);
-	environmentSettingsFrame->set_label(SettingsPageLabels::ENVIRONMENT_SETTINGS_HEADING);
-	environmentSettingsFrame->set_size_request(400, -1);
 	environmentSettingsFrame->add(*environmentSettingsVBox);
 
 	// center all widgets in window
@@ -97,6 +94,19 @@ void SettingsPage::initWidgets() {
 	saveFileDirPathButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::SAVE_PATH_TO_DIR_BUTTON));
 	settingsVBox = Gtk::manage(new Gtk::VBox);
 	mainBox = Gtk::manage(new Gtk::HBox());
+}
+
+void SettingsPage::initializeEnvironmentSettings() {
+	environmentSettingsFrame->set_label(SettingsPageLabels::ENVIRONMENT_SETTINGS_HEADING);
+	environmentSettingsFrame->set_size_request(400, -1);
+
+	try {
+	ConfigFileParser configParser;
+	fileDirPathEdit->set_text(configParser.getSaveDirectoryPath());
+	} catch(CONFIG_ERRORS &error) {
+		HelpDialogs::showErrorDialog(error);
+		exit(0);
+	}
 }
 
 /**

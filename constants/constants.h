@@ -10,6 +10,8 @@
 #define PROGRAM_NAME "homework"
 #define DELETE_ICO "./src/delete.png"
 #define OPENDIR_ICO "./src/openDir.png"
+#define SAVE_ICO "./src/save.png"
+#define RESET_CHANGES_ICO "./src/resetChanges.png"
 
 #ifdef __unix__
 	#define FILEMANAGER "xdg-open"
@@ -28,8 +30,9 @@
 
 
 enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION, ERROR_CREATE_COLUMN };
-
+enum class CONFIG_ERRORS { ERROR_UNKNOWN_PARAMETER, ERROR_FILE_NOT_CREATABLE};
 namespace ConfigParams {
+	static const std::string SAVE_DIR_PATH_TEXT = "SAVE_DIRECTORY_PATH=";
 	static const int SAVE_DIRECTORY_PATH = 0;
 }
 

@@ -60,6 +60,29 @@ namespace HelpDialogs {
 	}
 
 	/**
+	 * shows an error-dialog that gives out an config-file error
+	 * @param error: enum ConfigErrors-message. thrown by ConfigFileParser
+	 */
+	static void showErrorDialog(CONFIG_ERRORS& error) {
+		std::string title, message;
+		switch(error) {
+			case CONFIG_ERRORS::ERROR_FILE_NOT_CREATABLE:
+				title = "Konfigurationsdatei konnte nicht erstellt werden.";
+				message = "Bitte überprüfen Sie die Berechtigungen des Programms.";
+				break;
+			case CONFIG_ERRORS::ERROR_UNKNOWN_PARAMETER:
+				title = "Die Konfigurationsdatei ist fehlerhaft.";
+				message = "Sie wurde auf die Standardeinstellungen zurückgesetzt.\nDas Programm muss neu gestartet werden, damit die Änderungen wirksam werden.";
+				break;
+			default:
+				title = "Ein unbekannter Fehler ist aufgetreten.";
+				message = "Sorry, das hätte nicht passieren dürfen.";
+		}
+
+		HelpDialogs::showErrorDialog(title, message);
+	}
+
+	/**
 	 * shows individual error-dialog.
 	 * @param title: title of the message-box
 	 * @param message: message of the message-box

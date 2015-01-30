@@ -42,7 +42,6 @@ LessonPage::LessonPage(std::string pageTitle) :
 	tableScroller->add(*exerciseTable);
 	tableScroller->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	mainBox->pack_start(*tableScroller, Gtk::PACK_EXPAND_WIDGET, 0);
-	mainBox->pack_start(*newExerciseFrame, Gtk::PACK_SHRINK, 0);
 	this->add(*mainBox);
 }
 
@@ -64,17 +63,30 @@ void LessonPage::initializeWidgets() {
 	newExerciseFrame = Gtk::manage(new Gtk::Frame);
 	newExerciseBox = Gtk::manage(new Gtk::HBox);
 	tableScroller = Gtk::manage(new Gtk::ScrolledWindow);
-	saveChangingsButton = Gtk::manage(new Gtk::Button(LessonPageLabels::SAVE_CHANGINGS_BUTTON));
-	resetButton = Gtk::manage(new Gtk::Button(LessonPageLabels::RESET_BUTTON));
+	saveChangingsButton = Gtk::manage(new Gtk::Button);
+	resetButton = Gtk::manage(new Gtk::Button);
 }
 
 /// Initialize all widgets of the menuebar and add them to the main-frame
 void LessonPage::initializeTableMenueBar() {
 	Gtk::HBox *centerBox = Gtk::manage(new Gtk::HBox);
+	Gtk::Image *saveImage = Gtk::manage(new Gtk::Image(SAVE_ICO));
+	Gtk::Image *resetImage = Gtk::manage(new Gtk::Image(RESET_CHANGES_ICO));
+
+	saveChangingsButton->set_image(*saveImage);
+	saveChangingsButton->set_tooltip_text(LessonPageLabels::SAVE_CHANGINGS_BUTTON);
+	saveChangingsButton->set_relief(Gtk::RELIEF_NONE);
+
+	resetButton->set_image(*resetImage);
+	resetButton->set_tooltip_text(LessonPageLabels::RESET_BUTTON);
+	resetButton->set_relief(Gtk::RELIEF_NONE);
 	resetButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::resetRowsClicked));
-	tableOptionsBox->pack_end(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
-	tableOptionsBox->pack_end(*resetButton, Gtk::PACK_SHRINK, 10);
+
+	tableOptionsBox->pack_start(*resetButton, Gtk::PACK_SHRINK, 10);
+	tableOptionsBox->pack_start(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
+
 	centerBox->pack_start(*tableOptionsBox, Gtk::PACK_EXPAND_PADDING);
+	centerBox->pack_end(*newExerciseFrame, Gtk::PACK_SHRINK);
 	mainBox->pack_start(*centerBox, Gtk::PACK_SHRINK, 10);
 }
 
@@ -117,10 +129,14 @@ void LessonPage::initializeNewExerciseBox() {
 	newExerciseBox->pack_start(*exerciseUntilMonthSpin, Gtk::PACK_START, 0);
 	newExerciseBox->pack_start(*exerciseUntilYearSpin, Gtk::PACK_START, 0);
 	newExerciseBox->pack_start(*saveNewExerciseButton, Gtk::PACK_START, 0);
+	newExerciseBox->set_border_width(10);
+
+	saveNewExerciseButton->set_size_request(-1, 20);
 	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveButtonClicked));
 
 	newExerciseFrame->set_label(NEW_EXERCISE_LABEL_TEXT);
 	newExerciseFrame->add(*newExerciseBox);
+	newExerciseFrame->set_border_width(5);
 }
 
 /// Initializes the exercise table with exercise-rows.

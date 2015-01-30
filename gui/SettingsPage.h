@@ -34,6 +34,7 @@ private:
 	Gtk::VBox *settingsVBox;
 	void initWidgets();
 	void initTable();
+	void initializeEnvironmentSettings();
 	void saveNewLessonButtonClicked();
 	void saveFileDirPathButtonClicked();
 	void deleteButtonClicked();

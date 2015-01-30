@@ -16,6 +16,7 @@ class ConfigFileParser {
 public:
 	ConfigFileParser();
 	virtual ~ConfigFileParser();
+	const std::string getSaveDirectoryPath() const;
 private:
 	std::map<int, std::string> configurations = {
 			{ConfigParams::SAVE_DIRECTORY_PATH, ""}
