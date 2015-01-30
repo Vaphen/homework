@@ -5,14 +5,18 @@
  *      Author: vaphen
  */
 
-#ifndef FOLDEROPERATIONS_BASICFILEOPS_H_
-#define FOLDEROPERATIONS_BASICFILEOPS_H_
+#ifndef FILEOPERATIONS_BASICFILEOPS_H_
+#define FILEOPERATIONS_BASICFILEOPS_H_
+
+#include <string>
 
 class BasicFileOps {
 public:
 	BasicFileOps();
 	virtual ~BasicFileOps();
 	void initializeDir();
+	std::string showFileChooser();
+
 };
 
-#endif /* FOLDEROPERATIONS_BASICFILEOPS_H_ */
+#endif /* FILEOPERATIONS_BASICFILEOPS_H_ */

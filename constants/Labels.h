@@ -15,6 +15,8 @@ namespace LessonPageLabels {
 	static const std::string EXERCISE_COMMENT = "<b>Kommentar</b>";
 	static const std::string DELETE_EXERCISE = "<b>Löschen</b>";
 
+	static const std::string NO_EXERCISE_ADDED_LABEL = "<b><u>Dieses Fach enthält noch keine Aufgaben.</u></b>";
+
 	static const std::string NEW_EXERCISE_ERROR_TITLE = "Fehlendes Aufgabendatum";
 	static const std::string NEW_EXERCISE_ERROR_MESSAGE = "Das Feld 'bis' darf nicht leer sein.";
 }
@@ -23,8 +25,9 @@ namespace SettingsPageLabels {
 	static const std::string NEW_LESSON_LABEL = "Neues Fach: ";
 	static const std::string NEW_LESSON_BUTTON = "Fach anlegen: ";
 	static const std::string DELETE_BUTTON = "Löschen";
+	static const std::string ENVIRONMENT_SETTINGS_HEADING = "Umgebungseinstellungen";
 	static const std::string PATH_TO_DIR_LABEL = "Pfad zum Aufgabenordner: ";
-	static const std::string SAVE_PATH_TO_DIR_BUTTON = "Pfad speichern";
+	static const std::string SAVE_PATH_TO_DIR_BUTTON = "Pfad auswählen";
 
 	static const std::string NEW_LESSON_ERROR_TITLE = "Fehlendes Fach";
 	static const std::string NEW_LESSON_ERROR_MESSAGE = "Das Feld 'Fach' darf nicht leer sein.";

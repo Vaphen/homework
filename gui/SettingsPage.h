@@ -24,18 +24,20 @@ private:
 	Gtk::Entry *newLessonEdit;
 	Gtk::Button *saveNewLessonButton;
 	Gtk::Button *deleteLessonButton;
-	Gtk::HSeparator *separatorToSavePath;
+	Gtk::Frame *environmentSettingsFrame;
+	Gtk::VBox *environmentSettingsVBox;
 	Gtk::Label *fileDirPathLabel;
 	Gtk::Entry *fileDirPathEdit;
 	Gtk::Button *saveFileDirPathButton;
+
 	Gtk::HBox *mainBox;
 	Gtk::VBox *settingsVBox;
-	Gtk::VBox *expandBox;
 	void initWidgets();
 	void initTable();
 	void saveNewLessonButtonClicked();
 	void saveFileDirPathButtonClicked();
 	void deleteButtonClicked();
+	void chooseFileDirButtonClicked();
 	SQLiteConnect connection;
 	Gtk::Notebook *notebook;
 };

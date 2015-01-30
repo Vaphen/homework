@@ -83,6 +83,18 @@ namespace HelpDialogs {
 		dialog.set_secondary_text(message);
 		dialog.run();
 	}
+
+	/// Shows a folder-select dialog
+	/**
+	 * @returns the path to the selected directory if the selection was not canceled
+	 */
+	static std::string showFileChooser() {
+		Gtk::FileChooserDialog fileDialog("Speicherpfad wählen", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
+		fileDialog.add_button("_Abbrechen", Gtk::RESPONSE_CANCEL);
+		fileDialog.add_button("Auswählen", Gtk::RESPONSE_OK);
+		fileDialog.run();
+		return fileDialog.get_filename();
+	}
 }
 
 #endif /* CONSTANTS_HELPDIALOGS_H_ */

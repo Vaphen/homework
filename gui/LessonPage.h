@@ -53,6 +53,7 @@ private:
 	void initializeTableMenueBar();
 	void initializeNewExerciseBox();
 	void initializeExerciseTable();
+	void addNothingAddedYetLabelToTable(); // :D
 	void addRowToTable();
 };
 

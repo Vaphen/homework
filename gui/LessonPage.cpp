@@ -58,6 +58,7 @@ void LessonPage::initializeWidgets() {
 	mainBox = Gtk::manage(new Gtk::VBox);
 	tableOptionsBox = Gtk::manage(new Gtk::HBox);
 	exerciseTable = Gtk::manage(new Gtk::Table);
+	nothingAddedYetLabel = nullptr;
 	// nothing added yet label is initialized in initializeExerciseTable because it is deleted
 	// if a first row was added. If the last row was deleted we have to reinitialize it
 	newExerciseFrame = Gtk::manage(new Gtk::Frame);
@@ -157,15 +158,11 @@ void LessonPage::initializeExerciseTable() {
 		exerciseTable->attach(*commentLabel, 5, 6, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 		exerciseTable->attach(*deleteLabel, 6, 7, 0, 1, Gtk::EXPAND, Gtk::FILL, 20, 0);
 
-		int numOfRows = (exercises.size() > 0) ? exercises.at(0).size() : 0;
-	/*	if(numOfRows == 0) {
-			nothingAddedYetLabel = Gtk::manage(new Gtk::Label);
-			Pango::FontDescription fdesc;
-			fdesc.set_size(15 * PANGO_SCALE);
-			nothingAddedYetLabel->modify_font(fdesc);
-			nothingAddedYetLabel->set_markup("<b><u>Dieses Fach enthält noch keine Aufgaben.</u></b>");
-			exerciseTable->attach(*nothingAddedYetLabel, 3, 4, 1, 2, Gtk::EXPAND, Gtk::FILL, 20, 40);
-		}*/
+		unsigned int numOfRows = (exercises.size() > 0) ? exercises.at(0).size() : 0;
+
+		// there is no row in the table so show the label
+		if(numOfRows == 0)
+			addNothingAddedYetLabelToTable();
 
 		/**
 		 * TODO: check, if a class of type Gtk::Label with static label-counter isnt better for
@@ -251,6 +248,11 @@ void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) 
 			exerciseTable->remove(*allRows.at(i)->getUntilLabel());
 			exerciseTable->remove(*deleteButton);
 			allRows.erase(allRows.begin() + i);
+
+			// there is no lesson left so show the label
+			if(allRows.size() == 0)
+				addNothingAddedYetLabelToTable();
+
 			exerciseTable->show_all();
 			return;
 		}
@@ -299,10 +301,10 @@ void LessonPage::addRowToTable() {
 	exerciseTable->get_size(rows, cols);
 
 	// delete the label because a first row was added right now
-	//if(nothingAddedYetLabel != nullptr) {
-	//	exerciseTable->remove(*nothingAddedYetLabel);
-		//delete nothingAddedYetLabel;
-	//}
+	if(nothingAddedYetLabel != nullptr) {
+		exerciseTable->remove(*nothingAddedYetLabel);
+		nothingAddedYetLabel = nullptr;
+	}
 
 	exerciseTable->attach(*allRows.back()->getUntilLabel(), 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back()->getReachedPointsSpin(), 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
@@ -314,4 +316,12 @@ void LessonPage::addRowToTable() {
 	exerciseTable->show_all();
 }
 
+void LessonPage::addNothingAddedYetLabelToTable() {
+	nothingAddedYetLabel = Gtk::manage(new Gtk::Label);
+	Pango::FontDescription fdesc;
+	fdesc.set_size(15 * PANGO_SCALE);
+	nothingAddedYetLabel->modify_font(fdesc);
+	nothingAddedYetLabel->set_markup(LessonPageLabels::NO_EXERCISE_ADDED_LABEL);
+	exerciseTable->attach(*nothingAddedYetLabel, 3, 4, 1, 2, Gtk::EXPAND, Gtk::FILL, 20, 40);
+}
 

@@ -7,10 +7,9 @@
 #include "../constants/constants.h"
 #include "../constants/Labels.h"
 #include "../helpers/HelpDialogs.h"
-#include "../folderOperations/BasicFileOps.h"
-
 #include <gtkmm.h>
 #include <iostream>
+#include "../fileOperations/BasicFileOps.h"
 
 
 GUI::GUI() :

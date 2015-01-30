@@ -7,6 +7,7 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
+#define PROGRAM_NAME "homework"
 #define DELETE_ICO "./src/delete.png"
 #define OPENDIR_ICO "./src/openDir.png"
 
@@ -28,6 +29,10 @@
 
 enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION, ERROR_CREATE_COLUMN };
 
+namespace ConfigParams {
+	static const int SAVE_DIRECTORY_PATH = 0;
+}
+
 namespace COLUMN_ID {
 /**
  * TODO: not working because of wrong database. delete it and everything should work
@@ -41,6 +46,7 @@ namespace COLUMN_ID {
 	static const int EXERCISE_FINISHED = 5;
 	static const int EXERCISE_COMMENT = 6;
 };
+
 
 namespace Database {
 	static const bool SUCCESS = true;

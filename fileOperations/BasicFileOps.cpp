@@ -5,9 +5,11 @@
  *      Author: vaphen
  */
 
-#include "BasicFileOps.h"
+#include "../fileOperations/BasicFileOps.h"
+
 #include "../constants/constants.h"
-#include <dirent.h>
+#include <gtkmm.h>
+#include <string>
 
 BasicFileOps::BasicFileOps() {
 
