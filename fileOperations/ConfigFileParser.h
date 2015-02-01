@@ -9,24 +9,26 @@
 #define FILEOPERATIONS_CONFIGFILEPARSER_H_
 
 #include "../constants/constants.h"
-#include <fstream>
 #include <map>
+#include <rude/config.h>
 
 class ConfigFileParser {
 public:
 	ConfigFileParser();
 	virtual ~ConfigFileParser();
 	const std::string getSaveDirectoryPath() const;
+	void setSaveDirectoryPath(const std::string&);
+	void createDefaultConfigFile();
+	void setPdfExecutablePath(const std::string&);
+	const std::string getPdfExecutablePath() const;
+	void setFileManagerPath(const std::string&);
+	const std::string getFileManagerPath() const;
 private:
-	std::map<int, std::string> configurations = {
-			{ConfigParams::SAVE_DIRECTORY_PATH, ""}
-	};
 	std::string pathToConfigFile;
-	std::ofstream writeConfigFile;
-	std::ifstream readConfigFile;
 
-	void createConfigFile();
-	void loadConfigs();
+	std::string saveFolderDirPath;
+	std::string pdfExecutablePath;
+	std::string fileManagerPath;
 };
 
 #endif /* FILEOPERATIONS_CONFIGFILEPARSER_H_ */

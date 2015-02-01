@@ -10,11 +10,18 @@
 #include <gtkmm.h>
 #include <iostream>
 #include "../fileOperations/BasicFileOps.h"
+#include "../fileOperations/ConfigFileParser.h"
 
 
 GUI::GUI() :
 		notebook(new Gtk::Notebook()),
 		settings_frame(nullptr) {
+
+	BasicFileOps fileManager;
+	if(!fileManager.isFileExistant(CONFIG_FILE)) {
+		ConfigFileParser configParser;
+		configParser.createDefaultConfigFile();
+	}
 
 	// add all lessons
 	std::vector<std::string> lessons = doSqlLessonRequest();
@@ -28,7 +35,6 @@ GUI::GUI() :
 
 	// add settings page
 	notebook->append_page(*settings_frame, GuiLabels::SETTINGS, false);
-	BasicFileOps fileManager;
 	set_title(WINDOW_TITLE);
 	add(*notebook);
 	show_all();

@@ -14,30 +14,32 @@
 class LessonTableRow {
 public:
 	LessonTableRow(std::vector<std::string>);
-	LessonTableRow(std::string, int);
+	LessonTableRow(const std::string&, int, const std::string&);
 	~LessonTableRow();
 
-	Gtk::Label* getUntilLabel();
-	Gtk::SpinButton* getReachedPointsSpin();
-	Gtk::SpinButton* getTotalPointsSpin();
-	Gtk::Button* getOpenFolderButton();
-	Gtk::CheckButton* getExerciseFinishedButton();
-	Gtk::TextView* getCommentTextView();
+	Gtk::Label* getUntilLabel() const;
+	Gtk::SpinButton* getReachedPointsSpin() const;
+	Gtk::SpinButton* getTotalPointsSpin()const;
+	Gtk::Button* getOpenFolderButton() const;
+	Gtk::Button* getOpenExercisePDF() const;
+	Gtk::CheckButton* getExerciseFinishedButton() const;
+	Gtk::TextView* getCommentTextView() const;
 	bool getStateChanged() const;
 	unsigned int getReachedPoints() const;
 	unsigned int getTotalPoints() const;
 	bool getIsExerciseFinished() const;
 	void setStateChanged(bool);
 	std::string getComment() const;
-	int getID();
+	std::string getUntil() const;
+	int getID() const;
 private:
 	int idInSqlDB;
 	std::string toDoUntil;
 	unsigned int reachedPoints;
 	unsigned int totalPoints;
-	std::string folderPath;
 	bool isExerciseFinished;
 	std::string exerciseComment;
+	std::string lessonName;
 	bool stateChanged; /**< if it's true, we need to write it to sql db */
 
 
@@ -46,13 +48,15 @@ private:
 	Gtk::SpinButton *totalPointsSpin;
 	Gtk::Button *openFolderButton;
 	Gtk::Image *openFolderButtonImage;
+	Gtk::Button *openExercisePDFButton;
+	Gtk::Image *openExercisePDFImage;
 	Gtk::CheckButton *exerciseFinishedButton;
 	Gtk::TextView *commentTextView;
 
 	void initializeWidgets();
 	void openFolderButtonClicked();
+	void openExercisePDFButtonClicked();
 	void changeState();
-
 };
 
 #endif /* GUI_LESSONTABLEROW_H_ */

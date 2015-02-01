@@ -7,20 +7,6 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
-#define PROGRAM_NAME "homework"
-#define DELETE_ICO "./src/delete.png"
-#define OPENDIR_ICO "./src/openDir.png"
-#define SAVE_ICO "./src/save.png"
-#define RESET_CHANGES_ICO "./src/resetChanges.png"
-
-#ifdef __unix__
-	#define FILEMANAGER "xdg-open"
-	#define FOLDER_PATH "./uni/"
-#elif defined(_WIN32) || defined(WIN32)
-	#define FILEMANAGER "explorer"
-	#define FOLDER_PATH "\\uni\\"
-#endif
-
 #include <string>
 #include <ctime>
 #include <iostream>
@@ -28,26 +14,36 @@
 #include <map>
 #include <gtkmm.h>
 
+#define PROGRAM_NAME "homework"
+#define DELETE_ICO "./src/delete.png"
+#define OPENDIR_ICO "./src/openDir.png"
+#define OPENDIR_ICO_SMALL "./src/openDirSmall.png"
+#define SAVE_ICO "./src/save.png"
+#define RESET_CHANGES_ICO "./src/resetChanges.png"
+#define OPEN_PDF_ICO "./src/openPdf.png"
+#define EXERCISE_PDF_FILE "Aufgabenblatt.pdf"
+
+static const std::string CONFIG_FILE = "./homework.ini";
+
+#ifdef __unix__
+	static const std::string FILEMANAGER = "xdg-open";
+	static const std::string FOLDER_PATH = "./uni/";
+#elif defined(_WIN32) || defined(WIN32)
+	static const std::string FILEMANAGER = "explorer";
+	static const std::string FOLDER_PATH = "\\uni\\";
+#endif
 
 enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION, ERROR_CREATE_COLUMN };
-enum class CONFIG_ERRORS { ERROR_UNKNOWN_PARAMETER, ERROR_FILE_NOT_CREATABLE};
-namespace ConfigParams {
-	static const std::string SAVE_DIR_PATH_TEXT = "SAVE_DIRECTORY_PATH=";
-	static const int SAVE_DIRECTORY_PATH = 0;
-}
+enum class FILE_ERRORS { FOLDER_NOT_CREATABLE, FOLDER_NOT_DELETABLE };
 
 namespace COLUMN_ID {
-/**
- * TODO: not working because of wrong database. delete it and everything should work
- * its because old tables just have 5 columns.
- */
 	static const int ID = 0;
 	static const int UNTIL = 1;
 	static const int REACHED_POINTS = 2;
 	static const int TOTAL_POINTS = 3;
-	static const int DIR_PATH = 4;
-	static const int EXERCISE_FINISHED = 5;
-	static const int EXERCISE_COMMENT = 6;
+	static const int EXERCISE_FINISHED = 4;
+	static const int EXERCISE_COMMENT = 5;
+	static const int LESSON = 6;
 };
 
 
@@ -60,7 +56,6 @@ namespace Database {
 			{"TO_DO_UNTIL", "until"},
 			{"REACHED_POINTS", "points_reached"},
 			{"TOTAL_POINTS", "points_total"},
-			{"FOLDER_PATH", "dir_path"},
 			{"IS_FINISHED", "finished"},
 			{"LESSON_COMMENT", "comment"}
 	};

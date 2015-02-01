@@ -24,19 +24,46 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 		lessonTable(new LessonTable),
 		notebook(guiNotebook) {
 
-	initWidgets();
-
-	// set settings to settingsPage frame
 	set_border_width(10);
 
-	// set additional options
+	// allocates "global" widgets
+	initWidgets();
+
+	// newLessonBox and widgets creation
+	initializeNewLessonBox();
+
+	// environmentSettingsFrame and widgets creation
+	initializeEnvironmentSettings();
+
+	// center all widgets in window
+	showCenteredWidgets();
+}
+
+SettingsPage::~SettingsPage() {
+	delete lessonTable;
+}
+
+void SettingsPage::initWidgets() {
+	newLessonEdit = Gtk::manage(new Gtk::Entry);
+	environmentSettingsFrame = Gtk::manage(new Gtk::Frame);
+	fileDirPathEdit = Gtk::manage(new Gtk::Entry);
+	pdfExecutablePathEdit = Gtk::manage(new Gtk::Entry);
+	fileManagerPathEdit = Gtk::manage(new Gtk::Entry);
+	settingsVBox = Gtk::manage(new Gtk::VBox);
+}
+
+void SettingsPage::initializeNewLessonBox() {
+	Gtk::HSeparator *separatorToNewLessonButtons = Gtk::manage(new Gtk::HSeparator);
+	Gtk::Label *newLessonLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::NEW_LESSON_LABEL));
+	Gtk::Button *deleteLessonButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::DELETE_BUTTON));
+	Gtk::Button *saveNewLessonButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::NEW_LESSON_BUTTON));
+
 	lessonTable->set_size_request(300, 300);
+
 	separatorToNewLessonButtons->set_size_request(300, 30);
 
 	deleteLessonButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::deleteButtonClicked));
 	saveNewLessonButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::saveNewLessonButtonClicked));
-
-	saveFileDirPathButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::chooseFileDirButtonClicked));
 
 	// set outer border to 10 (better look)
 	settingsVBox->set_border_width(10);
@@ -48,69 +75,108 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 	settingsVBox->pack_start(*newLessonLabel, Gtk::PACK_SHRINK, false, 0);
 	settingsVBox->pack_start(*newLessonEdit, Gtk::PACK_SHRINK, false, 0);
 	settingsVBox->pack_start(*saveNewLessonButton, Gtk::PACK_SHRINK, false, 0);
+}
 
-	// set outer border to 10 (better look)
-	environmentSettingsVBox->set_border_width(10);
+/// Initializes fundamental settings of the environment-settings widgets
+void SettingsPage::initializeEnvironmentSettings() {
+	Gtk::Label *fileDirPathLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PATH_TO_DIR_LABEL));
+	Gtk::Button *chooseFileDirPathButton = Gtk::manage(new Gtk::Button);
+	Gtk::Image *openDirIco = Gtk::manage(new Gtk::Image(OPENDIR_ICO_SMALL));
+	Gtk::Button *saveEnvironmentSettings = Gtk::manage(new Gtk::Button(SettingsPageLabels::SAVE_ENVIRONMENT_SETTINGS));
+	Gtk::HBox *fileDirPathBox = Gtk::manage(new Gtk::HBox);
+
+	Gtk::HSeparator *firstSeparator = Gtk::manage(new Gtk::HSeparator);
+	Gtk::Label *pdfExecutableLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PDF_EXECUTABLE_LABEL));
+	Gtk::Button *choosePdfExecutableButton = Gtk::manage(new Gtk::Button);
+	Gtk::Image *choosePdfExecutableImage = Gtk::manage(new Gtk::Image(OPENDIR_ICO_SMALL));
+	Gtk::HBox *pdfExecutableBox = Gtk::manage(new Gtk::HBox);
+
+	Gtk::HSeparator *secondSeparator = Gtk::manage(new Gtk::HSeparator);
+	Gtk::Label *fileManagerLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::FILE_MANAGER_LABEL));
+	Gtk::Button *chooseFileManagerButton = Gtk::manage(new Gtk::Button);
+	Gtk::Image *chooseFileManagerImage = Gtk::manage(new Gtk::Image(OPENDIR_ICO_SMALL));
+	Gtk::HBox *fileManagerBox = Gtk::manage(new Gtk::HBox);
+
+	Gtk::VBox *environmentSettingsVBox = Gtk::manage(new Gtk::VBox);
+
+
+	ConfigFileParser configParser;
+
 	environmentSettingsFrame->set_border_width(10);
-	// environmentSettingsFrame initialization
-	initializeEnvironmentSettings();
-	environmentSettingsVBox->pack_start(*fileDirPathLabel, Gtk::PACK_SHRINK, false, 0);;
-	environmentSettingsVBox->pack_start(*fileDirPathEdit, Gtk::PACK_SHRINK, false, 0);
-	environmentSettingsVBox->pack_start(*saveFileDirPathButton, Gtk::PACK_SHRINK, false, 0);
-	environmentSettingsFrame->add(*environmentSettingsVBox);
+	environmentSettingsFrame->set_label(SettingsPageLabels::ENVIRONMENT_SETTINGS_HEADING);
+	environmentSettingsFrame->set_size_request(400, -1);
 
-	// center all widgets in window
+	fileDirPathEdit->set_sensitive(false);
+	fileDirPathEdit->set_size_request(320, -1);
+	fileDirPathEdit->set_text(configParser.getSaveDirectoryPath());
+
+	chooseFileDirPathButton->set_image(*openDirIco);
+	chooseFileDirPathButton->set_relief(Gtk::RELIEF_NONE);
+	chooseFileDirPathButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::chooseFileDirButtonClicked));
+
+	fileDirPathBox->pack_start(*fileDirPathEdit, Gtk::PACK_START, false, 0);
+	fileDirPathBox->pack_start(*chooseFileDirPathButton, Gtk::PACK_SHRINK, false, 0);
+
+	firstSeparator->set_size_request(300, 10);
+
+	pdfExecutablePathEdit->set_sensitive(false);
+	pdfExecutablePathEdit->set_size_request(320, -1);
+	pdfExecutablePathEdit->set_text(configParser.getPdfExecutablePath());
+
+	choosePdfExecutableButton->set_image(*choosePdfExecutableImage);
+	choosePdfExecutableButton->set_relief(Gtk::RELIEF_NONE);
+	choosePdfExecutableButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::choosePdfExecutableButtonClicked));
+
+	pdfExecutableBox->pack_start(*pdfExecutablePathEdit, Gtk::PACK_SHRINK, false, 0);
+	pdfExecutableBox->pack_start(*choosePdfExecutableButton, Gtk::PACK_SHRINK, false, 0);
+
+	secondSeparator->set_size_request(300, 10);
+
+	fileManagerPathEdit->set_sensitive(false);
+	fileManagerPathEdit->set_size_request(320, -1);
+	fileManagerPathEdit->set_text(configParser.getFileManagerPath());
+
+	chooseFileManagerButton->set_image(*chooseFileManagerImage);
+	chooseFileManagerButton->set_relief(Gtk::RELIEF_NONE);
+	chooseFileManagerButton->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::chooseFileManagerButtonClicked));
+
+	fileManagerBox->pack_start(*fileManagerPathEdit, Gtk::PACK_SHRINK, false, 0);
+	fileManagerBox->pack_start(*chooseFileManagerButton, Gtk::PACK_SHRINK, false, 0);
+
+
+	saveEnvironmentSettings->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::saveEnvironmentSettingsClicked));
+
+	environmentSettingsVBox->set_border_width(10);
+	environmentSettingsVBox->pack_start(*fileDirPathLabel, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*fileDirPathBox, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*firstSeparator, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*pdfExecutableLabel, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*pdfExecutableBox, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*secondSeparator, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*fileManagerLabel, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*fileManagerBox, Gtk::PACK_SHRINK, false, 0);
+	environmentSettingsVBox->pack_start(*saveEnvironmentSettings, Gtk::PACK_SHRINK, false, 20);
+	environmentSettingsFrame->add(*environmentSettingsVBox);
+}
+
+void SettingsPage::showCenteredWidgets() {
+	Gtk::HBox *mainBox = Gtk::manage(new Gtk::HBox);
 	Gtk::HBox *shrinkTogetherBox = Gtk::manage(new Gtk::HBox);
 	Gtk::VBox *expandVBox = Gtk::manage(new Gtk::VBox);
+
 	shrinkTogetherBox->pack_start(*settingsVBox, Gtk::PACK_SHRINK, false, 20);
 	shrinkTogetherBox->pack_start(*environmentSettingsFrame, Gtk::PACK_SHRINK, false, 20);
 	mainBox->pack_start(*shrinkTogetherBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
 
-
 	expandVBox->pack_start(*mainBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
 
-	 // add the box to the frame
+	// add the box to the frame
 	this->add(*expandVBox);
 }
 
-SettingsPage::~SettingsPage() {
-	delete lessonTable;
-}
-
-void SettingsPage::initWidgets() {
-	/**
-	 * TODO: add constants for button string labels and bring the widgets to a understandable order
-	 */
-	lessonTable = Gtk::manage(new LessonTable);
-	separatorToNewLessonButtons = Gtk::manage(new Gtk::HSeparator);
-	newLessonLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::NEW_LESSON_LABEL));
-	newLessonEdit = Gtk::manage(new Gtk::Entry);
-	saveNewLessonButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::NEW_LESSON_BUTTON));
-	deleteLessonButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::DELETE_BUTTON));
-	environmentSettingsFrame = Gtk::manage(new Gtk::Frame);
-	environmentSettingsVBox = Gtk::manage(new Gtk::VBox);
-	fileDirPathLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PATH_TO_DIR_LABEL));
-	fileDirPathEdit = Gtk::manage(new Gtk::Entry);
-	saveFileDirPathButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::SAVE_PATH_TO_DIR_BUTTON));
-	settingsVBox = Gtk::manage(new Gtk::VBox);
-	mainBox = Gtk::manage(new Gtk::HBox());
-}
-
-void SettingsPage::initializeEnvironmentSettings() {
-	environmentSettingsFrame->set_label(SettingsPageLabels::ENVIRONMENT_SETTINGS_HEADING);
-	environmentSettingsFrame->set_size_request(400, -1);
-
-	try {
-	ConfigFileParser configParser;
-	fileDirPathEdit->set_text(configParser.getSaveDirectoryPath());
-	} catch(CONFIG_ERRORS &error) {
-		HelpDialogs::showErrorDialog(error);
-		exit(0);
-	}
-}
-
+// Triggered when the save new lesson button was clicked
 /**
- * if the save-button is clicked, we try to connect to the database
+ * If the save-button is clicked we try to connect to the database
  * and save the input value; then, we update the notebook and the LessonTable
  */
 void SettingsPage::saveNewLessonButtonClicked() {
@@ -136,11 +202,11 @@ void SettingsPage::saveNewLessonButtonClicked() {
 }
 
 
-/**
- * Delete-Button clicked
- */
+/// Triggered when delete button was clicked
 void SettingsPage::deleteButtonClicked() {
-	if(lessonTable->getSelectedLesson() == "") {
+	Glib::ustring selectedLesson = lessonTable->getSelectedLesson();
+	// nothing has been selected
+	if(selectedLesson == "") {
 		HelpDialogs::showInfoDialog("Kein Fach ausgewählt", "Das zu löschende Fach muss zuerst selektiert werden.");
 		return;
 	}
@@ -149,10 +215,7 @@ void SettingsPage::deleteButtonClicked() {
 		return;
 	}
 
-	Glib::ustring selectedLesson = lessonTable->getSelectedLesson();
-	// nothing has been selected
-	if(selectedLesson == "")
-		return;
+
 
 	/**
 	 * connect to the Database and try to delete the lesson
@@ -188,6 +251,35 @@ void SettingsPage::deleteButtonClicked() {
 	notebook->show_all();
 }
 
+/// Triggered when choose file button was clicked
 void SettingsPage::chooseFileDirButtonClicked() {
-	fileDirPathEdit->set_text(HelpDialogs::showFileChooser());
+	std::string chosenPath = "";
+	// if the cancel-button is clicked, it returns an empty string
+	if((chosenPath = HelpDialogs::showFolderChooser()) != "") {
+		fileDirPathEdit->set_text(chosenPath);
+	}
+}
+
+/// Triggered when save settings button was clicked
+void SettingsPage::saveEnvironmentSettingsClicked() {
+	ConfigFileParser configParser;
+	configParser.setSaveDirectoryPath(fileDirPathEdit->get_text());
+	configParser.setPdfExecutablePath(pdfExecutablePathEdit->get_text());
+	configParser.setFileManagerPath(fileManagerPathEdit->get_text());
+}
+
+void SettingsPage::choosePdfExecutableButtonClicked() {
+	std::string chosenPath = "";
+	// if the cancel-button is clicked, it returns an empty string
+	if((chosenPath = HelpDialogs::showExecutableChooser("Anwendung zum Öffnen von PDF-Dateien auswählen")) != "") {
+		pdfExecutablePathEdit->set_text(chosenPath);
+	}
+}
+
+void SettingsPage::chooseFileManagerButtonClicked() {
+	std::string chosenPath = "";
+	// if the cancel-button is clicked, it returns an empty string
+	if((chosenPath = HelpDialogs::showExecutableChooser("Anwendung zum Öffnen von Ordnern auswählen")) != "") {
+		fileManagerPathEdit->set_text(chosenPath);
+	}
 }

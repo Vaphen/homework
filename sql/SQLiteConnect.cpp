@@ -58,8 +58,6 @@ void SQLiteConnect::createSpecificLessonTable(std::string lessonName) {
 							  " INTEGER, " +
 							  Database::COLUMN["TOTAL_POINTS"] +
 							  " INTEGER, " +
-							  Database::COLUMN["FOLDER_PATH"] +
-							  " TEXT, " +
 							  Database::COLUMN["IS_FINISHED"] +
 							  " BOOLEAN, " +
 							  Database::COLUMN["LESSON_COMMENT"] +
@@ -161,7 +159,6 @@ void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPat
 							  "strftime('%d.%m.%Y', '" + date + "'), " +
 							  "NULL, " + ""
 							  "NULL, " +
-							  "'" + folderPath + "', " +
 							  "0, " +
 							  "'');";
 
@@ -232,8 +229,8 @@ std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string le
 	int res = 0;
 	std::vector<std::vector<std::string>> lessons;
 
-	// initialize the vector with the amount of columns
-	for(int i = 0; i < Database::COLUMN.size(); i++)
+	// initialize the vector with the amount of columns (+1 for lessonName column)
+	for(int i = 0; i < Database::COLUMN.size() + 1; i++)
 	    lessons.push_back(std::vector< std::string >());
 
 
@@ -249,6 +246,8 @@ std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string le
 	    		lessons.at(i).push_back("");
 	    	}
 	    }
+	    // append to the end of the vector the current lesson
+	    lessons.at(Database::COLUMN.size()).push_back(lessonName);
 	}
 
 	if(res == SQLITE_ERROR) {

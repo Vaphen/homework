@@ -11,6 +11,7 @@ namespace LessonPageLabels {
 	static const std::string REACHED_POINTS = "<b>Erreichte Punkte</b>";
 	static const std::string TOTAL_POINTS = "<b>Maximale Punktzahl</b>";
 	static const std::string OPEN_DIR = "<b>Verzeichnis öffnen</b>";
+	static const std::string OPEN_PDF = "<b>Aufgabenblatt öffnen</b>";
 	static const std::string EXERCISE_FINISHED = "<b>Erledigt</b>";
 	static const std::string EXERCISE_COMMENT = "<b>Kommentar</b>";
 	static const std::string DELETE_EXERCISE = "<b>Löschen</b>";
@@ -26,8 +27,10 @@ namespace SettingsPageLabels {
 	static const std::string NEW_LESSON_BUTTON = "Fach anlegen: ";
 	static const std::string DELETE_BUTTON = "Löschen";
 	static const std::string ENVIRONMENT_SETTINGS_HEADING = "Umgebungseinstellungen";
-	static const std::string PATH_TO_DIR_LABEL = "Pfad zum Aufgabenordner: ";
-	static const std::string SAVE_PATH_TO_DIR_BUTTON = "Pfad auswählen";
+	static const std::string PATH_TO_DIR_LABEL = "Aufgabenordner: ";
+	static const std::string PDF_EXECUTABLE_LABEL = "Pfad zum PDF-Betrachter: ";
+	static const std::string FILE_MANAGER_LABEL = "Pfad zum Dateimanager: ";
+	static const std::string SAVE_ENVIRONMENT_SETTINGS = "Speichern";
 
 	static const std::string NEW_LESSON_ERROR_TITLE = "Fehlendes Fach";
 	static const std::string NEW_LESSON_ERROR_MESSAGE = "Das Feld 'Fach' darf nicht leer sein.";

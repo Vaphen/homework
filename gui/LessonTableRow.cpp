@@ -8,14 +8,12 @@
 #include "LessonTableRow.h"
 #include "LessonPage.h"
 #include "../constants/constants.h"
+#include "../fileOperations/BasicFileOps.h"
+#include "../fileOperations/ConfigFileParser.h"
+#include "../helpers/HelpDialogs.h"
 #include <string>
 #include <gtkmm.h>
 #include <iostream>
-#include <thread>
-
-/**
- * TODO: chageState doesnt work!!
- */
 
 /**
  * default constructor; called to create an row-object from sql-database
@@ -26,9 +24,9 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
 	toDoUntil = row.at(COLUMN_ID::UNTIL);
 	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
 	totalPoints = atoi(row.at(COLUMN_ID::TOTAL_POINTS).c_str());
-	folderPath = row.at(COLUMN_ID::DIR_PATH);
 	isExerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
 	exerciseComment = row.at(COLUMN_ID::EXERCISE_COMMENT);
+	lessonName = row.at(COLUMN_ID::LESSON);
 
 	initializeWidgets();
 }
@@ -37,7 +35,7 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
  * This constructor should only be called if a new exercise has been added
  * all values are set to 0, except the until-value and the id-value
  */
-LessonTableRow::LessonTableRow(std::string until, int id) :
+LessonTableRow::LessonTableRow(const std::string &until, int id, const std::string &lesson) :
 			stateChanged(false) {
 	/**
 	 * TODO: add folderPath to this function and set it(as parameter etc.)
@@ -46,9 +44,9 @@ LessonTableRow::LessonTableRow(std::string until, int id) :
 	toDoUntil = until;
 	reachedPoints = 0;
 	totalPoints = 0;
-	folderPath = "";
 	isExerciseFinished = false;
 	exerciseComment = "";
+	lessonName = lesson;
 	initializeWidgets();
 }
 
@@ -58,6 +56,8 @@ void LessonTableRow::initializeWidgets() {
 	totalPointsSpin = Gtk::manage(new Gtk::SpinButton);
 	openFolderButton = Gtk::manage(new Gtk::Button);
 	openFolderButtonImage = Gtk::manage(new Gtk::Image(OPENDIR_ICO));
+	openExercisePDFButton = Gtk::manage(new Gtk::Button);
+	openExercisePDFImage = Gtk::manage(new Gtk::Image(OPEN_PDF_ICO));
 	exerciseFinishedButton = Gtk::manage(new Gtk::CheckButton);
 	commentTextView = Gtk::manage(new Gtk::TextView);
 
@@ -81,8 +81,13 @@ void LessonTableRow::initializeWidgets() {
 
 	openFolderButton->set_image(*openFolderButtonImage);
 	openFolderButton->set_size_request(50, 50);
-	openFolderButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
+	openFolderButton->set_relief(Gtk::RELIEF_NONE);
 	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openFolderButtonClicked));
+
+	openExercisePDFButton->set_image(*openExercisePDFImage);
+	openExercisePDFButton->set_size_request(50, 50);
+	openExercisePDFButton->set_relief(Gtk::RELIEF_NONE);
+	openExercisePDFButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openExercisePDFButtonClicked));
 
 	exerciseFinishedButton->set_active(isExerciseFinished);
 	exerciseFinishedButton->signal_toggled().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
@@ -96,31 +101,35 @@ void LessonTableRow::initializeWidgets() {
 	commentTextView->signal_grab_focus().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 }
 
-Gtk::Label* LessonTableRow::getUntilLabel() {
+Gtk::Label* LessonTableRow::getUntilLabel() const {
 	return untilLabel;
 }
 
-Gtk::SpinButton* LessonTableRow::getReachedPointsSpin() {
+Gtk::SpinButton* LessonTableRow::getReachedPointsSpin() const {
 	return reachedPointsSpin;
 }
 
-Gtk::SpinButton* LessonTableRow::getTotalPointsSpin() {
+Gtk::SpinButton* LessonTableRow::getTotalPointsSpin() const {
 	return totalPointsSpin;
 }
 
-Gtk::Button* LessonTableRow::getOpenFolderButton() {
+Gtk::Button* LessonTableRow::getOpenFolderButton() const {
 	return openFolderButton;
 }
 
-Gtk::CheckButton* LessonTableRow::getExerciseFinishedButton() {
+Gtk::Button* LessonTableRow::getOpenExercisePDF() const {
+	return openExercisePDFButton;
+}
+
+Gtk::CheckButton* LessonTableRow::getExerciseFinishedButton() const {
 	return exerciseFinishedButton;
 }
 
-Gtk::TextView* LessonTableRow::getCommentTextView() {
+Gtk::TextView* LessonTableRow::getCommentTextView() const {
 	return commentTextView;
 }
 
-int LessonTableRow::getID() {
+int LessonTableRow::getID() const {
 	return idInSqlDB;
 }
 
@@ -148,12 +157,31 @@ void LessonTableRow::setStateChanged(bool state) {
 	stateChanged = state;
 }
 
+std::string LessonTableRow::getUntil() const {
+	return toDoUntil;
+}
+
 void LessonTableRow::openFolderButtonClicked() {
-	std::thread ownThread([](){
-		// just for test-issues. must be changed
-		system(std::string(std::string(FILEMANAGER) + " " + std::string(FOLDER_PATH) + "PSE/").c_str());
-	});
-	ownThread.detach();
+	BasicFileOps fileOps;
+	ConfigFileParser configParser;
+	std::string exerciseFolderPath = configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil;
+	fileOps.openFileManager(exerciseFolderPath);
+}
+
+void LessonTableRow::openExercisePDFButtonClicked() {
+	BasicFileOps fileOps;
+	ConfigFileParser configParser;
+	std::string exercise_file_path = configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE;
+	std::cout << exercise_file_path << std::endl;
+	if(fileOps.isFileExistant(exercise_file_path)) {
+		fileOps.openPdfFile(exercise_file_path);
+	}else {
+		std::string chosenFile = "";
+		if((chosenFile = HelpDialogs::showFileChooser()) != "") {
+			fileOps.copyFile(chosenFile, configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE);
+			fileOps.openPdfFile(configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE);
+		}
+	}
 }
 
 void LessonTableRow::changeState() {

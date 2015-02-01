@@ -19,26 +19,25 @@ public:
 private:
 
 	LessonTable *lessonTable;
-	Gtk::HSeparator *separatorToNewLessonButtons;
-	Gtk::Label *newLessonLabel;
 	Gtk::Entry *newLessonEdit;
-	Gtk::Button *saveNewLessonButton;
-	Gtk::Button *deleteLessonButton;
 	Gtk::Frame *environmentSettingsFrame;
-	Gtk::VBox *environmentSettingsVBox;
-	Gtk::Label *fileDirPathLabel;
 	Gtk::Entry *fileDirPathEdit;
-	Gtk::Button *saveFileDirPathButton;
+	Gtk::Entry *pdfExecutablePathEdit;
+	Gtk::Entry *fileManagerPathEdit;
 
-	Gtk::HBox *mainBox;
 	Gtk::VBox *settingsVBox;
 	void initWidgets();
 	void initTable();
+	void initializeNewLessonBox();
 	void initializeEnvironmentSettings();
+	void showCenteredWidgets();
 	void saveNewLessonButtonClicked();
 	void saveFileDirPathButtonClicked();
 	void deleteButtonClicked();
 	void chooseFileDirButtonClicked();
+	void saveEnvironmentSettingsClicked();
+	void choosePdfExecutableButtonClicked();
+	void chooseFileManagerButtonClicked();
 	SQLiteConnect connection;
 	Gtk::Notebook *notebook;
 };

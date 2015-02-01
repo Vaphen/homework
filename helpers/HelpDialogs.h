@@ -60,25 +60,24 @@ namespace HelpDialogs {
 	}
 
 	/**
-	 * shows an error-dialog that gives out an config-file error
-	 * @param error: enum ConfigErrors-message. thrown by ConfigFileParser
-	 */
-	static void showErrorDialog(CONFIG_ERRORS& error) {
+	* shows an error-dialog that gives out a folder error
+	* @param error: enum FileError-message. thrown by BasicFileOps
+	*/
+	static void showErrorDialog(FILE_ERRORS &error) {
 		std::string title, message;
 		switch(error) {
-			case CONFIG_ERRORS::ERROR_FILE_NOT_CREATABLE:
-				title = "Konfigurationsdatei konnte nicht erstellt werden.";
+			case FILE_ERRORS::FOLDER_NOT_CREATABLE:
+				title = "Der Ordner konnte nicht erstellt werden.";
 				message = "Bitte überprüfen Sie die Berechtigungen des Programms.";
 				break;
-			case CONFIG_ERRORS::ERROR_UNKNOWN_PARAMETER:
-				title = "Die Konfigurationsdatei ist fehlerhaft.";
-				message = "Sie wurde auf die Standardeinstellungen zurückgesetzt.\nDas Programm muss neu gestartet werden, damit die Änderungen wirksam werden.";
+			case FILE_ERRORS::FOLDER_NOT_DELETABLE:
+				title = "Der Ordner konnte nicht gelöscht werden.";
+				message = "Wurde der Ordner bereits manuell gelöscht?";
 				break;
 			default:
 				title = "Ein unbekannter Fehler ist aufgetreten.";
 				message = "Sorry, das hätte nicht passieren dürfen.";
 		}
-
 		HelpDialogs::showErrorDialog(title, message);
 	}
 
@@ -111,8 +110,44 @@ namespace HelpDialogs {
 	/**
 	 * @returns the path to the selected directory if the selection was not canceled
 	 */
-	static std::string showFileChooser() {
+	static std::string showFolderChooser() {
 		Gtk::FileChooserDialog fileDialog("Speicherpfad wählen", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
+		fileDialog.add_button("_Abbrechen", Gtk::RESPONSE_CANCEL);
+		fileDialog.add_button("Auswählen", Gtk::RESPONSE_OK);
+		fileDialog.run();
+		return fileDialog.get_filename();
+	}
+
+	/// Shows a pdf-file-select dialog
+	/**
+	 * @returns the path to the selected file if the selection was not canceled
+	 */
+	static std::string showFileChooser() {
+		Gtk::FileChooserDialog fileDialog("Aufgabenblatt auswählen", Gtk::FILE_CHOOSER_ACTION_OPEN);
+
+		Gtk::FileFilter *pdfFilter = Gtk::manage(new Gtk::FileFilter);
+		pdfFilter->set_name("PDF Dateien");
+		pdfFilter->add_mime_type("application/pdf");
+		fileDialog.add_filter(*pdfFilter);
+
+		fileDialog.add_button("_Abbrechen", Gtk::RESPONSE_CANCEL);
+		fileDialog.add_button("Auswählen", Gtk::RESPONSE_OK);
+		fileDialog.run();
+		return fileDialog.get_filename();
+	}
+
+	/// Shows a pdf-file-select dialog
+	/**
+	 * @returns the path to the selected file if the selection was not canceled
+	 */
+	static std::string showExecutableChooser(const std::string &title) {
+		Gtk::FileChooserDialog fileDialog(title, Gtk::FILE_CHOOSER_ACTION_OPEN);
+
+		Gtk::FileFilter *executableFilter = Gtk::manage(new Gtk::FileFilter);
+		executableFilter->set_name("Ausführbare Dateien");
+		executableFilter->add_mime_type("application/x-executable");
+		fileDialog.add_filter(*executableFilter);
+
 		fileDialog.add_button("_Abbrechen", Gtk::RESPONSE_CANCEL);
 		fileDialog.add_button("Auswählen", Gtk::RESPONSE_OK);
 		fileDialog.run();
