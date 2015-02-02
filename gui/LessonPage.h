@@ -47,7 +47,7 @@ private:
 
 	void resetRowsClicked();
 	void saveButtonClicked();
-	void deleteButtonClicked(int, Gtk::Button*);
+	void deleteButtonClicked(LessonTableRow&, Gtk::Button*);
 	void newExerciseDateChanged();
 	void initializeWidgets();
 	void initializeTableMenueBar();

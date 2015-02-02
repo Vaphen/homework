@@ -179,7 +179,6 @@ void LessonTableRow::openExercisePDFButtonClicked() {
 		std::string chosenFile = "";
 		if((chosenFile = HelpDialogs::showFileChooser()) != "") {
 			fileOps.copyFile(chosenFile, configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE);
-			fileOps.openPdfFile(configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE);
 		}
 	}
 }

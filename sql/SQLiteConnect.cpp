@@ -175,7 +175,7 @@ void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPat
  * @param exerciseId id of the exercise which should be deleted
  * @throws ERRORS a SQL-execution error
  */
-void SQLiteConnect::deleteExercise(std::string lessonName, int exerciseId) {
+void SQLiteConnect::deleteExercise(std::string lessonName, unsigned int exerciseId) {
 	std::string deleteQuery = "DELETE FROM " +
 							  lessonName +
 							  " WHERE id='" +

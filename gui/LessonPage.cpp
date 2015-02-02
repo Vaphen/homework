@@ -244,8 +244,8 @@ Gtk::Button* LessonPage::getDeleteButton() {
 	deleteButton->set_image(*deleteIcon);
 	deleteButton->set_size_request(50, 50);
 	deleteButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
-	deleteButton->signal_clicked().connect(sigc::bind<int, Gtk::Button*>(
-				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), allRows.back()->getID(), deleteButton));
+	deleteButton->signal_clicked().connect(sigc::bind<LessonTableRow&, Gtk::Button*>(
+				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), *(allRows.back()), deleteButton));
 	return deleteButton;
 }
 
@@ -256,43 +256,49 @@ Gtk::Button* LessonPage::getDeleteButton() {
  * @param exerciseId the (sql)id of the row which should be deleted
  * @param *deleteButton pointer to the widget itself so that it can delete itself
  */
-void LessonPage::deleteButtonClicked(int exerciseId, Gtk::Button *deleteButton) {
-	if(HelpDialogs::showConfirmDialog(HelpDialogs::CONFIRM_DELETION,
-			HelpDialogs::CONFIRM_DELETION_SUBTEXT) != HelpDialogs::CONFIRMED)
+void LessonPage::deleteButtonClicked(LessonTableRow &lastRow, Gtk::Button *deleteButton) {
+	switch(HelpDialogs::showMultipleDeleteDialog(LessonPageLabels::MULTIPLE_DELETE_TITLE,
+												 LessonPageLabels::MULTIPLE_DELETE_MESSAGE)) {
+	case int(ANSWERS::CANCEL):
 		return;
-	for(int i = 0; i < allRows.size(); i++) {
-		if(allRows.at(i)->getID() == exerciseId) {
-			try {
-				connection.deleteExercise(this->curLesson, allRows.at(i)->getID());
-			} catch(ERRORS &error) {
-				HelpDialogs::showErrorDialog(error);
-				return;
-			}
-
-			BasicFileOps fileOps;
-			ConfigFileParser configParser;
-			try {
-				fileOps.deleteFolder(configParser.getSaveDirectoryPath() + "/" + curLesson + "/" + allRows.at(i)->getUntil());
-			} catch (FILE_ERRORS &error) {
-				HelpDialogs::showErrorDialog(error);
-			}
-			exerciseTable->remove(*allRows.at(i)->getCommentTextView());
-			exerciseTable->remove(*allRows.at(i)->getExerciseFinishedButton());
-			exerciseTable->remove(*allRows.at(i)->getReachedPointsSpin());
-			exerciseTable->remove(*allRows.at(i)->getTotalPointsSpin());
-			exerciseTable->remove(*allRows.at(i)->getOpenFolderButton());
-			exerciseTable->remove(*allRows.at(i)->getOpenExercisePDF());
-			exerciseTable->remove(*allRows.at(i)->getUntilLabel());
-			exerciseTable->remove(*deleteButton);
-			allRows.erase(allRows.begin() + i);
-
-			// there is no lesson left so show the label
-			if(allRows.size() == 0)
-				addNothingAddedYetLabelToTable();
-
-			exerciseTable->show_all();
+		break;
+	case int(ANSWERS::DELETE_ALL): {
+		// this case runs through to case delete cell only (no break).
+		// That's why it deletes all, inclusive the cell.
+		BasicFileOps fileOps;
+		ConfigFileParser configParser;
+		try {
+			fileOps.deleteFolder(configParser.getSaveDirectoryPath() + "/" + curLesson + "/" + lastRow.getUntil());
+		} catch (const FILE_ERRORS &error) {
+			HelpDialogs::showErrorDialog(error);
+		}
+	}
+	case int(ANSWERS::DELETE): {
+		try {
+			connection.deleteExercise(this->curLesson, lastRow.getID());
+		} catch(ERRORS &error) {
+			HelpDialogs::showErrorDialog(error);
 			return;
 		}
+		exerciseTable->remove(*lastRow.getCommentTextView());
+		exerciseTable->remove(*lastRow.getExerciseFinishedButton());
+		exerciseTable->remove(*lastRow.getReachedPointsSpin());
+		exerciseTable->remove(*lastRow.getTotalPointsSpin());
+		exerciseTable->remove(*lastRow.getOpenFolderButton());
+		exerciseTable->remove(*lastRow.getOpenExercisePDF());
+		exerciseTable->remove(*lastRow.getUntilLabel());
+		exerciseTable->remove(*deleteButton);
+		allRows.erase(std::find(allRows.begin(), allRows.end(), &lastRow));
+
+		// there is no lesson left so show the label
+		if(allRows.size() == 0)
+			addNothingAddedYetLabelToTable();
+
+		exerciseTable->show_all();
+		break;
+	}
+	default:
+		return;
 	}
 }
 

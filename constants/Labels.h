@@ -17,7 +17,8 @@ namespace LessonPageLabels {
 	static const std::string DELETE_EXERCISE = "<b>Löschen</b>";
 
 	static const std::string NO_EXERCISE_ADDED_LABEL = "<b><u>Dieses Fach enthält noch keine Aufgaben.</u></b>";
-
+	static const std::string MULTIPLE_DELETE_TITLE = "Wollen Sie die Aufgabe löschen?";
+	static const std::string MULTIPLE_DELETE_MESSAGE = "Die Aufgabenblätter, Punkte etc. ebenfalls löschen";
 	static const std::string NEW_EXERCISE_ERROR_TITLE = "Fehlendes Aufgabendatum";
 	static const std::string NEW_EXERCISE_ERROR_MESSAGE = "Das Feld 'bis' darf nicht leer sein.";
 }
@@ -37,6 +38,9 @@ namespace SettingsPageLabels {
 
 	static const std::string SAVING_SUCCESS_TITLE = "Speichern erfolgreich";
 	static const std::string SAVING_SUCCESS_MESSAGE = "Das neue Fach wurde der Liste hinzugefügt.";
+
+	static const std::string MULTIPLE_DELETE_TITLE = "Wollen Sie die Aufgabe löschen?";
+	static const std::string MULTIPLE_DELETE_MESSAGE = "Alle zugehörigen Aufgaben inklusive der Blätter ebenfalls löschen";
 }
 
 namespace GuiLabels {

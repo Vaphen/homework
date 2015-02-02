@@ -15,7 +15,12 @@
 #include <gtkmm.h>
 #include <iostream>
 #include "../fileOperations/ConfigFileParser.h"
+#include "../fileOperations/BasicFileOps.h"
 
+
+/*
+ * TODO: double lesson entry is possible: fix it
+ */
 
 /**
  * SettingsPage: Frame, which contains settings
@@ -180,6 +185,7 @@ void SettingsPage::showCenteredWidgets() {
  * and save the input value; then, we update the notebook and the LessonTable
  */
 void SettingsPage::saveNewLessonButtonClicked() {
+	lessonTable->get
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
 		HelpDialogs::showErrorDialog(SettingsPageLabels::NEW_LESSON_ERROR_TITLE,
@@ -189,16 +195,24 @@ void SettingsPage::saveNewLessonButtonClicked() {
 	try {
 		this->connection.addNewLesson(newLesson);
 		this->connection.createSpecificLessonTable(newLesson);
-		newLessonEdit->set_text("");
-		LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson));
-		notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
-		notebook->show_all();
-		lessonTable->appendLesson(newLesson);
-		HelpDialogs::showInfoDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
-				SettingsPageLabels::SAVING_SUCCESS_MESSAGE);
 	} catch (ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
+		return;
 	}
+	try {
+		BasicFileOps fileOps;
+		ConfigFileParser configParser;
+		fileOps.createFolder(configParser.getSaveDirectoryPath() + "/" + newLesson);
+	} catch(const FILE_ERRORS &error) {
+		HelpDialogs::showErrorDialog(error);
+	}
+	newLessonEdit->set_text("");
+	LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson));
+	notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
+	notebook->show_all();
+	lessonTable->appendLesson(newLesson);
+	HelpDialogs::showInfoDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
+			SettingsPageLabels::SAVING_SUCCESS_MESSAGE);
 }
 
 
@@ -210,45 +224,58 @@ void SettingsPage::deleteButtonClicked() {
 		HelpDialogs::showInfoDialog("Kein Fach ausgewählt", "Das zu löschende Fach muss zuerst selektiert werden.");
 		return;
 	}
-	if(HelpDialogs::showConfirmDialog(HelpDialogs::CONFIRM_DELETION,
-			HelpDialogs::CONFIRM_LESSON_DELETION_SUBTEXT) != HelpDialogs::CONFIRMED) {
-		return;
-	}
-
-
-
-	/**
-	 * connect to the Database and try to delete the lesson
-	 */
-	SQLiteConnect connection;
-	std::vector<std::string> lessons = {};
-
-	try {
-		lessons = connection.getLessons();
-		connection.deleteLesson(std::string(selectedLesson));
-		connection.deleteSpecificLessonTable(std::string(selectedLesson));
-	} catch (ERRORS &error) {
-		HelpDialogs::showErrorDialog(error);
-		return;
-	}
-
-
-	// if sql-delete was successfull, we can delete it from the table
-	lessonTable->deleteSelectedLesson();
-
-	/*
-	 * there is no way to delete notebook-page by its label.
-	 * we need to iterate through all lessons to check if it's
-	 * the deleted one
-	 */
-	for(int i = 0; i < lessons.size(); i++) {
-		if(lessons.at(i) == selectedLesson) {
-			notebook->remove_page(i);
-			break;
+	switch(HelpDialogs::showMultipleDeleteDialog(SettingsPageLabels::MULTIPLE_DELETE_TITLE, SettingsPageLabels::MULTIPLE_DELETE_MESSAGE)) {
+	case int(ANSWERS::CANCEL):
+			return;
+	case int(ANSWERS::DELETE_ALL): {
+		// this case runs through to case delete (no break).
+		// That's why it deletes all, inclusive the cell.
+		BasicFileOps fileOps;
+		ConfigFileParser configParser;
+		try {
+			fileOps.deleteFolder(configParser.getSaveDirectoryPath() + "/" + selectedLesson);
+		}catch(const FILE_ERRORS &error) {
+			HelpDialogs::showErrorDialog(error);
 		}
 	}
+	case int(ANSWERS::DELETE): {
+		/**
+		 * connect to the Database and try to delete the lesson
+		 */
+		SQLiteConnect connection;
+		std::vector<std::string> lessons = {};
 
-	notebook->show_all();
+		try {
+			lessons = connection.getLessons();
+			connection.deleteLesson(std::string(selectedLesson));
+			connection.deleteSpecificLessonTable(std::string(selectedLesson));
+		} catch (ERRORS &error) {
+			HelpDialogs::showErrorDialog(error);
+			return;
+		}
+
+
+		// if sql-delete was successfull, we can delete it from the table
+		lessonTable->deleteSelectedLesson();
+
+		/*
+		 * there is no way to delete notebook-page by its label.
+		 * we need to iterate through all lessons to check if it's
+		 * the deleted one
+		 */
+		for(int i = 0; i < lessons.size(); i++) {
+			if(lessons.at(i) == selectedLesson) {
+				notebook->remove_page(i);
+				break;
+			}
+		}
+
+		notebook->show_all();
+		break;
+	}
+	default:
+		return;
+	}
 }
 
 /// Triggered when choose file button was clicked

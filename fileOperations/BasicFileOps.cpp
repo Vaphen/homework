@@ -54,16 +54,29 @@ void BasicFileOps::openFileManager(const std::string &path) {
 /// Creates the a folder to a special path
 /*
  * @param path the path of the new folder
- * @throws FILE_ERRORS::FOLDER_NOT_CREATABLE if the folder could not be created
+ * @throws FILE_ERRORS if the folder could not be created or is already existant
  */
 void BasicFileOps::createFolder(const std::string& path) {
 	boost::filesystem::path dir(path);
-	if (!boost::filesystem::create_directory(dir))
-	   throw FILE_ERRORS::FOLDER_NOT_CREATABLE;
+	if(boost::filesystem::is_directory(path))
+		throw FILE_ERRORS::FOLDER_ALREADY_EXISTANT;
+	try {
+		boost::filesystem::create_directory(dir);
+	}catch(const boost::filesystem::filesystem_error &error) {
+		throw FILE_ERRORS::FOLDER_NOT_CREATABLE;
+	}
 }
 
+/// Deletes the folder from the given path
+/**
+ * @param path the path of the folder that should be delted
+ * @throws FILE_ERRORS if file was not deletable
+ */
 void BasicFileOps::deleteFolder(const std::string &path) {
 	boost::filesystem::path dir(path);
-	if(!boost::filesystem::remove_all(dir))
+	try {
+		boost::filesystem::remove_all(dir);
+	}catch(const boost::filesystem::filesystem_error &error) {
 		throw FILE_ERRORS::FOLDER_NOT_DELETABLE;
+	}
 }

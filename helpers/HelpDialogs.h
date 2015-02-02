@@ -9,11 +9,12 @@
 #define CONSTANTS_HELPDIALOGS_H_
 
 #include "../constants/constants.h"
+#include "ConfirmDeleteDialog.h"
 
 namespace HelpDialogs {
 	const static bool CONFIRMED = true;
 	const static std::string CONFIRM_DELETION = "Löschen bestätigen";
-	const static std::string CONFIRM_DELETION_SUBTEXT = "Wollen sie die ausgewählte Aufgabe wirklich löschen?";
+	const static std::string CONFIRM_DELETION_SUBTEXT = "Wollen sie die ausgewählte Aufgabe inklusive aller Aufgabenblätter und den erreichten Punkten wirklich löschen?";
 	const static std::string CONFIRM_LESSON_DELETION_SUBTEXT = "Soll das markierte Fach inklusive aller Aufgabenblätter, erreichter Punkte etc. gelöscht werden?";
 
 	/**
@@ -60,28 +61,6 @@ namespace HelpDialogs {
 	}
 
 	/**
-	* shows an error-dialog that gives out a folder error
-	* @param error: enum FileError-message. thrown by BasicFileOps
-	*/
-	static void showErrorDialog(FILE_ERRORS &error) {
-		std::string title, message;
-		switch(error) {
-			case FILE_ERRORS::FOLDER_NOT_CREATABLE:
-				title = "Der Ordner konnte nicht erstellt werden.";
-				message = "Bitte überprüfen Sie die Berechtigungen des Programms.";
-				break;
-			case FILE_ERRORS::FOLDER_NOT_DELETABLE:
-				title = "Der Ordner konnte nicht gelöscht werden.";
-				message = "Wurde der Ordner bereits manuell gelöscht?";
-				break;
-			default:
-				title = "Ein unbekannter Fehler ist aufgetreten.";
-				message = "Sorry, das hätte nicht passieren dürfen.";
-		}
-		HelpDialogs::showErrorDialog(title, message);
-	}
-
-	/**
 	 * shows individual error-dialog.
 	 * @param title: title of the message-box
 	 * @param message: message of the message-box
@@ -93,13 +72,21 @@ namespace HelpDialogs {
 		return (dialog.run() == Gtk::RESPONSE_YES) ? HelpDialogs::CONFIRMED : !HelpDialogs::CONFIRMED;
 	}
 
+	/// Shows delete dialog for exercise deletion (Answers: delete all, delete just table row, cancel
+	/**
+	 * @returns ANSWERS the answer given as int
+	 */
+	static unsigned int showMultipleDeleteDialog(std::string const &title, std::string const &message) {
+		ConfirmDeleteDialog delDialogTest(title, message);
+		return delDialogTest.run();
+	}
 
 	/*
 	 * @param title: title of the messagedialog
 	 * @param message: message of the messagedialog
 	 * Shows a dialog with a success-image
 	 */
-	static void showInfoDialog(std::string const &title, std::string const& message) {
+	static void showInfoDialog(std::string const &title, std::string const &message) {
 		Gtk::MessageDialog dialog(title, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK);
 		dialog.set_title(title);
 		dialog.set_secondary_text(message);
@@ -152,6 +139,33 @@ namespace HelpDialogs {
 		fileDialog.add_button("Auswählen", Gtk::RESPONSE_OK);
 		fileDialog.run();
 		return fileDialog.get_filename();
+	}
+
+	/**
+	* shows an error-dialog that gives out a folder error
+	* @param error: enum FileError-message. thrown by BasicFileOps
+	*/
+	static void showErrorDialog(const FILE_ERRORS &error) {
+		std::string title, message;
+		switch(error) {
+			case FILE_ERRORS::FOLDER_NOT_CREATABLE:
+				title = "Der Ordner konnte nicht erstellt werden.";
+				message = "Bitte überprüfen Sie die Berechtigungen des Programms.";
+				break;
+			case FILE_ERRORS::FOLDER_NOT_DELETABLE:
+				title = "Der Ordner konnte nicht gelöscht werden.";
+				message = "Wurde der Ordner bereits manuell gelöscht?";
+				break;
+			case FILE_ERRORS::FOLDER_ALREADY_EXISTANT:
+				title = "Es existiert bereits Material für dieses Datum.";
+				message = "Die neue Aufgabe wurde in die bestehende Aufgabe integriert.";
+				HelpDialogs::showInfoDialog(title, message);
+				return;
+			default:
+				title = "Ein unbekannter Fehler ist aufgetreten.";
+				message = "Sorry, das hätte nicht passieren dürfen.";
+		}
+		HelpDialogs::showErrorDialog(title, message);
 	}
 }
 
