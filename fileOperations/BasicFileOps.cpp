@@ -14,6 +14,11 @@
 #include <thread>
 #include <boost/filesystem.hpp>
 
+
+/*
+ * TODO: check why member function of configfileparser doesnt work in lambda function
+ */
+
 BasicFileOps::BasicFileOps() {
 
 }
@@ -22,12 +27,23 @@ BasicFileOps::~BasicFileOps() {
 
 }
 
+/// Returns true if the given file exists
+/**
+ * @param fileName the path to the file that should be checked
+ */
 bool BasicFileOps::isFileExistant(const std::string &fileName) {
   std::ifstream ifile(fileName);
   return ifile;
 }
 
+/// Copies a given file via ios::binary
+/**
+ * @param from the path where the 'from'-file is located
+ * @param to the path where the copied file should be placed
+ */
 void BasicFileOps::copyFile(const std::string &from, const std::string &to) {
+	if(!isFileExistant(from))
+		throw FILE_ERRORS::FILE_DOESNT_EXIST;
 	std::ifstream inputFileStream(from, std::ios::binary);
 	std::ofstream outputFileStream(to, std::ios::binary);
     std::copy(std::istreambuf_iterator<char>(inputFileStream),
@@ -35,18 +51,27 @@ void BasicFileOps::copyFile(const std::string &from, const std::string &to) {
         std::ostreambuf_iterator<char>(outputFileStream));
 }
 
+
+/// Opens a PDF-File with the programm that is set in preferences
+/**
+ * @param filePath the path to the PDF-file
+ */
 void BasicFileOps::openPdfFile(const std::string &filePath) {
 	std::thread ownThread([filePath](){
-		ConfigFileParser configFile;
-		system(std::string(configFile.getPdfExecutablePath() + " " + filePath).c_str());
+		ConfigFileParser configParser;
+		system(std::string(configParser.getPdfExecutablePath() + " " + filePath).c_str());
 	});
 	ownThread.detach();
 }
 
+/// Opens a specific folder with the file manager that is set in preferences
+/**
+ * @param path the path to the folder that should be opened
+ */
 void BasicFileOps::openFileManager(const std::string &path) {
 	std::thread ownThread([path](){
-		ConfigFileParser configFile;
-		system(std::string(configFile.getFileManagerPath() + " " + path).c_str());
+		ConfigFileParser configParser;
+		system(std::string(configParser.getFileManagerPath() + " " + path).c_str());
 	});
 	ownThread.detach();
 }
@@ -79,4 +104,8 @@ void BasicFileOps::deleteFolder(const std::string &path) {
 	}catch(const boost::filesystem::filesystem_error &error) {
 		throw FILE_ERRORS::FOLDER_NOT_DELETABLE;
 	}
+}
+
+const ConfigFileParser BasicFileOps::callConfigParser() const {
+	return configParser;
 }

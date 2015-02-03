@@ -220,9 +220,8 @@ void LessonPage::saveButtonClicked() {
 		addRowToTable();
 
 		BasicFileOps fileOps;
-		ConfigFileParser configParser;
 		try {
-			fileOps.createFolder(configParser.getSaveDirectoryPath() + "/" + curLesson + "/" + timeOpts.getGermanDateFormat());
+			fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + curLesson + "/" + timeOpts.getGermanDateFormat());
 		} catch (FILE_ERRORS &error) {
 			HelpDialogs::showErrorDialog(error);
 		}
@@ -266,9 +265,8 @@ void LessonPage::deleteButtonClicked(LessonTableRow &lastRow, Gtk::Button *delet
 		// this case runs through to case delete cell only (no break).
 		// That's why it deletes all, inclusive the cell.
 		BasicFileOps fileOps;
-		ConfigFileParser configParser;
 		try {
-			fileOps.deleteFolder(configParser.getSaveDirectoryPath() + "/" + curLesson + "/" + lastRow.getUntil());
+			fileOps.deleteFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + curLesson + "/" + lastRow.getUntil());
 		} catch (const FILE_ERRORS &error) {
 			HelpDialogs::showErrorDialog(error);
 		}
