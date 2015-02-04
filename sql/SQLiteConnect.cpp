@@ -301,3 +301,25 @@ std::vector<std::string> SQLiteConnect::getLessons() {
 	close_db();
 	return lessons;
 }
+
+
+void SQLiteConnect::updateExercise(std::string const &lesson,
+								   int const &exerciseId,
+								   int const &reachedPoints,
+								   int const &totalPoints,
+								   bool const &isFinished,
+								   std::string const &comment) {
+	std::string deleteQuery = "UPDATE " + lesson + " SET " +
+								Database::COLUMN["REACHED_POINTS"] + "='" + std::to_string(reachedPoints) + "', " +
+							  Database::COLUMN["TOTAL_POINTS"] + "='" + std::to_string(totalPoints) + "', " +
+							  Database::COLUMN["IS_FINISHED"] + "='" + std::to_string(isFinished) + "', " +
+							  Database::COLUMN["LESSON_COMMENT"] + "='" + comment + "' " +
+							  "WHERE " + Database::COLUMN["ID"] + "='" +
+							  std::to_string(exerciseId) + "';";
+	std::cout << deleteQuery << std::endl;
+	try {
+		executeQuery(deleteQuery);
+	}catch(ERRORS &error) {
+		throw error;
+	}
+}

@@ -76,6 +76,8 @@ void LessonPage::initializeTableMenueBar() {
 	saveChangingsButton->set_image(*saveImage);
 	saveChangingsButton->set_tooltip_text(LessonPageLabels::SAVE_CHANGINGS_BUTTON);
 	saveChangingsButton->set_relief(Gtk::RELIEF_NONE);
+	saveChangingsButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveChangingsButtonClicked));
+
 
 	resetButton->set_image(*resetImage);
 	resetButton->set_tooltip_text(LessonPageLabels::RESET_BUTTON);
@@ -132,7 +134,7 @@ void LessonPage::initializeNewExerciseBox() {
 	newExerciseBox->set_border_width(10);
 
 	saveNewExerciseButton->set_size_request(-1, 20);
-	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveButtonClicked));
+	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveNewExerciseButtonClicked));
 
 	newExerciseFrame->set_label(NEW_EXERCISE_LABEL_TEXT);
 	newExerciseFrame->add(*newExerciseBox);
@@ -207,7 +209,7 @@ void LessonPage::initializeExerciseTable() {
  * Triggered when the saveNewExerciseButton is clicked.
  * If an error occurs, it shows an error-dialog.
  */
-void LessonPage::saveButtonClicked() {
+void LessonPage::saveNewExerciseButtonClicked() {
 	try {
 		TimeConvert timeOpts(exerciseUntilDaySpin->get_value(),
 				exerciseUntilMonthSpin->get_value(),
@@ -291,8 +293,9 @@ void LessonPage::deleteButtonClicked(LessonTableRow &lastRow, Gtk::Button *delet
 		allRows.erase(std::find(allRows.begin(), allRows.end(), &lastRow));
 
 		// there is no lesson left so show the label
-		if(allRows.size() == 0)
+		if(allRows.size() == 0) {
 			addNothingAddedYetLabelToTable();
+		}
 
 		exerciseTable->show_all();
 		break;
@@ -345,7 +348,7 @@ void LessonPage::addRowToTable() {
 
 	// delete the label because a first row was added right now
 	if(nothingAddedYetLabel != nullptr) {
-		exerciseTable->remove(*nothingAddedYetLabel);
+		mainBox->remove(*nothingAddedYetLabel);
 		nothingAddedYetLabel = nullptr;
 	}
 
@@ -366,6 +369,24 @@ void LessonPage::addNothingAddedYetLabelToTable() {
 	fdesc.set_size(15 * PANGO_SCALE);
 	nothingAddedYetLabel->modify_font(fdesc);
 	nothingAddedYetLabel->set_markup(LessonPageLabels::NO_EXERCISE_ADDED_LABEL);
-	exerciseTable->attach(*nothingAddedYetLabel, 3, 4, 1, 2, Gtk::EXPAND, Gtk::FILL, 20, 40);
+	mainBox->pack_end(*nothingAddedYetLabel, Gtk::PACK_SHRINK, 10);
+	mainBox->show_all();
+
 }
 
+
+void LessonPage::saveChangingsButtonClicked() {
+	for(LessonTableRow* curRow : allRows) {
+		if(curRow->getStateChanged()) {
+			SQLiteConnect connection;
+			connection.updateExercise(curLesson,
+									  curRow->getID(),
+									  curRow->getReachedPointsSpin()->get_value(),
+									  curRow->getTotalPointsSpin()->get_value(),
+									  [&] () -> int {
+										return (curRow->getExerciseFinishedButton()->get_state() == Gtk::STATE_ACTIVE);
+									  }(),
+									  curRow->getCommentTextView()->get_buffer()->get_text());
+		}
+	}
+}

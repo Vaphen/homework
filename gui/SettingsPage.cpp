@@ -185,7 +185,7 @@ void SettingsPage::showCenteredWidgets() {
  * and save the input value; then, we update the notebook and the LessonTable
  */
 void SettingsPage::saveNewLessonButtonClicked() {
-	lessonTable->get
+	// lessonTable->get
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
 		HelpDialogs::showErrorDialog(SettingsPageLabels::NEW_LESSON_ERROR_TITLE,

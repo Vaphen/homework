@@ -30,8 +30,8 @@ void ConfigFileParser::createDefaultConfigFile() {
 	config.load(pathToConfigFile.c_str());
 	config.setSection("EnvironmentVariables");
 	config.setStringValue("SAVE_FOLDER_DIR_PATH", "./uni");
-	config.setStringValue("PDF_EXECUTABLE_PATH", "xdb-open");
-	config.setStringValue("FILE_MANAGER_PATH", "xdb-open");
+	config.setStringValue("PDF_EXECUTABLE_PATH", "xdg-open");
+	config.setStringValue("FILE_MANAGER_PATH", "xdg-open");
 	config.save();
 }
 

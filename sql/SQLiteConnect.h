@@ -25,6 +25,7 @@ public:
 	void deleteSpecificLessonTable(std::string);
 	void addNewExercise(std::string, std::string, std::string);
 	void deleteExercise(std::string, unsigned int);
+	void updateExercise(std::string const&, int const&, int const&, int const&, bool const&, std::string const&);
 	std::vector<std::vector<std::string>> getExercises(std::string);
 	std::vector<std::string> getLessons();
 private:
