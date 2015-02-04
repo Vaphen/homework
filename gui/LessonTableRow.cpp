@@ -15,8 +15,10 @@
 #include <gtkmm.h>
 #include <iostream>
 
+/// Constructor for new row (from SQL-Query)
 /**
- * default constructor; called to create an row-object from sql-database
+ * Should be used rather than the other constructor.
+ * @param row a vector containing all infos about the row that should be added
  */
 LessonTableRow::LessonTableRow(std::vector<std::string> row) :
 		stateChanged(false) {
@@ -30,10 +32,13 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
 
 	initializeWidgets();
 }
-
+/// Constructor for new, not yet in database existing lesson
 /**
- * This constructor should only be called if a new exercise has been added
- * all values are set to 0, except the until-value and the id-value
+ * This constructor should only be called if a new exercise has been added.
+ * All values are set to 0, except the until-value, the id and the lessonName-value
+ * @param until string of the date until the exercise should be finished
+ * @param id The id of the exercise in the database
+ * @param lesson name of the lesson the row was added to
  */
 LessonTableRow::LessonTableRow(const std::string &until, int id, const std::string &lesson) :
 			stateChanged(false) {
@@ -50,6 +55,7 @@ LessonTableRow::LessonTableRow(const std::string &until, int id, const std::stri
 	initializeWidgets();
 }
 
+/// Initializes all widgets for one row setting properties too.
 void LessonTableRow::initializeWidgets() {
 	untilLabel = Gtk::manage(new Gtk::Label(toDoUntil));
 	reachedPointsSpin = Gtk::manage(new Gtk::SpinButton);
@@ -161,6 +167,7 @@ std::string LessonTableRow::getUntil() const {
 	return toDoUntil;
 }
 
+/// Opens the lesson specific folder.
 void LessonTableRow::openFolderButtonClicked() {
 	BasicFileOps fileOps;
 	ConfigFileParser configParser;
@@ -168,11 +175,11 @@ void LessonTableRow::openFolderButtonClicked() {
 	fileOps.openFileManager(exerciseFolderPath);
 }
 
+/// Opens the PDF-File if there is one selected before. If not, it shows a file chooser dialog.
 void LessonTableRow::openExercisePDFButtonClicked() {
 	BasicFileOps fileOps;
 	ConfigFileParser configParser;
 	std::string exercise_file_path = configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE;
-	std::cout << exercise_file_path << std::endl;
 	if(fileOps.isFileExistant(exercise_file_path)) {
 		fileOps.openPdfFile(exercise_file_path);
 	}else {

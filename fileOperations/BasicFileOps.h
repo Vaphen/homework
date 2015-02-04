@@ -8,11 +8,9 @@
 #ifndef FILEOPERATIONS_BASICFILEOPS_H_
 #define FILEOPERATIONS_BASICFILEOPS_H_
 
+#include "ConfigFileParser.h"
 #include <string>
 
-/**
- * TODO: isnt it better to get ConfigFileParams via inheritance
- */
 class BasicFileOps {
 public:
 	BasicFileOps();
@@ -23,6 +21,9 @@ public:
 	void openFileManager(const std::string&);
 	void createFolder(const std::string&);
 	void deleteFolder(const std::string&);
+	const ConfigFileParser callConfigParser() const;
+private:
+	const ConfigFileParser configParser;
 };
 
 #endif /* FILEOPERATIONS_BASICFILEOPS_H_ */

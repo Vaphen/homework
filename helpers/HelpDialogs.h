@@ -161,6 +161,10 @@ namespace HelpDialogs {
 				message = "Die neue Aufgabe wurde in die bestehende Aufgabe integriert.";
 				HelpDialogs::showInfoDialog(title, message);
 				return;
+			case FILE_ERRORS::FILE_DOESNT_EXIST:
+				title = "Die eingegebene Datei existiert nicht.";
+				message = "Möglicherweise wurde die Datei zuvor gelöscht oder sie besitzen nicht die erforderlichen Rechte, um die Datei zu lesen.";
+				break;
 			default:
 				title = "Ein unbekannter Fehler ist aufgetreten.";
 				message = "Sorry, das hätte nicht passieren dürfen.";

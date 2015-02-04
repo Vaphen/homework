@@ -185,7 +185,10 @@ void SettingsPage::showCenteredWidgets() {
  * and save the input value; then, we update the notebook and the LessonTable
  */
 void SettingsPage::saveNewLessonButtonClicked() {
+<<<<<<< HEAD
 	// lessonTable->get
+=======
+>>>>>>> 93a2d6d0911fe752a399e5205e34af5e0aa49145
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
 		HelpDialogs::showErrorDialog(SettingsPageLabels::NEW_LESSON_ERROR_TITLE,
@@ -201,8 +204,7 @@ void SettingsPage::saveNewLessonButtonClicked() {
 	}
 	try {
 		BasicFileOps fileOps;
-		ConfigFileParser configParser;
-		fileOps.createFolder(configParser.getSaveDirectoryPath() + "/" + newLesson);
+		fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + newLesson);
 	} catch(const FILE_ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 	}
@@ -231,9 +233,8 @@ void SettingsPage::deleteButtonClicked() {
 		// this case runs through to case delete (no break).
 		// That's why it deletes all, inclusive the cell.
 		BasicFileOps fileOps;
-		ConfigFileParser configParser;
 		try {
-			fileOps.deleteFolder(configParser.getSaveDirectoryPath() + "/" + selectedLesson);
+			fileOps.deleteFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + selectedLesson);
 		}catch(const FILE_ERRORS &error) {
 			HelpDialogs::showErrorDialog(error);
 		}
