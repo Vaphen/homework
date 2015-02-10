@@ -27,9 +27,11 @@
  * Initializes all child-widgets, the menuebar, the exercisetable and the
  * new exercise box
  * @param pageTitle the title of the new Frame (visible in top left corner)
+ * @param *parentNotebook a pointer to the notebook the side was added to
  */
-LessonPage::LessonPage(std::string pageTitle) :
-		curLesson(pageTitle) {
+LessonPage::LessonPage(std::string pageTitle, Gtk::Notebook *parentNotebook) :
+		curLesson(pageTitle),
+		parentNotebook(parentNotebook){
 	set_label(LessonPageLabels::FRAME_HEADER + curLesson);
 
 	initializeWidgets();
@@ -65,6 +67,7 @@ void LessonPage::initializeWidgets() {
 	tableScroller = Gtk::manage(new Gtk::ScrolledWindow);
 	saveChangingsButton = Gtk::manage(new Gtk::Button);
 	resetButton = Gtk::manage(new Gtk::Button);
+	statisticsButton = Gtk::manage(new Gtk::Button);
 }
 
 /// Initialize all widgets of the menuebar and add them to the main-frame
@@ -72,20 +75,28 @@ void LessonPage::initializeTableMenueBar() {
 	Gtk::HBox *centerBox = Gtk::manage(new Gtk::HBox);
 	Gtk::Image *saveImage = Gtk::manage(new Gtk::Image(SAVE_ICO));
 	Gtk::Image *resetImage = Gtk::manage(new Gtk::Image(RESET_CHANGES_ICO));
+	Gtk::Image *statisticsImage = Gtk::manage(new Gtk::Image(STATISTICS_ICO));
 
 	saveChangingsButton->set_image(*saveImage);
-	saveChangingsButton->set_tooltip_text(LessonPageLabels::SAVE_CHANGINGS_BUTTON);
+	saveChangingsButton->set_tooltip_text(LessonPageLabels::SAVE_CHANGINGS_BUTTON_TOOLTIP);
 	saveChangingsButton->set_relief(Gtk::RELIEF_NONE);
 	saveChangingsButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveChangingsButtonClicked));
 
 
 	resetButton->set_image(*resetImage);
-	resetButton->set_tooltip_text(LessonPageLabels::RESET_BUTTON);
+	resetButton->set_tooltip_text(LessonPageLabels::RESET_BUTTON_TOOLTIP);
 	resetButton->set_relief(Gtk::RELIEF_NONE);
 	resetButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::resetRowsClicked));
 
+
+	statisticsButton->set_image(*statisticsImage);
+	statisticsButton->set_tooltip_text(LessonPageLabels::STATISTICS_BUTTON_TOOLTIP);
+	statisticsButton->set_relief(Gtk::RELIEF_NONE);
+	statisticsButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::statisticsButtonClicked));
+
 	tableOptionsBox->pack_start(*resetButton, Gtk::PACK_SHRINK, 10);
 	tableOptionsBox->pack_start(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
+	tableOptionsBox->pack_start(*statisticsButton, Gtk::PACK_SHRINK, 10);
 
 	centerBox->pack_start(*tableOptionsBox, Gtk::PACK_EXPAND_PADDING);
 	centerBox->pack_end(*newExerciseFrame, Gtk::PACK_SHRINK);
@@ -214,7 +225,7 @@ void LessonPage::saveNewExerciseButtonClicked() {
 		TimeConvert timeOpts(exerciseUntilDaySpin->get_value(),
 				exerciseUntilMonthSpin->get_value(),
 				exerciseUntilYearSpin->get_value());
-		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/", timeOpts.getEnglishDateFormat());
+		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/", timeOpts.getUnixTimeFormat());
 		LessonTableRow *newRow = new LessonTableRow(timeOpts.getGermanDateFormat(), [this] () {
 			return (allRows.size() == 0) ? 1 : allRows.back()->getID() + 1;
 		}(), curLesson);
@@ -245,6 +256,7 @@ Gtk::Button* LessonPage::getDeleteButton() {
 	deleteButton->set_image(*deleteIcon);
 	deleteButton->set_size_request(50, 50);
 	deleteButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
+	deleteButton->set_tooltip_text(LessonPageLabels::DELETE_TOOLTIP);
 	deleteButton->signal_clicked().connect(sigc::bind<LessonTableRow&, Gtk::Button*>(
 				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), *(allRows.back()), deleteButton));
 	return deleteButton;
@@ -280,7 +292,7 @@ void LessonPage::deleteButtonClicked(LessonTableRow &lastRow, Gtk::Button *delet
 			HelpDialogs::showErrorDialog(error);
 			return;
 		}
-		exerciseTable->remove(*lastRow.getCommentTextView());
+		exerciseTable->remove(*lastRow.getCommentScrolledWindow());
 		exerciseTable->remove(*lastRow.getExerciseFinishedButton());
 		exerciseTable->remove(*lastRow.getReachedPointsSpin());
 		exerciseTable->remove(*lastRow.getTotalPointsSpin());
@@ -316,7 +328,7 @@ void LessonPage::resetRowsClicked() {
 			curRow->getExerciseFinishedButton()->set_active(curRow->getIsExerciseFinished());
 			Glib::RefPtr<Gtk::TextBuffer> oldText = Gtk::TextBuffer::create();
 			oldText->set_text(curRow->getComment());
-			curRow->getCommentTextView()->set_buffer(oldText);
+			static_cast<Gtk::TextView*>(curRow->getCommentScrolledWindow()->get_child())->set_buffer(oldText);
 			curRow->setStateChanged(false);
 		}
 	}
@@ -356,7 +368,7 @@ void LessonPage::addRowToTable() {
 	exerciseTable->attach(*allRows.back()->getOpenFolderButton(), 3, 4, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back()->getOpenExercisePDF(), 4, 5, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back()->getExerciseFinishedButton(), 5, 6, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
-	exerciseTable->attach(*allRows.back()->getCommentTextView(), 6, 7, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
+	exerciseTable->attach(*allRows.back()->getCommentScrolledWindow(), 6, 7, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*getDeleteButton(), 7, 8, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->show_all();
 }
@@ -376,15 +388,36 @@ void LessonPage::addNothingAddedYetLabelToTable() {
 void LessonPage::saveChangingsButtonClicked() {
 	for(LessonTableRow* curRow : allRows) {
 		if(curRow->getStateChanged()) {
+			unsigned int newReachedPoints = curRow->getReachedPointsSpin()->get_value();
+			unsigned int newTotalPoints = curRow->getTotalPointsSpin()->get_value();
+			bool newFinishedState = (curRow->getExerciseFinishedButton()->get_state() == Gtk::STATE_ACTIVE);
+			std::string newCommentText = static_cast<Gtk::TextView*>(curRow->getCommentScrolledWindow()->get_child())->get_buffer()->get_text();
+
+			// update curRow properties
+			curRow->setReachedPoints(newReachedPoints);
+			curRow->setTotalPoints(newTotalPoints);
+			curRow->setIsExerciseFinished(newFinishedState);
+			curRow->setComment(newCommentText);
+
+			// update SQL-entry
 			SQLiteConnect connection;
+			try {
 			connection.updateExercise(curLesson,
 									  curRow->getID(),
-									  curRow->getReachedPointsSpin()->get_value(),
-									  curRow->getTotalPointsSpin()->get_value(),
-									  [&] () -> int {
-										return (curRow->getExerciseFinishedButton()->get_state() == Gtk::STATE_ACTIVE);
-									  }(),
-									  curRow->getCommentTextView()->get_buffer()->get_text());
+									  newReachedPoints,
+									  newTotalPoints,
+									  static_cast<int>(newFinishedState),
+									  newCommentText);
+			}catch(ERRORS &error) {
+				HelpDialogs::showErrorDialog(error);
+			}
 		}
 	}
+}
+
+void LessonPage::statisticsButtonClicked() {
+	std::cout << parentNotebook->get_n_pages() << std::endl;
+	parentNotebook->set_current_page(allRows.size() - 1);
+	//if(allRows.size() == 0)
+	//	HelpDialogs::showInfoDialog("Es existieren keine gewerteten Aufgaben", "Es müssen Aufgaben gewertet werden, bevor eine Statistik entstehen kann.");
 }

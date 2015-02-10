@@ -8,9 +8,11 @@
 #include "LessonTableRow.h"
 #include "LessonPage.h"
 #include "../constants/constants.h"
+#include "../constants/Labels.h"
 #include "../fileOperations/BasicFileOps.h"
 #include "../fileOperations/ConfigFileParser.h"
 #include "../helpers/HelpDialogs.h"
+#include "../helpers/TimeConvert.h"
 #include <string>
 #include <gtkmm.h>
 #include <iostream>
@@ -23,7 +25,8 @@
 LessonTableRow::LessonTableRow(std::vector<std::string> row) :
 		stateChanged(false) {
 	idInSqlDB = atoi(row.at(COLUMN_ID::ID).c_str());
-	toDoUntil = row.at(COLUMN_ID::UNTIL);
+	TimeConvert timeConverter;
+	toDoUntil = timeConverter.unixToGermanDateFormat(row.at(COLUMN_ID::UNTIL));
 	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
 	totalPoints = atoi(row.at(COLUMN_ID::TOTAL_POINTS).c_str());
 	isExerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
@@ -66,6 +69,8 @@ void LessonTableRow::initializeWidgets() {
 	openExercisePDFImage = Gtk::manage(new Gtk::Image(OPEN_PDF_ICO));
 	exerciseFinishedButton = Gtk::manage(new Gtk::CheckButton);
 	commentTextView = Gtk::manage(new Gtk::TextView);
+	defaultText = Gtk::TextBuffer::create();
+	commentScrolledWindow = Gtk::manage(new Gtk::ScrolledWindow);
 
 	reachedPointsSpin->set_size_request(80, 33);
 	reachedPointsSpin->set_max_length(4);
@@ -88,23 +93,28 @@ void LessonTableRow::initializeWidgets() {
 	openFolderButton->set_image(*openFolderButtonImage);
 	openFolderButton->set_size_request(50, 50);
 	openFolderButton->set_relief(Gtk::RELIEF_NONE);
+	openFolderButton->set_tooltip_text(LessonTableRowLabels::OPEN_FOLDER_TOOLTIP);
 	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openFolderButtonClicked));
 
 	openExercisePDFButton->set_image(*openExercisePDFImage);
 	openExercisePDFButton->set_size_request(50, 50);
 	openExercisePDFButton->set_relief(Gtk::RELIEF_NONE);
+	openExercisePDFButton->set_tooltip_text(LessonTableRowLabels::OPEN_PDF_TOOLTIP);
 	openExercisePDFButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openExercisePDFButtonClicked));
 
 	exerciseFinishedButton->set_active(isExerciseFinished);
 	exerciseFinishedButton->signal_toggled().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
 
-	Glib::RefPtr<Gtk::TextBuffer> defaultText = Gtk::TextBuffer::create();
+
 	defaultText->set_text(exerciseComment);
 	commentTextView->set_size_request(130, 50);
 	commentTextView->set_border_width(1);
 	commentTextView->set_justification(Gtk::JUSTIFY_FILL);
 	commentTextView->set_buffer(defaultText);
 	commentTextView->signal_grab_focus().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
+
+	commentScrolledWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	commentScrolledWindow->add(*commentTextView);
 }
 
 Gtk::Label* LessonTableRow::getUntilLabel() const {
@@ -131,8 +141,8 @@ Gtk::CheckButton* LessonTableRow::getExerciseFinishedButton() const {
 	return exerciseFinishedButton;
 }
 
-Gtk::TextView* LessonTableRow::getCommentTextView() const {
-	return commentTextView;
+Gtk::ScrolledWindow* LessonTableRow::getCommentScrolledWindow() const {
+	return commentScrolledWindow;
 }
 
 int LessonTableRow::getID() const {
@@ -143,16 +153,32 @@ unsigned int LessonTableRow::getReachedPoints() const {
 	return reachedPoints;
 }
 
+void LessonTableRow::setReachedPoints(unsigned int &newPoints) {
+	this->reachedPoints = newPoints;
+}
+
 unsigned int LessonTableRow::getTotalPoints() const {
 	return totalPoints;
+}
+
+void LessonTableRow::setTotalPoints(unsigned int &newPoints) {
+	this->totalPoints = newPoints;
 }
 
 bool LessonTableRow::getIsExerciseFinished() const {
 	return isExerciseFinished;
 }
 
+void LessonTableRow::setIsExerciseFinished(bool &newFinished) {
+	this->isExerciseFinished = newFinished;
+}
+
 std::string LessonTableRow::getComment() const {
 	return exerciseComment;
+}
+
+void LessonTableRow::setComment(std::string &newComment) {
+	this->exerciseComment = newComment;
 }
 
 bool LessonTableRow::getStateChanged() const {

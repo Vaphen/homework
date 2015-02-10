@@ -22,6 +22,7 @@ private:
 	Gtk::TreeModelColumn<Glib::ustring> *lessonHeader;
 	Gtk::TreeModel::ColumnRecord *allHeader;
 	Glib::RefPtr<Gtk::ListStore> allLessons;
+	std::vector<std::string> lessons;
 };
 
 #endif /* SETTINGSLESSONTABLE_H_ */

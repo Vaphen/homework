@@ -20,14 +20,15 @@ LessonTable::LessonTable() :
 	allHeader->add(*lessonHeader);
 	set_model(allLessons = Gtk::ListStore::create(*allHeader));
 	SQLiteConnect connection;
-	std::vector<std::string> lessons = {};
+	lessons = {};
 	try {
 		lessons = connection.getLessons();
 	}catch(ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
+		return;
 	}
 
-	for(std::string &lesson : lessons) {
+	for(std::string lesson : lessons) {
 		appendLesson(lesson);
 	}
 	append_column(SettingsLessonTableLabels::TABLE_HEADING, *lessonHeader);
@@ -57,6 +58,8 @@ void LessonTable::deleteSelectedLesson() {
 	Gtk::TreeModel::iterator selectedRow = selection->get_selected();
 	Gtk::TreeModel::Row row = *selectedRow;
 	allLessons->erase(selectedRow);
+
+//	for(std::string lesson : lessons) if(lesson == )
 }
 
 /**
@@ -70,3 +73,7 @@ Glib::ustring LessonTable::getSelectedLesson() {
 	Gtk::TreeModel::Row row = *selectedRow;
 	return row[*lessonHeader];
 }
+
+/*std::vector<std::string> LessonTable::getAllLessons() {
+	return vecOfAllLessons;
+}*/

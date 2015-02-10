@@ -10,6 +10,7 @@
 #include <string>
 #include <gtkmm.h>
 #include "SettingsPage.h"
+#include "StatisticsPage.h"
 #include "../sql/SQLiteConnect.h"
 
 #define WINDOW_TITLE "Homework"
@@ -27,6 +28,7 @@ protected:
 	 */
 	Gtk::Notebook *notebook;
 	SettingsPage *settings_frame;
+	StatisticsPage *statistics_frame;
 private:
 	SQLiteConnect connection;
 	std::vector<std::string> doSqlLessonRequest();

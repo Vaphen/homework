@@ -7,10 +7,9 @@
 #include "../constants/constants.h"
 #include "../constants/Labels.h"
 #include "../helpers/HelpDialogs.h"
+#include "../fileOperations/BasicFileOps.h"
 #include <gtkmm.h>
 #include <iostream>
-#include "../fileOperations/BasicFileOps.h"
-#include "../fileOperations/ConfigFileParser.h"
 
 
 GUI::GUI() :
@@ -19,22 +18,25 @@ GUI::GUI() :
 
 	BasicFileOps fileManager;
 	if(!fileManager.isFileExistant(CONFIG_FILE)) {
-		ConfigFileParser configParser;
-		configParser.createDefaultConfigFile();
+		fileManager.callConfigParser().createDefaultConfigFile();
 	}
 
 	// add all lessons
-	std::vector<std::string> lessons = doSqlLessonRequest();
-	for(std::string &lesson : lessons) {
+	for(std::string &lesson : doSqlLessonRequest()) {
 		addLessonPage(lesson);
 	}
 
 	// could not use initialization list because if theres a sql-error,
 	// it shows it twice. thats why its initialized here.
+	Gtk::Label *settingsLabel = Gtk::manage(new Gtk::Label(GuiLabels::SETTINGS));
 	settings_frame = new SettingsPage(notebook);
+	statistics_frame = new StatisticsPage;
+
 
 	// add settings page
 	notebook->append_page(*settings_frame, GuiLabels::SETTINGS, false);
+	notebook->append_page(*statistics_frame, GuiLabels::STATISTICS, false);
+
 	set_title(WINDOW_TITLE);
 	add(*notebook);
 	show_all();
@@ -60,7 +62,7 @@ std::vector<std::string> GUI::doSqlLessonRequest() {
 
 
 void GUI::addLessonPage(std::string newLesson) {
-	LessonPage *newFrame = Gtk::manage(new LessonPage(newLesson));
+	LessonPage *newFrame = Gtk::manage(new LessonPage(newLesson, notebook));
 	notebook->append_page(*newFrame, newLesson, true);
 }
 
@@ -71,4 +73,5 @@ void GUI::addLessonPage(std::string newLesson) {
 GUI::~GUI() {
 	delete notebook;
 	delete settings_frame;
+	delete statistics_frame;
 }

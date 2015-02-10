@@ -18,7 +18,7 @@
 
 class LessonPage : public Gtk::Frame {
 public:
-	LessonPage(std::string);
+	LessonPage(std::string, Gtk::Notebook*);
 	virtual ~LessonPage();
 private:
 	std::string curLesson;
@@ -27,6 +27,8 @@ private:
 
 	SQLiteConnect connection;
 
+	Gtk::Notebook *parentNotebook;
+
 	Gtk::VBox *mainBox;
 	Gtk::HBox *tableOptionsBox;
 	Gtk::Table *exerciseTable;
@@ -34,10 +36,11 @@ private:
 	Gtk::Frame *newExerciseFrame;
 	Gtk::HBox *newExerciseBox;
 	Gtk::ScrolledWindow *tableScroller;
-	Gtk::Button* getDeleteButton();
+
 
 	Gtk::Button *saveChangingsButton;
 	Gtk::Button *resetButton;
+	Gtk::Button *statisticsButton;
 
 	Gtk::Label *exerciseUntilLabel;
 	Gtk::SpinButton *exerciseUntilDaySpin;
@@ -45,10 +48,13 @@ private:
 	Gtk::SpinButton *exerciseUntilYearSpin;
 	Gtk::Button *saveNewExerciseButton;
 
+	Gtk::Button* getDeleteButton();
+
 	void resetRowsClicked();
 	void saveNewExerciseButtonClicked();
 	void saveChangingsButtonClicked();
 	void deleteButtonClicked(LessonTableRow&, Gtk::Button*);
+	void statisticsButtonClicked();
 	void newExerciseDateChanged();
 	void initializeWidgets();
 	void initializeTableMenueBar();

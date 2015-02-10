@@ -23,13 +23,17 @@ public:
 	Gtk::Button* getOpenFolderButton() const;
 	Gtk::Button* getOpenExercisePDF() const;
 	Gtk::CheckButton* getExerciseFinishedButton() const;
-	Gtk::TextView* getCommentTextView() const;
+	Gtk::ScrolledWindow* getCommentScrolledWindow() const;
 	bool getStateChanged() const;
-	unsigned int getReachedPoints() const;
-	unsigned int getTotalPoints() const;
-	bool getIsExerciseFinished() const;
 	void setStateChanged(bool);
+	unsigned int getReachedPoints() const;
+	void setReachedPoints(unsigned int&);
+	unsigned int getTotalPoints() const;
+	void setTotalPoints(unsigned int&);
+	bool getIsExerciseFinished() const;
+	void setIsExerciseFinished(bool&);
 	std::string getComment() const;
+	void setComment(std::string&);
 	std::string getUntil() const;
 	int getID() const;
 private:
@@ -52,6 +56,8 @@ private:
 	Gtk::Image *openExercisePDFImage;
 	Gtk::CheckButton *exerciseFinishedButton;
 	Gtk::TextView *commentTextView;
+	Glib::RefPtr<Gtk::TextBuffer> defaultText;
+	Gtk::ScrolledWindow *commentScrolledWindow;
 
 	void initializeWidgets();
 	void openFolderButtonClicked();

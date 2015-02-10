@@ -185,16 +185,13 @@ void SettingsPage::showCenteredWidgets() {
  * and save the input value; then, we update the notebook and the LessonTable
  */
 void SettingsPage::saveNewLessonButtonClicked() {
-<<<<<<< HEAD
-	// lessonTable->get
-=======
->>>>>>> 93a2d6d0911fe752a399e5205e34af5e0aa49145
 	std::string newLesson = newLessonEdit->get_text();
 	if(newLesson == "") {
 		HelpDialogs::showErrorDialog(SettingsPageLabels::NEW_LESSON_ERROR_TITLE,
 				SettingsPageLabels::NEW_LESSON_ERROR_MESSAGE);
 		return;
 	}
+
 	try {
 		this->connection.addNewLesson(newLesson);
 		this->connection.createSpecificLessonTable(newLesson);
@@ -209,8 +206,8 @@ void SettingsPage::saveNewLessonButtonClicked() {
 		HelpDialogs::showErrorDialog(error);
 	}
 	newLessonEdit->set_text("");
-	LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson));
-	notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 1);
+	LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson, notebook));
+	notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 2);
 	notebook->show_all();
 	lessonTable->appendLesson(newLesson);
 	HelpDialogs::showInfoDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
@@ -269,6 +266,9 @@ void SettingsPage::deleteButtonClicked() {
 				notebook->remove_page(i);
 				break;
 			}
+		}
+		if(lessons.size() == 0) {
+			notebook->remove_page(notebook->get_n_pages());
 		}
 
 		notebook->show_all();
