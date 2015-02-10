@@ -133,9 +133,12 @@ void SQLiteConnect::close_db() {
 /// Writes a new lesson to 'lesson' table
 /**
  * @param lessonName name of the lesson which should be added
+ * @throws ERRORS::ERROR_TABLE_ALREADY_EXISTS if table is already existant
  * @throws ERRORS a SQL-execution error
  */
 void SQLiteConnect::addNewLesson(std::string lessonName) {
+	if(isTableExistant(lessonName))
+		throw ERRORS::ERROR_TABLE_ALREADY_EXISTS;
 	std::string insertQuery = "INSERT INTO " + Database::LESSON_TABLE +
 						" VALUES (NULL, '" +
 						lessonName + "');";
@@ -146,6 +149,27 @@ void SQLiteConnect::addNewLesson(std::string lessonName) {
 	}
 }
 
+/// Checks if the given table is already existant
+/**
+ * @throws ERRORS a SQL-execution error
+ * @returns true if table is existant, false otherwise
+ */
+bool SQLiteConnect::isTableExistant(std::string &tableName) {
+	std::string query = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "';";
+
+	if(open_db(Database::LESSON_DB) == Database::ERROR)
+			throw ERRORS::ERROR_OPEN_DB;
+	if(sqlite3_prepare(database, query.c_str(), -1, &queryStatement, NULL) != SQLITE_OK)
+		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+
+	int res = sqlite3_step(queryStatement);
+
+	sqlite3_finalize(queryStatement);
+	close_db();
+
+	return (res != SQLITE_DONE);
+}
+
 // Writes a new exercise to a specific lesson table
 /**
  * @param lessonName name of the lesson the exercise belongs to
@@ -153,10 +177,10 @@ void SQLiteConnect::addNewLesson(std::string lessonName) {
  * @param date the date until the exercise should be finished given as english-formatted date (YYYY-MM-DD)
  * @throws ERRORS a SQL-execution error
  */
-void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPath, std::string date) {
+void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPath, unsigned int timestamp) {
 	std::string insertQuery = "INSERT INTO " + lessonName + " VALUES (" +
 							  "NULL, " +
-							  "strftime('%d.%m.%Y', '" + date + "'), " +
+							  "'" + std::to_string(timestamp) + "', " +
 							  "NULL, " + ""
 							  "NULL, " +
 							  "0, " +
@@ -258,6 +282,85 @@ std::vector<std::vector<std::string>> SQLiteConnect::getExercises(std::string le
 	close_db();
 	return lessons;
 }
+
+
+/// read the exercise name (until), reached Points and total Points
+/**
+ * The outer vector is the column of the table. The inner vector
+ * contains the row.
+ * @param lessonName name of the lesson table
+ * @throws ERRORS a SQL-execution error
+ * @returns a 2-dimensional vector that contains a unix-timestamp
+ * until when the exercise was finished, total Points and reached points
+ */
+std::vector<std::vector<std::string>> SQLiteConnect::getPoints(std::string &lessonName) {
+
+	if(open_db(Database::LESSON_DB) == Database::ERROR)
+		throw ERRORS::ERROR_OPEN_DB;
+
+	std::string selectQuery = "SELECT " +
+							   Database::COLUMN["TO_DO_UNTIL"] + ", " +
+							   Database::COLUMN["REACHED_POINTS"] + ", " +
+							   Database::COLUMN["TOTAL_POINTS"] +
+							   " FROM " +
+							  lessonName + ";";
+
+	if(sqlite3_prepare(database, selectQuery.c_str(), -1, &queryStatement, NULL) != SQLITE_OK) {
+		throw ERRORS::ERROR_DB_NOT_PREPARABLE;
+	}
+
+	int res = 0;
+	std::vector<std::vector<std::string>> nameAndPointsVec;
+
+	/*
+	 * TODO: check if reachedPointsVec, totalPointsVec, untilVec are not useless
+	 * (Eg u can push the values directly into the nameAndPointsVec).
+	 */
+	std::vector<std::string> reachedPointsVec;
+	std::vector<std::string> totalPointsVec;
+	std::vector<std::string> untilVec;
+	while((res = sqlite3_step(queryStatement)) != SQLITE_DONE)
+	{
+	    for( int i = 0; i < 3; i++ ) {
+	    	if((char*)sqlite3_column_text(queryStatement, i) != nullptr) {
+	    		// if an entry exists, push it back
+	    		if(i % 3 == 0) {
+	    			untilVec.push_back(std::string((char *)sqlite3_column_text(queryStatement, i)));
+	    		}else if(i % 3 == 1) {
+	    			reachedPointsVec.push_back(std::string((char *)sqlite3_column_text(queryStatement, i)));
+	    		}else if(i % 3 == 2) {
+	    			totalPointsVec.push_back(std::string((char *)sqlite3_column_text(queryStatement, i)));
+	    		}
+	    	}else{
+	    		//if not, we have to push back an empty string
+	    		if(i % 3 == 0) {
+	    			untilVec.push_back("");
+	    		}else if(i % 3 == 1) {
+	    			reachedPointsVec.push_back("");
+	    		}else if(i % 3 == 2) {
+	    			totalPointsVec.push_back("");
+	    		}
+	    	}
+	    }
+	}
+
+	// it should not push anything back if there is no entry. if there is none, we return the
+	// vector without inner vectors
+	if(untilVec.size() != 0 && totalPointsVec.size() != 0 && reachedPointsVec.size() != 0) {
+		nameAndPointsVec.push_back(untilVec);
+		nameAndPointsVec.push_back(reachedPointsVec);
+		nameAndPointsVec.push_back(totalPointsVec);
+	}
+
+	if(res == SQLITE_ERROR)
+		throw ERRORS::ERROR_QUERY_EXECUTION;
+
+	sqlite3_finalize(queryStatement);
+	close_db();
+	return nameAndPointsVec;
+}
+
+
 
 /// Read all lessons out of the all-lesson table
 /**

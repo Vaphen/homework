@@ -52,6 +52,10 @@ namespace HelpDialogs {
 				title = "Eine Spalte konnte nicht gelesen werden.";
 				message = "Es scheint einen Fehler in der Datenbank zu geben.";
 				break;
+			case ERRORS::ERROR_TABLE_ALREADY_EXISTS:
+				title = "Die Tabelle scheint bereits zu existieren.";
+				message = "Haben Sie eventuell versucht einen bereits existierenden Wert zu speichern?";
+				break;
 			default:
 				title = "Ein unbekannter Fehler ist aufgetreten.";
 				message = "Sorry, das hätte nicht passieren dürfen.";

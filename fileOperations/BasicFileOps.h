@@ -21,7 +21,7 @@ public:
 	void openFileManager(const std::string&);
 	void createFolder(const std::string&);
 	void deleteFolder(const std::string&);
-	const ConfigFileParser callConfigParser() const;
+	ConfigFileParser callConfigParser() const;
 private:
 	const ConfigFileParser configParser;
 };

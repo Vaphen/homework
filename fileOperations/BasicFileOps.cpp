@@ -106,6 +106,6 @@ void BasicFileOps::deleteFolder(const std::string &path) {
 	}
 }
 
-const ConfigFileParser BasicFileOps::callConfigParser() const {
+ConfigFileParser BasicFileOps::callConfigParser() const {
 	return configParser;
 }

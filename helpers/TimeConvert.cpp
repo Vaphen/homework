@@ -6,6 +6,7 @@
  */
 
 #include "TimeConvert.h"
+#include <iostream>
 #include <ctime>
 
 /// Constructor for time-operations. It takes Arguments of a special day, month and year.
@@ -75,9 +76,26 @@ std::string TimeConvert::getGermanDateFormat() {
 	return stringDateFormat.str();
 }
 
+std::string TimeConvert::unixToGermanDateFormat(std::string &unixTimestamp) {
+	char germanDateFormat[11];
+	theTime = std::atoi(unixTimestamp.c_str());
+	aTime = localtime(&theTime);
+	strftime(germanDateFormat, sizeof(germanDateFormat), "%d.%m.%Y", aTime);
+	return std::string(germanDateFormat);
+}
+
 std::string TimeConvert::getEnglishDateFormat() {
 	stringDateFormat.str("");
 	// this converts the given date-values to a valid english date string (YYYY-MM-DD)
 	stringDateFormat << year << "-" << std::setfill('0') << std::setw(2) << month << "-" << std::setfill('0') << std::setw(2) << day;
 	return stringDateFormat.str();
+}
+
+unsigned int TimeConvert::getUnixTimeFormat() {
+	std::time_t result = std::time(nullptr);
+	struct tm *tm = localtime(&result);
+	tm->tm_year = (year - 1900);
+	tm->tm_mon = (month - 1);
+	tm->tm_mday = day;
+	return mktime(tm);
 }

@@ -22,8 +22,10 @@ public:
 	unsigned int getCurYear();
 	unsigned int getCurMonth();
 	unsigned int getCurDay();
+	std::string unixToGermanDateFormat(std::string&);
 	std::string getGermanDateFormat();
 	std::string getEnglishDateFormat();
+	unsigned int getUnixTimeFormat();
 private:
 	time_t theTime;
 	struct tm *aTime;

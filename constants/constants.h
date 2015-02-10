@@ -21,6 +21,7 @@
 #define SAVE_ICO "./src/save.png"
 #define RESET_CHANGES_ICO "./src/resetChanges.png"
 #define OPEN_PDF_ICO "./src/openPdf.png"
+#define STATISTICS_ICO "./src/statistics.png"
 #define EXERCISE_PDF_FILE "Aufgabenblatt.pdf"
 
 static const std::string CONFIG_FILE = "./homework.ini";
@@ -33,7 +34,7 @@ static const std::string CONFIG_FILE = "./homework.ini";
 	static const std::string FOLDER_PATH = "\\uni\\";
 #endif
 
-enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION, ERROR_CREATE_COLUMN };
+enum class ERRORS { ERROR_OPEN_DB, ERROR_DB_NOT_PREPARABLE, ERROR_QUERY_EXECUTION, ERROR_CREATE_COLUMN, ERROR_TABLE_ALREADY_EXISTS };
 enum class FILE_ERRORS { FOLDER_NOT_CREATABLE, FOLDER_NOT_DELETABLE, FOLDER_ALREADY_EXISTANT, FILE_DOESNT_EXIST, UNKNOWN_ERROR };
 enum class ANSWERS { CANCEL, DELETE, DELETE_ALL };
 

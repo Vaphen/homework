@@ -4,8 +4,9 @@
 namespace LessonPageLabels {
 	static const std::string FRAME_HEADER = "Fach: ";
 
-	static const std::string SAVE_CHANGINGS_BUTTON = "Änderungen speichern";
-	static const std::string RESET_BUTTON = "Änderungen zurücksetzen";
+	static const std::string SAVE_CHANGINGS_BUTTON_TOOLTIP = "Änderungen speichern";
+	static const std::string RESET_BUTTON_TOOLTIP = "Änderungen zurücksetzen";
+	static const std::string STATISTICS_BUTTON_TOOLTIP = "Statistik anzeigen";
 
 	static const std::string UNTIL = "<b>Aufgabe zu erledigen bis</b>";
 	static const std::string REACHED_POINTS = "<b>Erreichte Punkte</b>";
@@ -21,11 +22,18 @@ namespace LessonPageLabels {
 	static const std::string MULTIPLE_DELETE_MESSAGE = "Die Aufgabenblätter, Punkte etc. ebenfalls löschen";
 	static const std::string NEW_EXERCISE_ERROR_TITLE = "Fehlendes Aufgabendatum";
 	static const std::string NEW_EXERCISE_ERROR_MESSAGE = "Das Feld 'bis' darf nicht leer sein.";
+
+	static const std::string DELETE_TOOLTIP = "Aufgabe löschen";
+}
+
+namespace LessonTableRowLabels {
+	static const std::string OPEN_PDF_TOOLTIP = "PDF öffnen";
+	static const std::string OPEN_FOLDER_TOOLTIP = "Aufgabenordner öffnen";
 }
 
 namespace SettingsPageLabels {
 	static const std::string NEW_LESSON_LABEL = "Neues Fach: ";
-	static const std::string NEW_LESSON_BUTTON = "Fach anlegen: ";
+	static const std::string NEW_LESSON_BUTTON = "Fach anlegen";
 	static const std::string DELETE_BUTTON = "Löschen";
 	static const std::string ENVIRONMENT_SETTINGS_HEADING = "Umgebungseinstellungen";
 	static const std::string PATH_TO_DIR_LABEL = "Aufgabenordner: ";
@@ -43,8 +51,15 @@ namespace SettingsPageLabels {
 	static const std::string MULTIPLE_DELETE_MESSAGE = "Alle zugehörigen Aufgaben inklusive der Blätter ebenfalls löschen";
 }
 
+namespace StatisticsLessonTableLabels {
+	static const std::string UNTIL_HEADING_LABEL = "<b>zu erledigebn bis:</b>";
+	static const std::string REACHED_HEADING_LABEL = "<b>erreichte Punkte</b>";
+	static const std::string TOTAL_HEADING_LABEL = "<b>gesamte Punkte</b>";
+}
+
 namespace GuiLabels {
 	static const std::string SETTINGS = "Einstellungen";
+	static const std::string STATISTICS = "Statistik";
 }
 
 namespace SettingsLessonTableLabels {
