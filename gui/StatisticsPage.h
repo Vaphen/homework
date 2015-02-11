@@ -15,9 +15,11 @@ class StatisticsPage : public Gtk::Frame {
 public:
 	StatisticsPage();
 	virtual ~StatisticsPage();
+	void refreshStatisticsTable();
 private:
+	Gtk::ScrolledWindow *mainScrolledWindow;
 	Gtk::Table *pageTable;
-	std::vector<StatisticsLessonTable*> statisticTables;
+	std::vector<std::unique_ptr<StatisticsLessonTable> > statisticTables;
 	std::vector<Gtk::VBox*> statisticTablesVBoxes;
 
 	Gtk::Label *nothingAddedYetLabel;

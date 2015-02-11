@@ -181,8 +181,8 @@ void SQLiteConnect::addNewExercise(std::string lessonName, std::string folderPat
 	std::string insertQuery = "INSERT INTO " + lessonName + " VALUES (" +
 							  "NULL, " +
 							  "'" + std::to_string(timestamp) + "', " +
-							  "NULL, " + ""
-							  "NULL, " +
+							  "0, " + ""
+							  "0, " +
 							  "0, " +
 							  "'');";
 

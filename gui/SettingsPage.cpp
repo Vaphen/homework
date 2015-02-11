@@ -10,12 +10,13 @@
 #include "../constants/Labels.h"
 #include "../helpers/HelpDialogs.h"
 #include "../sql/SQLiteConnect.h"
+#include "../fileOperations/ConfigFileParser.h"
+#include "../fileOperations/BasicFileOps.h"
 #include "LessonPage.h"
 #include "SettingsLessonTable.h"
 #include <gtkmm.h>
 #include <iostream>
-#include "../fileOperations/ConfigFileParser.h"
-#include "../fileOperations/BasicFileOps.h"
+#include <regex>
 
 
 /*
@@ -26,8 +27,8 @@
  * SettingsPage: Frame, which contains settings
  */
 SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
-		lessonTable(new LessonTable),
-		notebook(guiNotebook) {
+		notebook(guiNotebook),
+		lessonTable(new LessonTable) {
 
 	set_border_width(10);
 
@@ -186,9 +187,14 @@ void SettingsPage::showCenteredWidgets() {
  */
 void SettingsPage::saveNewLessonButtonClicked() {
 	std::string newLesson = newLessonEdit->get_text();
+	std::regex alphabeticStringRegex("^[A-z]+$");
+
 	if(newLesson == "") {
 		HelpDialogs::showErrorDialog(SettingsPageLabels::NEW_LESSON_ERROR_TITLE,
 				SettingsPageLabels::NEW_LESSON_ERROR_MESSAGE);
+		return;
+	}else if(!std::regex_match(newLesson, alphabeticStringRegex)) {
+		HelpDialogs::showErrorDialog("Das eingegebene Fach ist unzulässig.", "Es dürfen nur alphabetische Lettern im Fach vorkommen (Zahlen, Sonderzeichen etc. sind nicht erlaubt).");
 		return;
 	}
 

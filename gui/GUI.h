@@ -32,6 +32,7 @@ protected:
 private:
 	SQLiteConnect connection;
 	std::vector<std::string> doSqlLessonRequest();
+	void on_my_switch_page(GtkNotebookPage*, unsigned int page_num);
 };
 
 #endif /* GUI_H_ */

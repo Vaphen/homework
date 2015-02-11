@@ -10,6 +10,7 @@
 
 #include "../sql/SQLiteConnect.h"
 #include <gtkmm.h>
+#include <regex>
 #include "SettingsLessonTable.h"
 
 class SettingsPage : public Gtk::Frame {
@@ -17,6 +18,7 @@ public:
 	SettingsPage(Gtk::Notebook*);
 	virtual ~SettingsPage();
 private:
+	Gtk::Notebook *notebook;
 
 	LessonTable *lessonTable;
 	Gtk::Entry *newLessonEdit;
@@ -38,8 +40,8 @@ private:
 	void saveEnvironmentSettingsClicked();
 	void choosePdfExecutableButtonClicked();
 	void chooseFileManagerButtonClicked();
+
 	SQLiteConnect connection;
-	Gtk::Notebook *notebook;
 };
 
 #endif /* SETTINGSPAGE_H_ */

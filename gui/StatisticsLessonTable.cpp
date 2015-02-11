@@ -23,7 +23,6 @@ StatisticsLessonTable::StatisticsLessonTable(std::string &curLesson) :
 	std::vector<std::vector<std::string> > nameAndPointsVec;
 	SQLiteConnect connection;
 	nameAndPointsVec = connection.getPoints(curLesson);
-	std::cout << nameAndPointsVec.size() << std::endl;
 	if(nameAndPointsVec.size() == 0) {
 		appendRow("---", "0", "0");
 		return;
@@ -77,10 +76,24 @@ void StatisticsLessonTable::appendTotal() {
 	Gtk::Label *reachedPointsTotalLabel = Gtk::manage(new Gtk::Label(std::to_string(reachedPointsTotal)));
 	Gtk::Label *totalPointsTotalLabel = Gtk::manage(new Gtk::Label(std::to_string(totalPointsTotal)));
 
+	Gtk::HSeparator *hSepTwo = Gtk::manage(new Gtk::HSeparator);
+	hSepTwo->set_size_request(400, 20);
+
+	float reachedPointsinPercent = [&] () {
+		return (totalPointsTotal == 0) ? 0 : (((float)100 / totalPointsTotal) * reachedPointsTotal);
+	}();
+
+	Gtk::Label *reachedLabel = Gtk::manage(new Gtk::Label("Erreicht:"));
+	Gtk::Label *percentLabel = Gtk::manage(new Gtk::Label(std::to_string(reachedPointsinPercent).substr(0, 5) + "% / 100%"));
+
 	attach(*hSep, 0, 3, rows, rows + 1, Gtk::EXPAND, Gtk::FILL, 10, 0);
 	attach(*untilLabel, 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL, 10, 0);
 	attach(*reachedPointsTotalLabel, 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL, 10, 0);
 	attach(*totalPointsTotalLabel, 2, 3, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL, 10, 0);
+
+	attach(*hSepTwo, 0, 3, rows + 2, rows + 3, Gtk::EXPAND, Gtk::FILL, 10, 0);
+	attach(*reachedLabel, 0, 1, rows + 3, rows + 4, Gtk::EXPAND, Gtk::FILL, 10, 0);
+	attach(*percentLabel, 1, 2, rows + 3, rows + 4, Gtk::EXPAND, Gtk::FILL, 10, 0);
 
 	show_all_children();
 }

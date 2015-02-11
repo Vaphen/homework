@@ -233,13 +233,10 @@ void LessonPage::saveNewExerciseButtonClicked() {
 		addRowToTable();
 
 		BasicFileOps fileOps;
-		try {
-			fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + curLesson + "/" + timeOpts.getGermanDateFormat());
-		} catch (FILE_ERRORS &error) {
-			HelpDialogs::showErrorDialog(error);
-		}
-
+		fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + curLesson + "/" + timeOpts.getGermanDateFormat());
 	} catch(ERRORS &error) {
+		HelpDialogs::showErrorDialog(error);
+	} catch (FILE_ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 	}
 }
@@ -416,8 +413,5 @@ void LessonPage::saveChangingsButtonClicked() {
 }
 
 void LessonPage::statisticsButtonClicked() {
-	std::cout << parentNotebook->get_n_pages() << std::endl;
-	parentNotebook->set_current_page(allRows.size() - 1);
-	//if(allRows.size() == 0)
-	//	HelpDialogs::showInfoDialog("Es existieren keine gewerteten Aufgaben", "Es müssen Aufgaben gewertet werden, bevor eine Statistik entstehen kann.");
+	parentNotebook->set_current_page(parentNotebook->get_n_pages() - 1);
 }

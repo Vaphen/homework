@@ -1,6 +1,6 @@
 NAME := homework
 CC := g++
-CFLAGS := -lboost_filesystem -ggdb -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4`
+CFLAGS := -lboost_filesystem -ggdb -std=c++11 -lsqlite3 `pkg-config --libs --cflags gtkmm-2.4` 
 ADDITIONAL_LIBRARIES := /usr/local/lib/librudeconfig.a -lboost_system
 
 C_SRCS := $(shell find -name "*.cpp")

@@ -63,6 +63,8 @@ private:
 	void openFolderButtonClicked();
 	void openExercisePDFButtonClicked();
 	void changeState();
+	void totalPointsChanged();
+	void reachedPointsChanged();
 };
 
 #endif /* GUI_LESSONTABLEROW_H_ */

@@ -36,6 +36,7 @@ GUI::GUI() :
 	// add settings page
 	notebook->append_page(*settings_frame, GuiLabels::SETTINGS, false);
 	notebook->append_page(*statistics_frame, GuiLabels::STATISTICS, false);
+	notebook->signal_switch_page().connect(sigc::mem_fun(*this, &GUI::on_my_switch_page));
 
 	set_title(WINDOW_TITLE);
 	add(*notebook);
@@ -64,6 +65,14 @@ std::vector<std::string> GUI::doSqlLessonRequest() {
 void GUI::addLessonPage(std::string newLesson) {
 	LessonPage *newFrame = Gtk::manage(new LessonPage(newLesson, notebook));
 	notebook->append_page(*newFrame, newLesson, true);
+}
+
+
+/// Triggered when the notebook-page is changed (used only for statistics page)
+void GUI::on_my_switch_page(GtkNotebookPage *widgetPage, unsigned int pageNumber) {
+	if(pageNumber == notebook->get_n_pages() - 1) {
+		statistics_frame->refreshStatisticsTable();
+	}
 }
 
 

@@ -79,7 +79,8 @@ void LessonTableRow::initializeWidgets() {
 	reachedPointsSpin->set_range(0, 1000);
 	reachedPointsSpin->set_editable(false);
 	reachedPointsSpin->set_value(reachedPoints);
-	reachedPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
+	// changeState is called by the reachedPointsChanged function.
+	reachedPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::reachedPointsChanged));
 
 	totalPointsSpin->set_size_request(80, 33);
 	totalPointsSpin->set_max_length(4);
@@ -88,7 +89,8 @@ void LessonTableRow::initializeWidgets() {
 	totalPointsSpin->set_range(0, 1000);
 	totalPointsSpin->set_editable(false);
 	totalPointsSpin->set_value(totalPoints);
-	totalPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
+	// changeState is called by the totalPointsChanged function.
+	totalPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::totalPointsChanged));
 
 	openFolderButton->set_image(*openFolderButtonImage);
 	openFolderButton->set_size_request(50, 50);
@@ -218,6 +220,20 @@ void LessonTableRow::openExercisePDFButtonClicked() {
 
 void LessonTableRow::changeState() {
 	stateChanged = true;
+}
+
+void LessonTableRow::totalPointsChanged() {
+	if(totalPointsSpin->get_value() < reachedPointsSpin->get_value()) {
+		reachedPointsSpin->set_value(totalPointsSpin->get_value());
+	}
+	changeState();
+}
+
+void LessonTableRow::reachedPointsChanged() {
+	if(reachedPointsSpin->get_value() > totalPointsSpin->get_value()) {
+		totalPointsSpin->set_value(reachedPointsSpin->get_value());
+	}
+	changeState();
 }
 
 LessonTableRow::~LessonTableRow() { }
