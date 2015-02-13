@@ -14,18 +14,9 @@
 #include <thread>
 #include <boost/filesystem.hpp>
 
+BasicFileOps::BasicFileOps() { }
 
-/*
- * TODO: check why member function of configfileparser doesnt work in lambda function
- */
-
-BasicFileOps::BasicFileOps() {
-
-}
-
-BasicFileOps::~BasicFileOps() {
-
-}
+BasicFileOps::~BasicFileOps() { }
 
 /// Returns true if the given file exists
 /**

@@ -196,13 +196,8 @@ void LessonPage::initializeExerciseTable() {
 	if(numOfRows == 0)
 		addNothingAddedYetLabelToTable();
 
-	/**
-	 * TODO: check, if a class of type Gtk::Label with static label-counter isnt better for
-	 * this loop (or at all).
-	 */
 	for(int row = 0; row < numOfRows; row++) {
-		// because rows are columns and other way round, we need to do it like this
-		// transform the string-matrix
+		// first dimension of the vector is the column; the second dimension are the entries
 		std::vector<std::string> curRow;
 		for(int column = 0; column < exercises.size(); column++) {
 			curRow.push_back(exercises.at(column).at(row));

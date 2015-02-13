@@ -18,11 +18,6 @@
 #include <iostream>
 #include <regex>
 
-
-/*
- * TODO: double lesson entry is possible: fix it
- */
-
 /**
  * SettingsPage: Frame, which contains settings
  */

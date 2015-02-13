@@ -45,9 +45,6 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
  */
 LessonTableRow::LessonTableRow(const std::string &until, int id, const std::string &lesson) :
 			stateChanged(false) {
-	/**
-	 * TODO: add folderPath to this function and set it(as parameter etc.)
-	 */
 	idInSqlDB = id;
 	toDoUntil = until;
 	reachedPoints = 0;
