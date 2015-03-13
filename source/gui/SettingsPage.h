@@ -26,12 +26,16 @@ private:
 	Gtk::Entry *fileDirPathEdit;
 	Gtk::Entry *pdfExecutablePathEdit;
 	Gtk::Entry *fileManagerPathEdit;
+	Gtk::Frame *onlineSettingsFrame;
+	Gtk::Entry *usernameEdit;
+	Gtk::Entry *passwordEdit;
 
 	Gtk::VBox *settingsVBox;
 	void initWidgets();
 	void initTable();
 	void initializeNewLessonBox();
 	void initializeEnvironmentSettings();
+	void initializeOnlineSettings();
 	void showCenteredWidgets();
 	void saveNewLessonButtonClicked();
 	void saveFileDirPathButtonClicked();

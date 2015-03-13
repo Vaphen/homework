@@ -40,6 +40,11 @@ namespace SettingsPageLabels {
 	static const std::string PDF_EXECUTABLE_LABEL = "Pfad zum PDF-Betrachter: ";
 	static const std::string FILE_MANAGER_LABEL = "Pfad zum Dateimanager: ";
 	static const std::string SAVE_ENVIRONMENT_SETTINGS = "Speichern";
+	static const std::string ONLINE_SETTINGS_HEADING = "Onlineeinstellungen";
+	static const std::string USERNAME_LABEL = "Benutzername: ";
+	static const std::string PASSWORD_LABEL = "Passwort: ";
+	static const std::string LOGIN_BUTTON = "Einloggen";
+	static const std::string STAY_LOGGED_IN = "eingeloggt bleiben";
 
 	static const std::string NEW_LESSON_ERROR_TITLE = "Fehlendes Fach";
 	static const std::string NEW_LESSON_ERROR_MESSAGE = "Das Feld 'Fach' darf nicht leer sein.";

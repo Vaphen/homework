@@ -36,6 +36,9 @@ SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
 	// environmentSettingsFrame and widgets creation
 	initializeEnvironmentSettings();
 
+	// onlineSettingsFrame and widgets creation
+	initializeOnlineSettings();
+
 	// center all widgets in window
 	showCenteredWidgets();
 }
@@ -51,6 +54,9 @@ void SettingsPage::initWidgets() {
 	pdfExecutablePathEdit = Gtk::manage(new Gtk::Entry);
 	fileManagerPathEdit = Gtk::manage(new Gtk::Entry);
 	settingsVBox = Gtk::manage(new Gtk::VBox);
+	onlineSettingsFrame = Gtk::manage(new Gtk::Frame);
+	usernameEdit = Gtk::manage(new Gtk::Entry);
+	passwordEdit = Gtk::manage(new Gtk::Entry);
 }
 
 void SettingsPage::initializeNewLessonBox() {
@@ -160,6 +166,29 @@ void SettingsPage::initializeEnvironmentSettings() {
 	environmentSettingsFrame->add(*environmentSettingsVBox);
 }
 
+void SettingsPage::initializeOnlineSettings() {
+	onlineSettingsFrame->set_border_width(10);
+	onlineSettingsFrame->set_label(SettingsPageLabels::ONLINE_SETTINGS_HEADING);
+	onlineSettingsFrame->set_size_request(400, -1);
+
+	Gtk::Label *usernameLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::USERNAME_LABEL));
+	Gtk::Label *passwordLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PASSWORD_LABEL));
+	Gtk::Button *loginButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::LOGIN_BUTTON));
+	Gtk::CheckButton *stayLoggedIn = Gtk::manage(new Gtk::CheckButton(SettingsPageLabels::STAY_LOGGED_IN));
+	Gtk::VBox *onlineVBox = Gtk::manage(new Gtk::VBox);
+
+	passwordEdit->set_visibility(false);
+
+	onlineVBox->pack_start(*usernameLabel, Gtk::PACK_SHRINK, false, 0);
+	onlineVBox->pack_start(*usernameEdit, Gtk::PACK_SHRINK, false, 0);
+	onlineVBox->pack_start(*passwordLabel, Gtk::PACK_SHRINK, false, 0);
+	onlineVBox->pack_start(*passwordEdit, Gtk::PACK_SHRINK, false, 0);
+	onlineVBox->pack_start(*stayLoggedIn, Gtk::PACK_SHRINK, false, 10);
+	onlineVBox->pack_start(*loginButton, Gtk::PACK_SHRINK, false, 20);
+
+	onlineSettingsFrame->add(*onlineVBox);
+}
+
 void SettingsPage::showCenteredWidgets() {
 	Gtk::HBox *mainBox = Gtk::manage(new Gtk::HBox);
 	Gtk::HBox *shrinkTogetherBox = Gtk::manage(new Gtk::HBox);
@@ -167,6 +196,7 @@ void SettingsPage::showCenteredWidgets() {
 
 	shrinkTogetherBox->pack_start(*settingsVBox, Gtk::PACK_SHRINK, false, 20);
 	shrinkTogetherBox->pack_start(*environmentSettingsFrame, Gtk::PACK_SHRINK, false, 20);
+	shrinkTogetherBox->pack_start(*onlineSettingsFrame, Gtk::PACK_SHRINK, false, 20);
 	mainBox->pack_start(*shrinkTogetherBox, Gtk::PACK_EXPAND_WIDGET, false, 0);
 
 	expandVBox->pack_start(*mainBox, Gtk::PACK_EXPAND_WIDGET, false, 0);

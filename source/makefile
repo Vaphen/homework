@@ -4,7 +4,7 @@ CC := g++
 ifeq ($(OS),Windows_NT)
 ADDITIONAL_LIBRARIES_WIN := rude/librudeconfig.a sqlite3/libsqlite3.a boost/boost_regex.a boost/boost_system.a boost/boost_filesystem.a boost/boost_thread.a
 else
-ADDITIONAL_LIBRARIES_LINUX := -lsqlite3 -lrudeconfig -lboost_system -lboost_filesystem -lboost_thread -lboost_regex
+ADDITIONAL_LIBRARIES_LINUX := /usr/lib/librudeconfig.a -lsqlite3 -lboost_system -lboost_filesystem -lboost_thread -lboost_regex
 endif
 
 C_SRCS := $(shell find -name "*.cpp")
