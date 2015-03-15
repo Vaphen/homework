@@ -27,6 +27,7 @@ private:
 	Gtk::Entry *pdfExecutablePathEdit;
 	Gtk::Entry *fileManagerPathEdit;
 	Gtk::Frame *onlineSettingsFrame;
+	Gtk::CheckButton *enableOnlineSync;
 	Gtk::Entry *usernameEdit;
 	Gtk::Entry *passwordEdit;
 
@@ -44,7 +45,7 @@ private:
 	void saveEnvironmentSettingsClicked();
 	void choosePdfExecutableButtonClicked();
 	void chooseFileManagerButtonClicked();
-
+	void enableOnlineSyncClicked(Gtk::StateType);
 	SQLiteConnect connection;
 };
 

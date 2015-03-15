@@ -41,6 +41,7 @@ namespace SettingsPageLabels {
 	static const std::string FILE_MANAGER_LABEL = "Pfad zum Dateimanager: ";
 	static const std::string SAVE_ENVIRONMENT_SETTINGS = "Speichern";
 	static const std::string ONLINE_SETTINGS_HEADING = "Onlineeinstellungen";
+	static const std::string ENABLE_ONLINE_SYNC = "Onlinesynchronisation aktivieren";
 	static const std::string USERNAME_LABEL = "Benutzername: ";
 	static const std::string PASSWORD_LABEL = "Passwort: ";
 	static const std::string LOGIN_BUTTON = "Einloggen";

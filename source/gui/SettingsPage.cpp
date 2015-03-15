@@ -55,6 +55,7 @@ void SettingsPage::initWidgets() {
 	fileManagerPathEdit = Gtk::manage(new Gtk::Entry);
 	settingsVBox = Gtk::manage(new Gtk::VBox);
 	onlineSettingsFrame = Gtk::manage(new Gtk::Frame);
+	enableOnlineSync = Gtk::manage(new Gtk::CheckButton(SettingsPageLabels::ENABLE_ONLINE_SYNC));
 	usernameEdit = Gtk::manage(new Gtk::Entry);
 	passwordEdit = Gtk::manage(new Gtk::Entry);
 }
@@ -177,8 +178,13 @@ void SettingsPage::initializeOnlineSettings() {
 	Gtk::CheckButton *stayLoggedIn = Gtk::manage(new Gtk::CheckButton(SettingsPageLabels::STAY_LOGGED_IN));
 	Gtk::VBox *onlineVBox = Gtk::manage(new Gtk::VBox);
 
+	enableOnlineSync->signal_state_changed().connect(sigc::mem_fun(*this, &SettingsPage::enableOnlineSyncClicked));;
+
+	usernameEdit->set_editable(false);
+	passwordEdit->set_editable(false);
 	passwordEdit->set_visibility(false);
 
+	onlineVBox->pack_start(*enableOnlineSync, Gtk::PACK_SHRINK, false, 20);
 	onlineVBox->pack_start(*usernameLabel, Gtk::PACK_SHRINK, false, 0);
 	onlineVBox->pack_start(*usernameEdit, Gtk::PACK_SHRINK, false, 0);
 	onlineVBox->pack_start(*passwordLabel, Gtk::PACK_SHRINK, false, 0);
@@ -341,4 +347,15 @@ void SettingsPage::chooseFileManagerButtonClicked() {
 	if((chosenPath = HelpDialogs::showExecutableChooser("Anwendung zum Öffnen von Ordnern auswählen")) != "") {
 		fileManagerPathEdit->set_text(chosenPath);
 	}
+}
+
+void SettingsPage::enableOnlineSyncClicked(Gtk::StateType state) {
+	if(state == Gtk::STATE_SELECTED) {
+		usernameEdit->set_editable(true);
+		passwordEdit->set_editable(true);
+	}else{
+		usernameEdit->set_editable(false);
+		passwordEdit->set_editable(false);
+	}
+
 }
