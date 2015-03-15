@@ -30,6 +30,8 @@ private:
 	Gtk::CheckButton *enableOnlineSync;
 	Gtk::Entry *usernameEdit;
 	Gtk::Entry *passwordEdit;
+	Gtk::CheckButton *stayLoggedIn;
+	Gtk::Button *loginButton;
 
 	Gtk::VBox *settingsVBox;
 	void initWidgets();
@@ -45,7 +47,7 @@ private:
 	void saveEnvironmentSettingsClicked();
 	void choosePdfExecutableButtonClicked();
 	void chooseFileManagerButtonClicked();
-	void enableOnlineSyncClicked(Gtk::StateType);
+	void enableOnlineSyncClicked();
 	SQLiteConnect connection;
 };
 

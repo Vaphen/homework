@@ -25,6 +25,10 @@ GUI::GUI() :
 		fileManager.callConfigParser().createDefaultConfigFile();
 	}
 
+	if(!fileManager.isFileExistant(FOLDER_PATH)) {
+		fileManager.createFolder(FOLDER_PATH);
+	}
+
 	// add all lessons
 	std::vector<std::string> allLessons = doSqlLessonRequest();
 	for(unsigned int i = 0; i < allLessons.size(); i++) {

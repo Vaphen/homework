@@ -58,6 +58,8 @@ void SettingsPage::initWidgets() {
 	enableOnlineSync = Gtk::manage(new Gtk::CheckButton(SettingsPageLabels::ENABLE_ONLINE_SYNC));
 	usernameEdit = Gtk::manage(new Gtk::Entry);
 	passwordEdit = Gtk::manage(new Gtk::Entry);
+	stayLoggedIn = Gtk::manage(new Gtk::CheckButton(SettingsPageLabels::STAY_LOGGED_IN));
+	loginButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::LOGIN_BUTTON));
 }
 
 void SettingsPage::initializeNewLessonBox() {
@@ -174,14 +176,14 @@ void SettingsPage::initializeOnlineSettings() {
 
 	Gtk::Label *usernameLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::USERNAME_LABEL));
 	Gtk::Label *passwordLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PASSWORD_LABEL));
-	Gtk::Button *loginButton = Gtk::manage(new Gtk::Button(SettingsPageLabels::LOGIN_BUTTON));
-	Gtk::CheckButton *stayLoggedIn = Gtk::manage(new Gtk::CheckButton(SettingsPageLabels::STAY_LOGGED_IN));
 	Gtk::VBox *onlineVBox = Gtk::manage(new Gtk::VBox);
 
-	enableOnlineSync->signal_state_changed().connect(sigc::mem_fun(*this, &SettingsPage::enableOnlineSyncClicked));;
+	enableOnlineSync->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::enableOnlineSyncClicked));
 
-	usernameEdit->set_editable(false);
-	passwordEdit->set_editable(false);
+	usernameEdit->set_sensitive(false);
+	passwordEdit->set_sensitive(false);
+	stayLoggedIn->set_sensitive(false);
+	loginButton->set_sensitive(false);
 	passwordEdit->set_visibility(false);
 
 	onlineVBox->pack_start(*enableOnlineSync, Gtk::PACK_SHRINK, false, 20);
@@ -349,13 +351,21 @@ void SettingsPage::chooseFileManagerButtonClicked() {
 	}
 }
 
-void SettingsPage::enableOnlineSyncClicked(Gtk::StateType state) {
-	if(state == Gtk::STATE_SELECTED) {
-		usernameEdit->set_editable(true);
-		passwordEdit->set_editable(true);
+void SettingsPage::enableOnlineSyncClicked() {
+
+	if(enableOnlineSync->get_active()) {
+		usernameEdit->set_sensitive(true);
+		passwordEdit->set_sensitive(true);
+		stayLoggedIn->set_sensitive(true);
+		loginButton->set_sensitive(true);
+
 	}else{
-		usernameEdit->set_editable(false);
-		passwordEdit->set_editable(false);
+		usernameEdit->set_sensitive(false);
+		passwordEdit->set_sensitive(false);
+		stayLoggedIn->set_sensitive(false);
+		loginButton->set_sensitive(false);
+		passwordEdit->set_text("");
+		stayLoggedIn->set_active(false);
 	}
 
 }
