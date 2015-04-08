@@ -12,22 +12,20 @@
 #define EXERCISE_UNTIL_LABEL_TEXT "zu erledigen bis:"
 #define SAVE_BUTTON_TEXT "Aufgabe speichern"
 
-#include "../sql/SQLiteConnect.h"
-#include "LessonTableRow.h"
+#include "../../sql/SQLiteConnect.h"
+#include "ExerciseTableRow.h"
 #include <gtkmm.h>
 
-class LessonPage : public Gtk::Frame {
+class ExercisePage : public Gtk::Frame {
 public:
-	LessonPage(std::string, Gtk::Notebook*);
-	virtual ~LessonPage();
+	ExercisePage(std::string);
+	virtual ~ExercisePage();
 private:
 	std::string curLesson;
-	std::vector<LessonTableRow*> allRows;
+	std::vector<ExerciseTableRow*> allRows;
 	std::vector<std::vector<std::string> > exercises;
 
 	SQLiteConnect connection;
-
-	Gtk::Notebook *parentNotebook;
 
 	Gtk::VBox *mainBox;
 	Gtk::HBox *tableOptionsBox;
@@ -35,6 +33,7 @@ private:
 	Gtk::Label *nothingAddedYetLabel;
 	Gtk::Frame *newExerciseFrame;
 	Gtk::HBox *newExerciseBox;
+	Gtk::EventBox *backgroundTableBox;
 	Gtk::ScrolledWindow *tableScroller;
 
 
@@ -53,7 +52,7 @@ private:
 	void resetRowsClicked();
 	void saveNewExerciseButtonClicked();
 	void saveChangingsButtonClicked();
-	void deleteButtonClicked(LessonTableRow&, Gtk::Button*);
+	void deleteButtonClicked(ExerciseTableRow&, Gtk::Button*);
 	void statisticsButtonClicked();
 	void newExerciseDateChanged();
 	void initializeWidgets();

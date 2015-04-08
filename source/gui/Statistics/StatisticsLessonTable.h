@@ -12,7 +12,7 @@
 
 class StatisticsLessonTable : public Gtk::Table{
 public:
-	StatisticsLessonTable(std::string&);
+	StatisticsLessonTable(std::string);
 	virtual ~StatisticsLessonTable();
 private:
 	Gtk::Label *exerciseUntilLabel;

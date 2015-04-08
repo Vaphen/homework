@@ -9,12 +9,11 @@
 #define SETTINGSLESSONTABLE_H_
 
 #include <gtkmm.h>
-#include "../sql/SQLiteConnect.h"
 
-class LessonTable : public Gtk::TreeView {
+class SettingsLessonTable : public Gtk::TreeView {
 public:
-	LessonTable();
-	virtual ~LessonTable();
+	SettingsLessonTable();
+	virtual ~SettingsLessonTable();
 	void appendLesson(Glib::ustring);
 	void deleteSelectedLesson();
 	Glib::ustring getSelectedLesson();

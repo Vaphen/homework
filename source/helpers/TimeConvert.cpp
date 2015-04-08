@@ -18,14 +18,9 @@
  * @param month month used to convert to special format
  * @param year year used to convert to special format
  */
-TimeConvert::TimeConvert(double day, double month, double year) :
-		day(day), month(month), year(year) {
-	initializeTimeStructures();
-}
 
 /// Constructor for time-operations. It is used for getting some independent information like current day
-TimeConvert::TimeConvert() :
-		day(0), month(0), year(0) {
+TimeConvert::TimeConvert() {
 	initializeTimeStructures();
 }
 
@@ -72,10 +67,11 @@ unsigned int TimeConvert::getCurDay() {
 	return aTime->tm_mday;
 }
 
-std::string TimeConvert::getGermanDateFormat() {
+std::string TimeConvert::getGermanDateFormat(unsigned int day, unsigned int month, unsigned int year) {
 	stringDateFormat.str("");
 	// this converts the given date-values to a valid german date string (DD.MM.YYYY)
-	stringDateFormat << std::setfill('0') << std::setw(2) << day << '.' << std::setfill('0') << std::setw(2) << month << '.' << year;
+	stringDateFormat << std::setfill('0') << std::setw(2) << day << '.'
+			<< std::setfill('0') << std::setw(2) << month << '.' << year;
 	return stringDateFormat.str();
 }
 
@@ -87,14 +83,51 @@ std::string TimeConvert::unixToGermanDateFormat(std::string &unixTimestamp) {
 	return std::string(germanDateFormat);
 }
 
-std::string TimeConvert::getEnglishDateFormat() {
+unsigned int TimeConvert::getDayOfUnixTimestamp(std::string unixTimestamp) {
+	// need 3 chars for two characters (e.g. 07)
+	char day[3];
+	theTime = std::atoi(unixTimestamp.c_str());
+	aTime = localtime(&theTime);
+	strftime(day, sizeof(day), "%d", aTime);
+
+	std::string sday = day;
+	if(sday.at(0) == '0')
+		sday = sday.substr(1, 2);
+	std::cout << sday << std::endl;
+	return std::stoi(sday);
+}
+
+unsigned int TimeConvert::getMonthOfUnixTimestamp(std::string unixTimestamp) {
+	char month[3];
+	theTime = std::atoi(unixTimestamp.c_str());
+	aTime = localtime(&theTime);
+	strftime(month, sizeof(month), "%m", aTime);
+
+	std::string smonth = month;
+	if(smonth.at(0) == '0')
+		smonth = smonth.substr(1, 2);
+	std::cout << smonth << std::endl;
+	return std::stoi(smonth);
+}
+
+unsigned int TimeConvert::getYearOfUnixTimestamp(std::string unixTimestamp) {
+	char year[5];
+	theTime = std::atoi(unixTimestamp.c_str());
+	aTime = localtime(&theTime);
+	strftime(year, sizeof(year), "%Y", aTime);
+	std::string syear = year;
+	return std::stoi(syear);
+}
+
+std::string TimeConvert::getEnglishDateFormat(unsigned int day, unsigned int month, unsigned int year) {
 	stringDateFormat.str("");
 	// this converts the given date-values to a valid english date string (YYYY-MM-DD)
-	stringDateFormat << year << "-" << std::setfill('0') << std::setw(2) << month << "-" << std::setfill('0') << std::setw(2) << day;
+	stringDateFormat << year << "-" << std::setfill('0') << std::setw(2) <<
+			month << "-" << std::setfill('0') << std::setw(2) << day;
 	return stringDateFormat.str();
 }
 
-unsigned int TimeConvert::getUnixTimeFormat() {
+unsigned int TimeConvert::getUnixTimeFormat(unsigned int day, unsigned int month, unsigned int year) {
 	std::time_t result = std::time(NULL);
 	struct tm *tm = localtime(&result);
 	tm->tm_year = (year - 1900);

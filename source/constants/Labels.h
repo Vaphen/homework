@@ -2,8 +2,6 @@
 #define CONSTANTS_LABELS_H_
 
 namespace LessonPageLabels {
-	static const std::string FRAME_HEADER = "Fach: ";
-
 	static const std::string SAVE_CHANGINGS_BUTTON_TOOLTIP = "Änderungen speichern";
 	static const std::string RESET_BUTTON_TOOLTIP = "Änderungen zurücksetzen";
 	static const std::string STATISTICS_BUTTON_TOOLTIP = "Statistik anzeigen";
@@ -24,6 +22,40 @@ namespace LessonPageLabels {
 	static const std::string NEW_EXERCISE_ERROR_MESSAGE = "Das Feld 'bis' darf nicht leer sein.";
 
 	static const std::string DELETE_TOOLTIP = "Aufgabe löschen";
+}
+
+namespace MarkPageLabels {
+	static const std::string FRAME_HEADER = "Noten";
+
+	static const std::string SAVE_CHANGINGS_BUTTON_TOOLTIP = "Änderungen speichern";
+	static const std::string RESET_BUTTON_TOOLTIP = "Änderungen zurücksetzen";
+
+	static const std::string EXAM_SEMESTER_LABEL = "Klausur im Semester ";
+	static const std::string EXAM_LESSON_LABEL = "im Fach"
+			" ";
+	static const std::string NEW_EXAM_LABEL = "Neue Klausur";
+	static const std::string SAVE_NEW_EXAM = "Klausur eintragen";
+
+	static const std::string UNTIL = "<b>Datum der Klausur</b>";
+	static const std::string LESSON = "<b>Fach</b>";
+	static const std::string SEMESTER = "<b>Semester</b>";
+	static const std::string IS_ADMITTED = "<b>Zulassung (Schein) erhalten</b>";
+	static const std::string HAS_PASSED = "<b>Klausur bestanden</b>";
+	static const std::string MARK = "<b>erhaltene Note</b>";
+	static const std::string DELETE_EXAM = "<b>Löschen</b>";
+
+	static const std::string NO_EXERCISE_ADDED_LABEL = "<b><u>Dieses Fach enthält noch keine Aufgaben.</u></b>";
+	static const std::string DELETE_TITLE = "Möchten Sie die Klausur wirklich löschen?";
+	static const std::string DELETE_MESSAGE = "Die Klausurdaten werden unwiederruflich gelöscht.";
+	static const std::string NEW_EXERCISE_ERROR_TITLE = "Fehlendes Aufgabendatum";
+	static const std::string NEW_EXERCISE_ERROR_MESSAGE = "Das Feld 'bis' darf nicht leer sein.";
+
+	static const std::string DELETE_TOOLTIP = "Note löschen";
+}
+
+namespace MarkTableRowLabels {
+	static const std::string OPEN_PDF_TOOLTIP = "PDF öffnen";
+	static const std::string OPEN_FOLDER_TOOLTIP = "Aufgabenordner öffnen";
 }
 
 namespace LessonTableRowLabels {
@@ -64,8 +96,7 @@ namespace StatisticsLessonTableLabels {
 }
 
 namespace GuiLabels {
-	static const std::string SETTINGS = "Einstellungen";
-	static const std::string STATISTICS = "Statistik";
+	static const std::string NO_LESSON_ADDED_LABEL = "<b>Keine Fächer hinzugefügt.\nNeue Fächer können unter 'Einstellungen' hinzugefügt werden.</b>";
 }
 
 namespace SettingsLessonTableLabels {

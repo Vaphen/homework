@@ -1,8 +1,9 @@
 /*  * gui.cpp  *  *  Created on: 25.12.2014  *      Author: vaphen  */
 
 #include "GUI.h"
-#include "LessonPage.h"
-#include "SettingsPage.h"
+#include "Settings/SettingsPage.h"
+#include "Exams/ExamPage.h"
+#include "Exercises/ExercisePage.h"
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
 #include "../constants/Labels.h"
@@ -15,19 +16,21 @@
 	#define nullptr 0x00
 #endif
 
-
+/**
+ * TODO: outsource notebook into its own class; it has nothing to do with controllclass GUI.
+ */
 GUI::GUI() :
+		vbox(new Gtk::VBox),
+		pageBox(new Gtk::EventBox),
 		notebook(new Gtk::Notebook()),
-		settings_frame(nullptr) {
+		settings_frame(new SettingsPage(notebook)),
+		statistics_frame(new StatisticsPage),
+		exam_frame(new ExamPage) {
 
-	BasicFileOps fileManager;
-	if(!fileManager.isFileExistant(CONFIG_FILE)) {
-		fileManager.callConfigParser().createDefaultConfigFile();
-	}
+	set_title(WINDOW_TITLE);
+	set_default_icon_from_file("./src/logo.png");
 
-	if(!fileManager.isFileExistant(FOLDER_PATH)) {
-		fileManager.createFolder(FOLDER_PATH);
-	}
+	initializeMenueBar();
 
 	// add all lessons
 	std::vector<std::string> allLessons = doSqlLessonRequest();
@@ -35,22 +38,110 @@ GUI::GUI() :
 		addLessonPage(allLessons.at(i));
 	}
 
-	// could not use initialization list because if theres a sql-error,
-	// it shows it twice. thats why its initialized here.
-	Gtk::Label *settingsLabel = Gtk::manage(new Gtk::Label(GuiLabels::SETTINGS));
-	settings_frame = new SettingsPage(notebook);
-	statistics_frame = new StatisticsPage;
+	if(allLessons.size() == 0) {
+		pageBox->add(*settings_frame);
+	}else {
+		pageBox->add(*notebook);
+	}
 
-
-	// add settings page
-	notebook->append_page(*settings_frame, GuiLabels::SETTINGS, false);
-	notebook->append_page(*statistics_frame, GuiLabels::STATISTICS, false);
-	notebook->signal_switch_page().connect(sigc::mem_fun(*this, &GUI::on_my_switch_page));
-
-	set_title(WINDOW_TITLE);
-	add(*notebook);
+	pageBox->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	vbox->pack_start(*pageBox);
+	add(*vbox);
 	show_all();
 	maximize();
+}
+
+/*
+ * initializes all menuebar items plus the logo and adds the menuebar to vbox
+ */
+void GUI::initializeMenueBar() {
+	// initialize widgets
+	Gtk::Image *settingsMenueImage = Gtk::manage(new Gtk::Image("./src/settings_button.png"));
+	settingsMenueButton = Gtk::manage(new Gtk::EventBox);
+
+	Gtk::Image *statisticsMenueImage = Gtk::manage(new Gtk::Image("./src/statistics_button.png"));
+	statisticsMenueButton = Gtk::manage(new Gtk::EventBox);
+
+	Gtk::Image *lessonsMenueImage = Gtk::manage(new Gtk::Image("./src/lessons_button.png"));
+	lessonsMenueButton = Gtk::manage(new Gtk::EventBox);
+
+	Gtk::Image *marksMenueImage = Gtk::manage(new Gtk::Image("./src/exam_button.png"));
+	marksMenueButton = Gtk::manage(new Gtk::EventBox);
+
+	// set bgiamge of buttons
+	lessonsMenueButton->add(*lessonsMenueImage);
+	settingsMenueButton->add(*settingsMenueImage);
+	statisticsMenueButton->add(*statisticsMenueImage);
+	marksMenueButton->add(*marksMenueImage);
+
+	// set size of buttons
+	settingsMenueButton->set_size_request(200, 40);
+	lessonsMenueButton->set_size_request(200, 40);
+	statisticsMenueButton->set_size_request(200, 40);
+	marksMenueButton->set_size_request(200, 40);
+
+	/*****************************************************************
+	 *  connect buttons to their events (press, hover and leave event)
+	 *****************************************************************/
+	lessonsMenueButton->signal_button_press_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonClicked),
+			MENUE_ENTRIES::LESSONS));
+	lessonsMenueButton->signal_enter_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonHover),
+			MENUE_ENTRIES::LESSONS));
+	lessonsMenueButton->signal_leave_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonLeave),
+			MENUE_ENTRIES::LESSONS));
+
+	settingsMenueButton->signal_button_press_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonClicked),
+				MENUE_ENTRIES::SETTINGS));
+	settingsMenueButton->signal_enter_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonHover),
+				MENUE_ENTRIES::SETTINGS));
+	settingsMenueButton->signal_leave_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonLeave),
+				MENUE_ENTRIES::SETTINGS));
+
+	statisticsMenueButton->signal_button_press_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonClicked),
+				MENUE_ENTRIES::STATISTICS));
+	statisticsMenueButton->signal_enter_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonHover),
+					MENUE_ENTRIES::STATISTICS));
+	statisticsMenueButton->signal_leave_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonLeave),
+					MENUE_ENTRIES::STATISTICS));
+
+	marksMenueButton->signal_button_press_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonClicked),
+					MENUE_ENTRIES::EXAMS));
+	marksMenueButton->signal_enter_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonHover),
+						MENUE_ENTRIES::EXAMS));
+	marksMenueButton->signal_leave_notify_event().connect(sigc::bind<MENUE_ENTRIES>(sigc::mem_fun(*this, &GUI::menueButtonLeave),
+						MENUE_ENTRIES::EXAMS));
+
+	// add all buttons to menueBox
+	Gtk::HBox *menueBox = Gtk::manage(new Gtk::HBox);
+	Gtk::EventBox *menueSeparatorBox = Gtk::manage(new Gtk::EventBox);
+	Gtk::Image *logo = Gtk::manage(new Gtk::Image("./src/logo.png"));
+
+	menueSeparatorBox->set_size_request(7, 50);
+	menueSeparatorBox->modify_bg(Gtk::STATE_NORMAL, secundaryColor);
+
+	menueBox->pack_start(*lessonsMenueButton, Gtk::PACK_SHRINK, 0);
+	menueBox->pack_start(*settingsMenueButton, Gtk::PACK_SHRINK, 0);
+	menueBox->pack_start(*statisticsMenueButton, Gtk::PACK_SHRINK, 0);
+	menueBox->pack_start(*marksMenueButton, Gtk::PACK_SHRINK, 0);
+	menueBox->pack_start(*menueSeparatorBox, Gtk::PACK_SHRINK, 0);
+	menueBox->pack_start(*logo, Gtk::PACK_EXPAND_PADDING, 0);
+
+
+
+	// add menuebox to the eventbox for backgroundcolor and add eventbox to vbox
+	Gtk::EventBox *menueBoxContainer = Gtk::manage(new Gtk::EventBox);
+	menueBoxContainer->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	lessonsMenueButton->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	settingsMenueButton->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	statisticsMenueButton->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	marksMenueButton->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	menueBoxContainer->add(*menueBox);
+	vbox->pack_start(*menueBoxContainer, Gtk::PACK_SHRINK);
+
+	Gtk::EventBox *separatorBox = Gtk::manage(new Gtk::EventBox);
+	separatorBox->modify_bg(Gtk::STATE_NORMAL, secundaryColor);
+	separatorBox->set_size_request(-1, 6);
+	vbox->pack_start(*separatorBox, Gtk::PACK_SHRINK, 0);
 }
 
 /*
@@ -60,8 +151,6 @@ GUI::GUI() :
 std::vector<std::string> GUI::doSqlLessonRequest() {
 	std::vector<std::string> lessons;
 	try {
-		// create table if not exists (just on startup)
-		connection.createAllLessonDb();
 		lessons = connection.getLessons();
 	} catch (ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
@@ -70,26 +159,101 @@ std::vector<std::string> GUI::doSqlLessonRequest() {
 	return lessons;
 }
 
-
-void GUI::addLessonPage(std::string newLesson) {
-	LessonPage *newFrame = Gtk::manage(new LessonPage(newLesson, notebook));
-	notebook->append_page(*newFrame, newLesson, true);
+void GUI::addLessonPage(std::string& newLesson) {
+	ExercisePage *newFrame = Gtk::manage(new ExercisePage(newLesson));
+	Gtk::EventBox *backgroundBox = Gtk::manage(new Gtk::EventBox);
+	backgroundBox->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	backgroundBox->add(*newFrame);
+	notebook->append_page(*backgroundBox, newLesson, true);
 }
 
-
-/// Triggered when the notebook-page is changed (used only for statistics page)
-void GUI::on_my_switch_page(GtkNotebookPage *widgetPage, unsigned int pageNumber) {
-	if(pageNumber == notebook->get_n_pages() - 1) {
-		statistics_frame->refreshStatisticsTable();
+/// Triggered when clicked a menue button
+bool GUI::menueButtonClicked(GdkEventButton *event, MENUE_ENTRIES &entry) {
+	pageBox->remove();
+	switch(entry) {
+		case MENUE_ENTRIES::LESSONS:
+			pageBox->add(*notebook);
+			break;
+		case MENUE_ENTRIES::SETTINGS:
+			pageBox->add(*settings_frame);
+			break;
+		case MENUE_ENTRIES::STATISTICS:
+			pageBox->add(*statistics_frame);
+			statistics_frame->refreshStatisticsTable();
+			break;
+		case MENUE_ENTRIES::EXAMS:
+			pageBox->add(*exam_frame);
+			break;
+		default:
+			// should never be reached
+			pageBox->add(*notebook);
+			break;
 	}
+	pageBox->show_all();
 }
 
+/// Triggered when hovered the lessonMenueButton
+bool GUI::menueButtonHover(GdkEventCrossing *event, MENUE_ENTRIES &curEntrie) {
+	Gtk::EventBox *selectedEventBox = nullptr;
+	Gtk::Image *hoverButton = nullptr;
+	switch(curEntrie) {
+		case MENUE_ENTRIES::LESSONS:
+			hoverButton = Gtk::manage(new Gtk::Image("./src/lessons_button_hover.png"));
+			selectedEventBox = lessonsMenueButton;
+			break;
+		case MENUE_ENTRIES::SETTINGS:
+			hoverButton = Gtk::manage(new Gtk::Image("./src/settings_button_hover.png"));
+			selectedEventBox = settingsMenueButton;
+			break;
+		case MENUE_ENTRIES::STATISTICS:
+			hoverButton = Gtk::manage(new Gtk::Image("./src/statistics_button_hover.png"));
+			selectedEventBox = statisticsMenueButton;
+			break;
+		case MENUE_ENTRIES::EXAMS:
+			hoverButton = Gtk::manage(new Gtk::Image("./src/exam_button_hover.png"));
+			selectedEventBox = marksMenueButton;
+			break;
+	}
+	selectedEventBox->remove();
+	selectedEventBox->add(*hoverButton);
+	selectedEventBox->show_all();
+}
+
+/// Triggered when leaved the lessonMenueButton
+bool GUI::menueButtonLeave(GdkEventCrossing *event, MENUE_ENTRIES &curEntrie) {
+	Gtk::Image *leaveButton = nullptr;
+	Gtk::EventBox *selectedEventBox = nullptr;
+	switch(curEntrie) {
+		case MENUE_ENTRIES::LESSONS:
+			leaveButton = Gtk::manage(new Gtk::Image("./src/lessons_button.png"));
+			selectedEventBox = lessonsMenueButton;
+			break;
+		case MENUE_ENTRIES::SETTINGS:
+			leaveButton = Gtk::manage(new Gtk::Image("./src/settings_button.png"));
+			selectedEventBox = settingsMenueButton;
+			break;
+		case MENUE_ENTRIES::STATISTICS:
+			leaveButton = Gtk::manage(new Gtk::Image("./src/statistics_button.png"));
+			selectedEventBox = statisticsMenueButton;
+			break;
+		case MENUE_ENTRIES::EXAMS:
+			leaveButton = Gtk::manage(new Gtk::Image("./src/exam_button.png"));
+			selectedEventBox = marksMenueButton;
+			break;
+	}
+	selectedEventBox->remove();
+	selectedEventBox->add(*leaveButton);
+	selectedEventBox->show_all();
+}
 
 /**
  * delete all widget-pointer
  */
 GUI::~GUI() {
+	delete vbox;
+	delete pageBox;
 	delete notebook;
 	delete settings_frame;
 	delete statistics_frame;
+	delete exam_frame;
 }

@@ -5,33 +5,34 @@
  *      Author: john
  */
 
-#include "LessonTableRow.h"
-#include "LessonPage.h"
-#include "../constants/constants.h"
-#include "../constants/Labels.h"
-#include "../fileOperations/BasicFileOps.h"
-#include "../fileOperations/ConfigFileParser.h"
-#include "../helpers/HelpDialogs.h"
-#include "../helpers/TimeConvert.h"
+#include "ExerciseTableRow.h"
+
+#include "../../constants/constants.h"
+#include "../../constants/Labels.h"
+#include "../../fileOperations/BasicFileOps.h"
+#include "../../fileOperations/ConfigFileParser.h"
+#include "../../helpers/HelpDialogs.h"
+#include "../../helpers/TimeConvert.h"
 #include <string>
 #include <gtkmm.h>
 #include <iostream>
+#include "ExercisePage.h"
 
 /// Constructor for new row (from SQL-Query)
 /**
  * Should be used rather than the other constructor.
  * @param row a vector containing all infos about the row that should be added
  */
-LessonTableRow::LessonTableRow(std::vector<std::string> row) :
+ExerciseTableRow::ExerciseTableRow(std::vector<std::string> row) :
 		stateChanged(false) {
-	idInSqlDB = atoi(row.at(COLUMN_ID::ID).c_str());
+	idInSqlDB = atoi(row.at(COLUMN_ID_LESSON::ID).c_str());
 	TimeConvert timeConverter;
-	toDoUntil = timeConverter.unixToGermanDateFormat(row.at(COLUMN_ID::UNTIL));
-	reachedPoints = atoi(row.at(COLUMN_ID::REACHED_POINTS).c_str());
-	totalPoints = atoi(row.at(COLUMN_ID::TOTAL_POINTS).c_str());
-	isExerciseFinished = (row.at(COLUMN_ID::EXERCISE_FINISHED) == "1") ? true : false;
-	exerciseComment = row.at(COLUMN_ID::EXERCISE_COMMENT);
-	lessonName = row.at(COLUMN_ID::LESSON);
+	toDoUntil = timeConverter.unixToGermanDateFormat(row.at(COLUMN_ID_LESSON::UNTIL));
+	reachedPoints = atoi(row.at(COLUMN_ID_LESSON::REACHED_POINTS).c_str());
+	totalPoints = atoi(row.at(COLUMN_ID_LESSON::TOTAL_POINTS).c_str());
+	isExerciseFinished = (row.at(COLUMN_ID_LESSON::EXERCISE_FINISHED) == "1") ? true : false;
+	exerciseComment = row.at(COLUMN_ID_LESSON::EXERCISE_COMMENT);
+	lessonName = row.at(COLUMN_ID_LESSON::LESSON);
 
 	initializeWidgets();
 }
@@ -43,7 +44,7 @@ LessonTableRow::LessonTableRow(std::vector<std::string> row) :
  * @param id The id of the exercise in the database
  * @param lesson name of the lesson the row was added to
  */
-LessonTableRow::LessonTableRow(const std::string &until, int id, const std::string &lesson) :
+ExerciseTableRow::ExerciseTableRow(const std::string &until, int id, const std::string &lesson) :
 			stateChanged(false) {
 	idInSqlDB = id;
 	toDoUntil = until;
@@ -56,7 +57,7 @@ LessonTableRow::LessonTableRow(const std::string &until, int id, const std::stri
 }
 
 /// Initializes all widgets for one row setting properties too.
-void LessonTableRow::initializeWidgets() {
+void ExerciseTableRow::initializeWidgets() {
 	untilLabel = Gtk::manage(new Gtk::Label(toDoUntil));
 	reachedPointsSpin = Gtk::manage(new Gtk::SpinButton);
 	totalPointsSpin = Gtk::manage(new Gtk::SpinButton);
@@ -71,13 +72,12 @@ void LessonTableRow::initializeWidgets() {
 
 	reachedPointsSpin->set_size_request(80, 33);
 	reachedPointsSpin->set_max_length(4);
-	reachedPointsSpin->set_value(reachedPoints);
 	reachedPointsSpin->set_increments(1, 1);
 	reachedPointsSpin->set_range(0, 1000);
 	reachedPointsSpin->set_editable(false);
 	reachedPointsSpin->set_value(reachedPoints);
 	// changeState is called by the reachedPointsChanged function.
-	reachedPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::reachedPointsChanged));
+	reachedPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &ExerciseTableRow::reachedPointsChanged));
 
 	totalPointsSpin->set_size_request(80, 33);
 	totalPointsSpin->set_max_length(4);
@@ -87,22 +87,22 @@ void LessonTableRow::initializeWidgets() {
 	totalPointsSpin->set_editable(false);
 	totalPointsSpin->set_value(totalPoints);
 	// changeState is called by the totalPointsChanged function.
-	totalPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonTableRow::totalPointsChanged));
+	totalPointsSpin->signal_changed().connect(sigc::mem_fun(*this, &ExerciseTableRow::totalPointsChanged));
 
 	openFolderButton->set_image(*openFolderButtonImage);
 	openFolderButton->set_size_request(50, 50);
 	openFolderButton->set_relief(Gtk::RELIEF_NONE);
 	openFolderButton->set_tooltip_text(LessonTableRowLabels::OPEN_FOLDER_TOOLTIP);
-	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openFolderButtonClicked));
+	openFolderButton->signal_clicked().connect(sigc::mem_fun(*this, &ExerciseTableRow::openFolderButtonClicked));
 
 	openExercisePDFButton->set_image(*openExercisePDFImage);
 	openExercisePDFButton->set_size_request(50, 50);
 	openExercisePDFButton->set_relief(Gtk::RELIEF_NONE);
 	openExercisePDFButton->set_tooltip_text(LessonTableRowLabels::OPEN_PDF_TOOLTIP);
-	openExercisePDFButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonTableRow::openExercisePDFButtonClicked));
+	openExercisePDFButton->signal_clicked().connect(sigc::mem_fun(*this, &ExerciseTableRow::openExercisePDFButtonClicked));
 
 	exerciseFinishedButton->set_active(isExerciseFinished);
-	exerciseFinishedButton->signal_toggled().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
+	exerciseFinishedButton->signal_toggled().connect(sigc::mem_fun(*this, &ExerciseTableRow::changeState));
 
 
 	defaultText->set_text(exerciseComment);
@@ -110,90 +110,90 @@ void LessonTableRow::initializeWidgets() {
 	commentTextView->set_border_width(1);
 	commentTextView->set_justification(Gtk::JUSTIFY_FILL);
 	commentTextView->set_buffer(defaultText);
-	commentTextView->signal_grab_focus().connect(sigc::mem_fun(*this, &LessonTableRow::changeState));
+	commentTextView->signal_grab_focus().connect(sigc::mem_fun(*this, &ExerciseTableRow::changeState));
 
 	commentScrolledWindow->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 	commentScrolledWindow->add(*commentTextView);
 }
 
-Gtk::Label* LessonTableRow::getUntilLabel() const {
+Gtk::Label* ExerciseTableRow::getUntilLabel() const {
 	return untilLabel;
 }
 
-Gtk::SpinButton* LessonTableRow::getReachedPointsSpin() const {
+Gtk::SpinButton* ExerciseTableRow::getReachedPointsSpin() const {
 	return reachedPointsSpin;
 }
 
-Gtk::SpinButton* LessonTableRow::getTotalPointsSpin() const {
+Gtk::SpinButton* ExerciseTableRow::getTotalPointsSpin() const {
 	return totalPointsSpin;
 }
 
-Gtk::Button* LessonTableRow::getOpenFolderButton() const {
+Gtk::Button* ExerciseTableRow::getOpenFolderButton() const {
 	return openFolderButton;
 }
 
-Gtk::Button* LessonTableRow::getOpenExercisePDF() const {
+Gtk::Button* ExerciseTableRow::getOpenExercisePDF() const {
 	return openExercisePDFButton;
 }
 
-Gtk::CheckButton* LessonTableRow::getExerciseFinishedButton() const {
+Gtk::CheckButton* ExerciseTableRow::getExerciseFinishedButton() const {
 	return exerciseFinishedButton;
 }
 
-Gtk::ScrolledWindow* LessonTableRow::getCommentScrolledWindow() const {
+Gtk::ScrolledWindow* ExerciseTableRow::getCommentScrolledWindow() const {
 	return commentScrolledWindow;
 }
 
-int LessonTableRow::getID() const {
+int ExerciseTableRow::getID() const {
 	return idInSqlDB;
 }
 
-unsigned int LessonTableRow::getReachedPoints() const {
+unsigned int ExerciseTableRow::getReachedPoints() const {
 	return reachedPoints;
 }
 
-void LessonTableRow::setReachedPoints(unsigned int &newPoints) {
+void ExerciseTableRow::setReachedPoints(unsigned int &newPoints) {
 	this->reachedPoints = newPoints;
 }
 
-unsigned int LessonTableRow::getTotalPoints() const {
+unsigned int ExerciseTableRow::getTotalPoints() const {
 	return totalPoints;
 }
 
-void LessonTableRow::setTotalPoints(unsigned int &newPoints) {
+void ExerciseTableRow::setTotalPoints(unsigned int &newPoints) {
 	this->totalPoints = newPoints;
 }
 
-bool LessonTableRow::getIsExerciseFinished() const {
+bool ExerciseTableRow::getIsExerciseFinished() const {
 	return isExerciseFinished;
 }
 
-void LessonTableRow::setIsExerciseFinished(bool &newFinished) {
+void ExerciseTableRow::setIsExerciseFinished(bool &newFinished) {
 	this->isExerciseFinished = newFinished;
 }
 
-std::string LessonTableRow::getComment() const {
+std::string ExerciseTableRow::getComment() const {
 	return exerciseComment;
 }
 
-void LessonTableRow::setComment(std::string &newComment) {
+void ExerciseTableRow::setComment(std::string &newComment) {
 	this->exerciseComment = newComment;
 }
 
-bool LessonTableRow::getStateChanged() const {
+bool ExerciseTableRow::getStateChanged() const {
 	return stateChanged;
 }
 
-void LessonTableRow::setStateChanged(bool state) {
+void ExerciseTableRow::setStateChanged(bool state) {
 	stateChanged = state;
 }
 
-std::string LessonTableRow::getUntil() const {
+std::string ExerciseTableRow::getUntil() const {
 	return toDoUntil;
 }
 
 /// Opens the lesson specific folder.
-void LessonTableRow::openFolderButtonClicked() {
+void ExerciseTableRow::openFolderButtonClicked() {
 	BasicFileOps fileOps;
 	ConfigFileParser configParser;
 	std::string exerciseFolderPath = configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil;
@@ -201,7 +201,7 @@ void LessonTableRow::openFolderButtonClicked() {
 }
 
 /// Opens the PDF-File if there is one selected before. If not, it shows a file chooser dialog.
-void LessonTableRow::openExercisePDFButtonClicked() {
+void ExerciseTableRow::openExercisePDFButtonClicked() {
 	BasicFileOps fileOps;
 	ConfigFileParser configParser;
 	std::string exercise_file_path = configParser.getSaveDirectoryPath() + "/" + lessonName + "/" + toDoUntil + "/" + EXERCISE_PDF_FILE;
@@ -215,23 +215,23 @@ void LessonTableRow::openExercisePDFButtonClicked() {
 	}
 }
 
-void LessonTableRow::changeState() {
+void ExerciseTableRow::changeState() {
 	stateChanged = true;
 }
 
-void LessonTableRow::totalPointsChanged() {
+void ExerciseTableRow::totalPointsChanged() {
 	if(totalPointsSpin->get_value() < reachedPointsSpin->get_value()) {
 		reachedPointsSpin->set_value(totalPointsSpin->get_value());
 	}
 	changeState();
 }
 
-void LessonTableRow::reachedPointsChanged() {
+void ExerciseTableRow::reachedPointsChanged() {
 	if(reachedPointsSpin->get_value() > totalPointsSpin->get_value()) {
 		totalPointsSpin->set_value(reachedPointsSpin->get_value());
 	}
 	changeState();
 }
 
-LessonTableRow::~LessonTableRow() { }
+ExerciseTableRow::~ExerciseTableRow() { }
 

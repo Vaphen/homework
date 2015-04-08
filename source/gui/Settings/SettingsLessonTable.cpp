@@ -8,12 +8,12 @@
 #include "SettingsLessonTable.h"
 #include <iostream>
 
-#include "../sql/SQLiteConnect.h"
-#include "../constants/constants.h"
-#include "../constants/Labels.h"
-#include "../helpers/HelpDialogs.h"
+#include "../../sql/SQLiteConnect.h"
+#include "../../constants/constants.h"
+#include "../../constants/Labels.h"
+#include "../../helpers/HelpDialogs.h"
 
-LessonTable::LessonTable() :
+SettingsLessonTable::SettingsLessonTable() :
 		lessonHeader(new Gtk::TreeModelColumn<Glib::ustring>),
 		allHeader(new Gtk::TreeModel::ColumnRecord) {
 
@@ -35,7 +35,7 @@ LessonTable::LessonTable() :
 	show_all_children();
 }
 
-LessonTable::~LessonTable() {
+SettingsLessonTable::~SettingsLessonTable() {
 	delete allHeader;
 	delete lessonHeader;
 }
@@ -43,7 +43,7 @@ LessonTable::~LessonTable() {
 /**
  * appands a given lesson to the TreeView
  */
-void LessonTable::appendLesson(Glib::ustring lessonName) {
+void SettingsLessonTable::appendLesson(Glib::ustring lessonName) {
 	Gtk::TreeModel::Row row = *(allLessons->append());
 	row[*lessonHeader] = lessonName;
 }
@@ -51,7 +51,7 @@ void LessonTable::appendLesson(Glib::ustring lessonName) {
 /**
  * delete the selected lesson from the treeView
  */
-void LessonTable::deleteSelectedLesson() {
+void SettingsLessonTable::deleteSelectedLesson() {
 	Glib::RefPtr<Gtk::TreeSelection> selection = get_selection();
 	if(selection->count_selected_rows() == 0)
 		return;
@@ -65,7 +65,7 @@ void LessonTable::deleteSelectedLesson() {
 /**
  * returns the name of the selected lesson
  */
-Glib::ustring LessonTable::getSelectedLesson() {
+Glib::ustring SettingsLessonTable::getSelectedLesson() {
 	Glib::RefPtr<Gtk::TreeSelection> selection = get_selection();
 	if(selection->count_selected_rows() == 0)
 		return "";

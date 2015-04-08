@@ -9,13 +9,12 @@
 #define GUI_LESSONTABLEROW_H_
 
 #include <gtkmm.h>
-#include <memory>
 
-class LessonTableRow {
+class ExerciseTableRow {
 public:
-	LessonTableRow(std::vector<std::string>);
-	LessonTableRow(const std::string&, int, const std::string&);
-	~LessonTableRow();
+	ExerciseTableRow(std::vector<std::string>);
+	ExerciseTableRow(const std::string&, int, const std::string&);
+	~ExerciseTableRow();
 
 	Gtk::Label* getUntilLabel() const;
 	Gtk::SpinButton* getReachedPointsSpin() const;

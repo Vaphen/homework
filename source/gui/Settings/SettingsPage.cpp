@@ -6,24 +6,24 @@
  */
 
 #include "SettingsPage.h"
-#include "../constants/constants.h"
-#include "../constants/Labels.h"
-#include "../helpers/HelpDialogs.h"
-#include "../sql/SQLiteConnect.h"
-#include "../fileOperations/ConfigFileParser.h"
-#include "../fileOperations/BasicFileOps.h"
-#include "LessonPage.h"
+#include "../../constants/constants.h"
+#include "../../constants/Labels.h"
+#include "../../helpers/HelpDialogs.h"
+#include "../../sql/SQLiteConnect.h"
+#include "../../fileOperations/ConfigFileParser.h"
+#include "../../fileOperations/BasicFileOps.h"
 #include "SettingsLessonTable.h"
 #include <gtkmm.h>
 #include <iostream>
 #include <boost/regex.hpp>
+#include "../Exercises/ExercisePage.h"
 
 /**
  * SettingsPage: Frame, which contains settings
  */
-SettingsPage::SettingsPage(Gtk::Notebook* guiNotebook) :
-		notebook(guiNotebook),
-		lessonTable(new LessonTable) {
+SettingsPage::SettingsPage(Gtk::Notebook *notebook) :
+		notebook(notebook),
+		lessonTable(new SettingsLessonTable) {
 
 	set_border_width(10);
 
@@ -92,7 +92,8 @@ void SettingsPage::initializeEnvironmentSettings() {
 	Gtk::Label *fileDirPathLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PATH_TO_DIR_LABEL));
 	Gtk::Button *chooseFileDirPathButton = Gtk::manage(new Gtk::Button);
 	Gtk::Image *openDirIco = Gtk::manage(new Gtk::Image(OPENDIR_ICO_SMALL));
-	Gtk::Button *saveEnvironmentSettings = Gtk::manage(new Gtk::Button(SettingsPageLabels::SAVE_ENVIRONMENT_SETTINGS));
+	Gtk::Image *saveButtonIco = Gtk::manage(new Gtk::Image(SAVE_ENVIRONMENT_BUTTON_ICO));
+	Gtk::Button *saveEnvironmentSettings = Gtk::manage(new Gtk::Button);
 	Gtk::HBox *fileDirPathBox = Gtk::manage(new Gtk::HBox);
 
 	Gtk::HSeparator *firstSeparator = Gtk::manage(new Gtk::HSeparator);
@@ -153,8 +154,10 @@ void SettingsPage::initializeEnvironmentSettings() {
 	fileManagerBox->pack_start(*fileManagerPathEdit, Gtk::PACK_SHRINK, false, 0);
 	fileManagerBox->pack_start(*chooseFileManagerButton, Gtk::PACK_SHRINK, false, 0);
 
-
+	saveEnvironmentSettings->set_relief(Gtk::RELIEF_NONE);
+	saveEnvironmentSettings->set_image(*saveButtonIco);
 	saveEnvironmentSettings->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::saveEnvironmentSettingsClicked));
+
 
 	environmentSettingsVBox->set_border_width(10);
 	environmentSettingsVBox->pack_start(*fileDirPathLabel, Gtk::PACK_SHRINK, false, 0);
@@ -234,18 +237,17 @@ void SettingsPage::saveNewLessonButtonClicked() {
 	try {
 		this->connection.addNewLesson(newLesson);
 		this->connection.createSpecificLessonTable(newLesson);
+
+		BasicFileOps fileOps;
+		fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + newLesson);
 	} catch (ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 		return;
-	}
-	try {
-		BasicFileOps fileOps;
-		fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + newLesson);
-	} catch(const FILE_ERRORS &error) {
+	} catch(FILE_ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 	}
 	newLessonEdit->set_text("");
-	LessonPage *newLessonPage = Gtk::manage(new LessonPage(newLesson, notebook));
+	ExercisePage *newLessonPage = Gtk::manage(new ExercisePage(newLesson));
 	notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 2);
 	notebook->show_all();
 	lessonTable->appendLesson(newLesson);

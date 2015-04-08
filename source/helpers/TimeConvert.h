@@ -14,7 +14,6 @@
 
 class TimeConvert {
 public:
-	TimeConvert(double, double, double);
 	TimeConvert();
 	virtual ~TimeConvert();
 	int getDaysInMonth(int const&, int const&);
@@ -23,17 +22,19 @@ public:
 	unsigned int getCurMonth();
 	unsigned int getCurDay();
 	std::string unixToGermanDateFormat(std::string&);
-	std::string getGermanDateFormat();
-	std::string getEnglishDateFormat();
-	unsigned int getUnixTimeFormat();
+	std::string getGermanDateFormat(unsigned int, unsigned int, unsigned int);
+	std::string getEnglishDateFormat(unsigned int, unsigned int, unsigned int);
+
+	unsigned int getDayOfUnixTimestamp(std::string);
+	unsigned int getMonthOfUnixTimestamp(std::string);
+	unsigned int getYearOfUnixTimestamp(std::string);
+
+
+	unsigned int getUnixTimeFormat(unsigned int, unsigned int, unsigned int);
 private:
 	time_t theTime;
 	struct tm *aTime;
 	std::stringstream stringDateFormat;
-
-	int day;
-	int month;
-	int year;
 
 	void initializeTimeStructures();
 };

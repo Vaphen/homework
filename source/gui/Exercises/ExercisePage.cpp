@@ -5,18 +5,18 @@
  *      Author: vaphen
  */
 
-#include "LessonPage.h"
-#include "../constants/constants.h"
-#include "../constants/Labels.h"
-#include "../helpers/HelpDialogs.h"
-#include "../helpers/TimeConvert.h"
-#include "../fileOperations/ConfigFileParser.h"
-#include "../fileOperations/BasicFileOps.h"
-#include "LessonTableRow.h"
+#include "ExercisePage.h"
+
+#include "../../constants/constants.h"
+#include "../../constants/Labels.h"
+#include "../../helpers/HelpDialogs.h"
+#include "../../helpers/TimeConvert.h"
+#include "../../fileOperations/ConfigFileParser.h"
+#include "../../fileOperations/BasicFileOps.h"
 #include <iostream>
 #include <gtkmm.h>
 #include <string>
-#include <sstream>
+#include "ExerciseTableRow.h"
 
 #if defined(_WIN32) || defined(WIN32)
 	#define nullptr 0x00
@@ -31,12 +31,9 @@
  * Initializes all child-widgets, the menuebar, the exercisetable and the
  * new exercise box
  * @param pageTitle the title of the new Frame (visible in top left corner)
- * @param *parentNotebook a pointer to the notebook the side was added to
  */
-LessonPage::LessonPage(std::string pageTitle, Gtk::Notebook *parentNotebook) :
-		curLesson(pageTitle),
-		parentNotebook(parentNotebook){
-	set_label(LessonPageLabels::FRAME_HEADER + curLesson);
+ExercisePage::ExercisePage(std::string pageTitle) :
+		curLesson(pageTitle) {
 
 	initializeWidgets();
 
@@ -45,21 +42,29 @@ LessonPage::LessonPage(std::string pageTitle, Gtk::Notebook *parentNotebook) :
 
 	initializeExerciseTable();
 
-	tableScroller->add(*exerciseTable);
+	backgroundTableBox = Gtk::manage(new Gtk::EventBox);
+	backgroundTableBox->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	backgroundTableBox->add(*exerciseTable);
+
+	tableScroller->add(*backgroundTableBox);
 	tableScroller->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 	mainBox->pack_start(*tableScroller, Gtk::PACK_EXPAND_WIDGET, 0);
-	this->add(*mainBox);
+
+	Gtk::EventBox *backgroundBox = Gtk::manage(new Gtk::EventBox);
+	backgroundBox->modify_bg(Gtk::STATE_NORMAL, primaryColor);
+	backgroundBox->add(*mainBox);
+	this->add(*backgroundBox);
 }
 
 /// Destructor that frees dynamically allocated pointers
-LessonPage::~LessonPage() {
+ExercisePage::~ExercisePage() {
 	for(int i = 0; i < allRows.size(); i++) {
 		delete allRows.at(i);
 	}
 }
 
 /// Initializes all widget-pointers with gtk garbage collector (no need to destroy them manually)
-void LessonPage::initializeWidgets() {
+void ExercisePage::initializeWidgets() {
 	mainBox = Gtk::manage(new Gtk::VBox);
 	tableOptionsBox = Gtk::manage(new Gtk::HBox);
 	exerciseTable = Gtk::manage(new Gtk::Table);
@@ -75,7 +80,7 @@ void LessonPage::initializeWidgets() {
 }
 
 /// Initialize all widgets of the menuebar and add them to the main-frame
-void LessonPage::initializeTableMenueBar() {
+void ExercisePage::initializeTableMenueBar() {
 	Gtk::HBox *centerBox = Gtk::manage(new Gtk::HBox);
 	Gtk::Image *saveImage = Gtk::manage(new Gtk::Image(SAVE_ICO));
 	Gtk::Image *resetImage = Gtk::manage(new Gtk::Image(RESET_CHANGES_ICO));
@@ -84,19 +89,19 @@ void LessonPage::initializeTableMenueBar() {
 	saveChangingsButton->set_image(*saveImage);
 	saveChangingsButton->set_tooltip_text(LessonPageLabels::SAVE_CHANGINGS_BUTTON_TOOLTIP);
 	saveChangingsButton->set_relief(Gtk::RELIEF_NONE);
-	saveChangingsButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveChangingsButtonClicked));
+	saveChangingsButton->signal_clicked().connect(sigc::mem_fun(*this, &ExercisePage::saveChangingsButtonClicked));
 
 
 	resetButton->set_image(*resetImage);
 	resetButton->set_tooltip_text(LessonPageLabels::RESET_BUTTON_TOOLTIP);
 	resetButton->set_relief(Gtk::RELIEF_NONE);
-	resetButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::resetRowsClicked));
+	resetButton->signal_clicked().connect(sigc::mem_fun(*this, &ExercisePage::resetRowsClicked));
 
 
 	statisticsButton->set_image(*statisticsImage);
 	statisticsButton->set_tooltip_text(LessonPageLabels::STATISTICS_BUTTON_TOOLTIP);
 	statisticsButton->set_relief(Gtk::RELIEF_NONE);
-	statisticsButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::statisticsButtonClicked));
+	statisticsButton->signal_clicked().connect(sigc::mem_fun(*this, &ExercisePage::statisticsButtonClicked));
 
 	tableOptionsBox->pack_start(*resetButton, Gtk::PACK_SHRINK, 10);
 	tableOptionsBox->pack_start(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
@@ -108,7 +113,7 @@ void LessonPage::initializeTableMenueBar() {
 }
 
 /// Initialize new exercise box and add it to the bottom of the page
-void LessonPage::initializeNewExerciseBox() {
+void ExercisePage::initializeNewExerciseBox() {
 	exerciseUntilLabel = Gtk::manage(new Gtk::Label(EXERCISE_UNTIL_LABEL_TEXT));
 	exerciseUntilDaySpin = Gtk::manage(new Gtk::SpinButton);
 	exerciseUntilMonthSpin = Gtk::manage(new Gtk::SpinButton);
@@ -119,25 +124,23 @@ void LessonPage::initializeNewExerciseBox() {
 
 	exerciseUntilDaySpin->set_max_length(2);
 	exerciseUntilDaySpin->set_editable(false);
-	exerciseUntilDaySpin->set_range(1, timeOps.getDaysInMonth(timeOps.getCurMonth(), timeOps.getCurYear()));
+	exerciseUntilDaySpin->set_range(timeOps.getCurDay(), timeOps.getDaysInMonth(timeOps.getCurMonth(), timeOps.getCurYear()));
 	exerciseUntilDaySpin->set_increments(1, 1);
-	exerciseUntilDaySpin->set_wrap(true);
 	exerciseUntilDaySpin->set_value(timeOps.getCurDay());
 
 	exerciseUntilMonthSpin->set_max_length(2);
 	exerciseUntilMonthSpin->set_editable(false);
-	exerciseUntilMonthSpin->set_range(1, 12);
+	exerciseUntilMonthSpin->set_range(timeOps.getCurMonth(), 12);
 	exerciseUntilMonthSpin->set_increments(1, 1);
-	exerciseUntilMonthSpin->set_wrap(true);
 	exerciseUntilMonthSpin->set_value(timeOps.getCurMonth());
-	exerciseUntilMonthSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonPage::newExerciseDateChanged));
+	exerciseUntilMonthSpin->signal_changed().connect(sigc::mem_fun(*this, &ExercisePage::newExerciseDateChanged));
 
 	exerciseUntilYearSpin->set_max_length(4);
 	exerciseUntilYearSpin->set_editable(false);
 	exerciseUntilYearSpin->set_range(timeOps.getCurYear(), timeOps.getCurYear() + 100);
 	exerciseUntilYearSpin->set_increments(1, 1);
 	exerciseUntilYearSpin->set_value(timeOps.getCurYear());
-	exerciseUntilYearSpin->signal_changed().connect(sigc::mem_fun(*this, &LessonPage::newExerciseDateChanged));
+	exerciseUntilYearSpin->signal_changed().connect(sigc::mem_fun(*this, &ExercisePage::newExerciseDateChanged));
 
 	exerciseUntilLabel->set_padding(10, 10);
 
@@ -149,7 +152,7 @@ void LessonPage::initializeNewExerciseBox() {
 	newExerciseBox->set_border_width(10);
 
 	saveNewExerciseButton->set_size_request(-1, 20);
-	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &LessonPage::saveNewExerciseButtonClicked));
+	saveNewExerciseButton->signal_clicked().connect(sigc::mem_fun(*this, &ExercisePage::saveNewExerciseButtonClicked));
 
 	newExerciseFrame->set_label(NEW_EXERCISE_LABEL_TEXT);
 	newExerciseFrame->add(*newExerciseBox);
@@ -160,7 +163,8 @@ void LessonPage::initializeNewExerciseBox() {
 /**
  * If an error occurs, it shows an error-dialog.
  */
-void LessonPage::initializeExerciseTable() {
+void ExercisePage::initializeExerciseTable() {
+	std::cout << "initializeExerciseTabe" << std::endl;
 	try {
 		exercises = connection.getExercises(curLesson);
 	}catch(ERRORS &error) {
@@ -200,13 +204,17 @@ void LessonPage::initializeExerciseTable() {
 	if(numOfRows == 0)
 		addNothingAddedYetLabelToTable();
 
+	// needed if allRows is already filled (for reinitialization in case of new exercise)
+	allRows.clear();
+
 	for(int row = 0; row < numOfRows; row++) {
 		// first dimension of the vector is the column; the second dimension are the entries
 		std::vector<std::string> curRow;
 		for(int column = 0; column < exercises.size(); column++) {
+			std::cout << exercises.at(column).at(row) << std::endl;
 			curRow.push_back(exercises.at(column).at(row));
 		}
-		LessonTableRow *newLessonRow = new LessonTableRow(curRow);
+		ExerciseTableRow *newLessonRow = new ExerciseTableRow(curRow);
 		allRows.push_back(newLessonRow);
 		addRowToTable();
 	}
@@ -219,20 +227,34 @@ void LessonPage::initializeExerciseTable() {
  * Triggered when the saveNewExerciseButton is clicked.
  * If an error occurs, it shows an error-dialog.
  */
-void LessonPage::saveNewExerciseButtonClicked() {
+void ExercisePage::saveNewExerciseButtonClicked() {
 	try {
-		TimeConvert timeOpts(exerciseUntilDaySpin->get_value(),
-				exerciseUntilMonthSpin->get_value(),
-				exerciseUntilYearSpin->get_value());
-		connection.addNewExercise(curLesson, FOLDER_PATH + this->curLesson + "/", timeOpts.getUnixTimeFormat());
-		LessonTableRow *newRow = new LessonTableRow(timeOpts.getGermanDateFormat(), [this] () {
-			return (allRows.size() == 0) ? 1 : allRows.back()->getID() + 1;
-		}(), curLesson);
+		unsigned int untilDay = exerciseUntilDaySpin->get_value_as_int();
+		unsigned int untilMonth = exerciseUntilMonthSpin->get_value_as_int();
+		unsigned int untilYear = exerciseUntilYearSpin->get_value_as_int();
+		TimeConvert timeOpts;
+		connection.addNewExercise(curLesson,
+				timeOpts.getUnixTimeFormat(untilDay,
+				untilMonth,
+				untilYear));
+		ExerciseTableRow *newRow = new ExerciseTableRow(
+				timeOpts.getGermanDateFormat(untilDay, untilMonth, untilYear),
+				((allRows.size() == 0) ? 1 : allRows.back()->getID() + 1),
+				curLesson);
+
 		allRows.push_back(newRow);
-		addRowToTable();
+
+		delete exerciseTable;
+		exerciseTable = Gtk::manage(new Gtk::Table);
+		initializeExerciseTable();
+		backgroundTableBox->remove();
+		backgroundTableBox->add(*exerciseTable);
+		backgroundTableBox->show_all();
+
 
 		BasicFileOps fileOps;
-		fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() + "/" + curLesson + "/" + timeOpts.getGermanDateFormat());
+		fileOps.createFolder(fileOps.callConfigParser().getSaveDirectoryPath() +
+				"/" + curLesson + "/" + timeOpts.getGermanDateFormat(untilDay, untilMonth, untilYear));
 	} catch(ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 	} catch (FILE_ERRORS &error) {
@@ -246,15 +268,15 @@ void LessonPage::saveNewExerciseButtonClicked() {
  * and to a pointer to the widget itself, just for deleting it after event was triggered.
  * @returns a delete-button with delete icon.
  */
-Gtk::Button* LessonPage::getDeleteButton() {
+Gtk::Button* ExercisePage::getDeleteButton() {
 	Gtk::Image *deleteIcon = Gtk::manage(new Gtk::Image(DELETE_ICO));
 	Gtk::Button *deleteButton = Gtk::manage(new Gtk::Button);
 	deleteButton->set_image(*deleteIcon);
 	deleteButton->set_size_request(50, 50);
 	deleteButton->set_relief(Gtk::ReliefStyle::RELIEF_NONE);
 	deleteButton->set_tooltip_text(LessonPageLabels::DELETE_TOOLTIP);
-	deleteButton->signal_clicked().connect(sigc::bind<LessonTableRow&, Gtk::Button*>(
-				sigc::mem_fun(*this, &LessonPage::deleteButtonClicked), *(allRows.back()), deleteButton));
+	deleteButton->signal_clicked().connect(sigc::bind<ExerciseTableRow&, Gtk::Button*>(
+				sigc::mem_fun(*this, &ExercisePage::deleteButtonClicked), *(allRows.back()), deleteButton));
 	return deleteButton;
 }
 
@@ -265,7 +287,7 @@ Gtk::Button* LessonPage::getDeleteButton() {
  * @param exerciseId the (sql)id of the row which should be deleted
  * @param *deleteButton pointer to the widget itself so that it can delete itself
  */
-void LessonPage::deleteButtonClicked(LessonTableRow &lastRow, Gtk::Button *deleteButton) {
+void ExercisePage::deleteButtonClicked(ExerciseTableRow &lastRow, Gtk::Button *deleteButton) {
 	switch(HelpDialogs::showMultipleDeleteDialog(LessonPageLabels::MULTIPLE_DELETE_TITLE,
 												 LessonPageLabels::MULTIPLE_DELETE_MESSAGE)) {
 	case int(ANSWERS::CANCEL):
@@ -315,9 +337,9 @@ void LessonPage::deleteButtonClicked(LessonTableRow &lastRow, Gtk::Button *delet
 /**
  * It resets all changed rows with their native (old) values
  */
-void LessonPage::resetRowsClicked() {
+void ExercisePage::resetRowsClicked() {
 	for(unsigned int i = 0; i < allRows.size(); i++) {
-		LessonTableRow *curRow = allRows.at(i);
+		ExerciseTableRow *curRow = allRows.at(i);
 		if(curRow->getStateChanged()) {
 			std::cout << curRow->getID() << std::endl;
 			curRow->getReachedPointsSpin()->set_value(curRow->getReachedPoints());
@@ -336,12 +358,21 @@ void LessonPage::resetRowsClicked() {
  * If the selected year respectively month has more or less days than the current one
  * the daySpinBox is updated to an appropriate value.
  */
-void LessonPage::newExerciseDateChanged() {
+void ExercisePage::newExerciseDateChanged() {
 	TimeConvert timeOpts;
-	unsigned int newMonth, newYear;
-	std::istringstream(exerciseUntilMonthSpin->get_text()) >> newMonth;
-	std::istringstream(exerciseUntilYearSpin->get_text()) >> newYear;
-	exerciseUntilDaySpin->set_range(1, timeOpts.getDaysInMonth(newMonth, newYear));
+
+	unsigned int newMonth = exerciseUntilMonthSpin->get_value_as_int();
+	unsigned int newYear = exerciseUntilYearSpin->get_value_as_int();
+
+	if(exerciseUntilMonthSpin->get_value_as_int() > timeOpts.getCurMonth()) {
+		exerciseUntilDaySpin->set_range(1, timeOpts.getDaysInMonth(newMonth, newYear));
+	} else if(exerciseUntilYearSpin->get_value_as_int() > timeOpts.getCurYear()) {
+		exerciseUntilDaySpin->set_range(1, timeOpts.getDaysInMonth(newMonth, newYear));
+		exerciseUntilMonthSpin->set_range(1, 12);
+	} else {
+		exerciseUntilDaySpin->set_range(timeOpts.getCurDay(), timeOpts.getDaysInMonth(newMonth, newYear));
+		exerciseUntilMonthSpin->set_range(timeOpts.getCurMonth(), 12);
+	}
 }
 
 /// Adds a new row to the end of the exercise table
@@ -349,7 +380,7 @@ void LessonPage::newExerciseDateChanged() {
  * This function takes the last element out of the allRows vector and
  * adds it at the end of the exercise table.
  */
-void LessonPage::addRowToTable() {
+void ExercisePage::addRowToTable() {
 	unsigned int rows, cols;
 	exerciseTable->get_size(rows, cols);
 
@@ -370,7 +401,7 @@ void LessonPage::addRowToTable() {
 	exerciseTable->show_all();
 }
 
-void LessonPage::addNothingAddedYetLabelToTable() {
+void ExercisePage::addNothingAddedYetLabelToTable() {
 	nothingAddedYetLabel = Gtk::manage(new Gtk::Label);
 	Pango::FontDescription fdesc;
 	fdesc.set_size(15 * PANGO_SCALE);
@@ -382,9 +413,9 @@ void LessonPage::addNothingAddedYetLabelToTable() {
 }
 
 
-void LessonPage::saveChangingsButtonClicked() {
+void ExercisePage::saveChangingsButtonClicked() {
 	for(unsigned int i = 0; i < allRows.size(); i++) {
-		LessonTableRow* curRow = allRows.at(i);
+		ExerciseTableRow* curRow = allRows.at(i);
 		if(curRow->getStateChanged()) {
 			unsigned int newReachedPoints = curRow->getReachedPointsSpin()->get_value();
 			unsigned int newTotalPoints = curRow->getTotalPointsSpin()->get_value();
@@ -413,6 +444,6 @@ void LessonPage::saveChangingsButtonClicked() {
 	}
 }
 
-void LessonPage::statisticsButtonClicked() {
-	parentNotebook->set_current_page(parentNotebook->get_n_pages() - 1);
+void ExercisePage::statisticsButtonClicked() {
+	//parentNotebook->set_current_page(parentNotebook->get_n_pages() - 1);
 }

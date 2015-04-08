@@ -8,7 +8,7 @@
 #ifndef SETTINGSPAGE_H_
 #define SETTINGSPAGE_H_
 
-#include "../sql/SQLiteConnect.h"
+#include "../../sql/SQLiteConnect.h"
 #include <gtkmm.h>
 #include <regex>
 #include "SettingsLessonTable.h"
@@ -19,8 +19,7 @@ public:
 	virtual ~SettingsPage();
 private:
 	Gtk::Notebook *notebook;
-
-	LessonTable *lessonTable;
+	SettingsLessonTable *lessonTable;
 	Gtk::Entry *newLessonEdit;
 	Gtk::Frame *environmentSettingsFrame;
 	Gtk::Entry *fileDirPathEdit;

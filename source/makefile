@@ -21,7 +21,7 @@ $(addprefix ../,$(NAME)): $(C_OBJS)
 	
 ../obj/%.o: %.cpp 
 	$(shell mkdir -p $(addprefix ../obj/,$(dir $?)))
-	$(CC) -std=c++0x -c -I/home/john/boost_1_55_0 -o $@ $? `pkg-config --cflags gtkmm-2.4`
+	$(CC) -std=c++0x -c -g -I/home/john/boost_1_55_0 -o $@ $? `pkg-config --cflags gtkmm-2.4`
 
 clean:
 	rm -f $(NAME) $(C_OBJS) $(C_PREH)

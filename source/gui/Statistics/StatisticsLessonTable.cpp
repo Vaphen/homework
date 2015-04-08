@@ -6,16 +6,22 @@
  */
 
 #include "StatisticsLessonTable.h"
-#include "../constants/Labels.h"
-#include "../sql/SQLiteConnect.h"
-#include "../helpers/TimeConvert.h"
+#include "../../constants/Labels.h"
+#include "../../constants/constants.h"
+#include "../../sql/SQLiteConnect.h"
+#include "../../helpers/TimeConvert.h"
 #include <iostream>
 
 #if defined(_WIN32) || defined(WIN32)
-	#include "../helpers/conversions.h"
+	#include "../../helpers/conversions.h"
 #endif
 
-StatisticsLessonTable::StatisticsLessonTable(std::string &curLesson) :
+// default constructor for special point-table
+/**
+ * @param curLesson the lesson the points table belongs to
+ * @throws ERRORS if an sql-error occures
+ */
+StatisticsLessonTable::StatisticsLessonTable(std::string curLesson) :
 		curLesson(curLesson),
 		reachedPointsTotal(0),
 		totalPointsTotal(0){
@@ -26,7 +32,11 @@ StatisticsLessonTable::StatisticsLessonTable(std::string &curLesson) :
 
 	std::vector<std::vector<std::string> > nameAndPointsVec;
 	SQLiteConnect connection;
-	nameAndPointsVec = connection.getPoints(curLesson);
+	try {
+		nameAndPointsVec = connection.getPoints(curLesson);
+	}catch(ERRORS& error) {
+		throw error;
+	}
 	if(nameAndPointsVec.size() == 0) {
 		appendRow("---", "0", "0");
 		return;
