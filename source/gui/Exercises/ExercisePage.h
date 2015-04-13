@@ -20,6 +20,7 @@ class ExercisePage : public Gtk::Frame {
 public:
 	ExercisePage(std::string);
 	virtual ~ExercisePage();
+	std::string getLessonName() const;
 private:
 	std::string curLesson;
 	std::vector<ExerciseTableRow*> allRows;
@@ -39,7 +40,6 @@ private:
 
 	Gtk::Button *saveChangingsButton;
 	Gtk::Button *resetButton;
-	Gtk::Button *statisticsButton;
 
 	Gtk::Label *exerciseUntilLabel;
 	Gtk::SpinButton *exerciseUntilDaySpin;
@@ -53,7 +53,6 @@ private:
 	void saveNewExerciseButtonClicked();
 	void saveChangingsButtonClicked();
 	void deleteButtonClicked(ExerciseTableRow&, Gtk::Button*);
-	void statisticsButtonClicked();
 	void newExerciseDateChanged();
 	void initializeWidgets();
 	void initializeTableMenueBar();

@@ -9,16 +9,19 @@
 #define SETTINGSPAGE_H_
 
 #include "../../sql/SQLiteConnect.h"
+#include "../Exercises/ExerciseFrame.h"
+#include "../Exams/ExamPage.h"
 #include <gtkmm.h>
 #include <regex>
 #include "SettingsLessonTable.h"
 
 class SettingsPage : public Gtk::Frame {
 public:
-	SettingsPage(Gtk::Notebook*);
+	SettingsPage(ExerciseFrame&, ExamPage&);
 	virtual ~SettingsPage();
 private:
-	Gtk::Notebook *notebook;
+	ExerciseFrame &exerciseFrame;
+	ExamPage &examFrame;
 	SettingsLessonTable *lessonTable;
 	Gtk::Entry *newLessonEdit;
 	Gtk::Frame *environmentSettingsFrame;

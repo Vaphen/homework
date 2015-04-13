@@ -58,8 +58,6 @@ void SettingsLessonTable::deleteSelectedLesson() {
 	Gtk::TreeModel::iterator selectedRow = selection->get_selected();
 	Gtk::TreeModel::Row row = *selectedRow;
 	allLessons->erase(selectedRow);
-
-//	for(std::string lesson : lessons) if(lesson == )
 }
 
 /**

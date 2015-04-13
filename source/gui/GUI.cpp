@@ -1,9 +1,9 @@
 /*  * gui.cpp  *  *  Created on: 25.12.2014  *      Author: vaphen  */
 
 #include "GUI.h"
+#include "Exercises/ExerciseFrame.h"
 #include "Settings/SettingsPage.h"
 #include "Exams/ExamPage.h"
-#include "Exercises/ExercisePage.h"
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
 #include "../constants/Labels.h"
@@ -16,32 +16,24 @@
 	#define nullptr 0x00
 #endif
 
-/**
- * TODO: outsource notebook into its own class; it has nothing to do with controllclass GUI.
- */
 GUI::GUI() :
+		allLessons(doSqlLessonRequest()),
 		vbox(new Gtk::VBox),
 		pageBox(new Gtk::EventBox),
-		notebook(new Gtk::Notebook()),
-		settings_frame(new SettingsPage(notebook)),
-		statistics_frame(new StatisticsPage),
-		exam_frame(new ExamPage) {
+		exam_frame(new ExamPage),
+		exercise_frame(new ExerciseFrame(allLessons)),
+		settings_frame(new SettingsPage(*exercise_frame, *exam_frame)),
+		statistics_frame(new StatisticsPage) {
 
 	set_title(WINDOW_TITLE);
 	set_default_icon_from_file("./src/logo.png");
 
 	initializeMenueBar();
 
-	// add all lessons
-	std::vector<std::string> allLessons = doSqlLessonRequest();
-	for(unsigned int i = 0; i < allLessons.size(); i++) {
-		addLessonPage(allLessons.at(i));
-	}
-
 	if(allLessons.size() == 0) {
 		pageBox->add(*settings_frame);
 	}else {
-		pageBox->add(*notebook);
+		pageBox->add(*exercise_frame);
 	}
 
 	pageBox->modify_bg(Gtk::STATE_NORMAL, primaryColor);
@@ -159,20 +151,12 @@ std::vector<std::string> GUI::doSqlLessonRequest() {
 	return lessons;
 }
 
-void GUI::addLessonPage(std::string& newLesson) {
-	ExercisePage *newFrame = Gtk::manage(new ExercisePage(newLesson));
-	Gtk::EventBox *backgroundBox = Gtk::manage(new Gtk::EventBox);
-	backgroundBox->modify_bg(Gtk::STATE_NORMAL, primaryColor);
-	backgroundBox->add(*newFrame);
-	notebook->append_page(*backgroundBox, newLesson, true);
-}
-
 /// Triggered when clicked a menue button
 bool GUI::menueButtonClicked(GdkEventButton *event, MENUE_ENTRIES &entry) {
 	pageBox->remove();
 	switch(entry) {
 		case MENUE_ENTRIES::LESSONS:
-			pageBox->add(*notebook);
+			pageBox->add(*exercise_frame);
 			break;
 		case MENUE_ENTRIES::SETTINGS:
 			pageBox->add(*settings_frame);
@@ -186,7 +170,7 @@ bool GUI::menueButtonClicked(GdkEventButton *event, MENUE_ENTRIES &entry) {
 			break;
 		default:
 			// should never be reached
-			pageBox->add(*notebook);
+			pageBox->add(*exercise_frame);
 			break;
 	}
 	pageBox->show_all();
@@ -252,7 +236,7 @@ bool GUI::menueButtonLeave(GdkEventCrossing *event, MENUE_ENTRIES &curEntrie) {
 GUI::~GUI() {
 	delete vbox;
 	delete pageBox;
-	delete notebook;
+	delete exercise_frame;
 	delete settings_frame;
 	delete statistics_frame;
 	delete exam_frame;

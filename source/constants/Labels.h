@@ -4,7 +4,6 @@
 namespace LessonPageLabels {
 	static const std::string SAVE_CHANGINGS_BUTTON_TOOLTIP = "Änderungen speichern";
 	static const std::string RESET_BUTTON_TOOLTIP = "Änderungen zurücksetzen";
-	static const std::string STATISTICS_BUTTON_TOOLTIP = "Statistik anzeigen";
 
 	static const std::string UNTIL = "<b>Aufgabe zu erledigen bis</b>";
 	static const std::string REACHED_POINTS = "<b>Erreichte Punkte</b>";
@@ -56,6 +55,10 @@ namespace MarkPageLabels {
 namespace MarkTableRowLabels {
 	static const std::string OPEN_PDF_TOOLTIP = "PDF öffnen";
 	static const std::string OPEN_FOLDER_TOOLTIP = "Aufgabenordner öffnen";
+}
+
+namespace ExamPageLabels {
+	static const std::string NO_EXAM_ADDED_LABEL = "Es wurden noch keine Klausuren hinzugefügt.";
 }
 
 namespace LessonTableRowLabels {

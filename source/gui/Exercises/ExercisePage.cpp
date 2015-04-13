@@ -76,7 +76,6 @@ void ExercisePage::initializeWidgets() {
 	tableScroller = Gtk::manage(new Gtk::ScrolledWindow);
 	saveChangingsButton = Gtk::manage(new Gtk::Button);
 	resetButton = Gtk::manage(new Gtk::Button);
-	statisticsButton = Gtk::manage(new Gtk::Button);
 }
 
 /// Initialize all widgets of the menuebar and add them to the main-frame
@@ -97,15 +96,8 @@ void ExercisePage::initializeTableMenueBar() {
 	resetButton->set_relief(Gtk::RELIEF_NONE);
 	resetButton->signal_clicked().connect(sigc::mem_fun(*this, &ExercisePage::resetRowsClicked));
 
-
-	statisticsButton->set_image(*statisticsImage);
-	statisticsButton->set_tooltip_text(LessonPageLabels::STATISTICS_BUTTON_TOOLTIP);
-	statisticsButton->set_relief(Gtk::RELIEF_NONE);
-	statisticsButton->signal_clicked().connect(sigc::mem_fun(*this, &ExercisePage::statisticsButtonClicked));
-
 	tableOptionsBox->pack_start(*resetButton, Gtk::PACK_SHRINK, 10);
 	tableOptionsBox->pack_start(*saveChangingsButton, Gtk::PACK_SHRINK, 10);
-	tableOptionsBox->pack_start(*statisticsButton, Gtk::PACK_SHRINK, 10);
 
 	centerBox->pack_start(*tableOptionsBox, Gtk::PACK_EXPAND_PADDING);
 	centerBox->pack_end(*newExerciseFrame, Gtk::PACK_SHRINK);
@@ -389,7 +381,6 @@ void ExercisePage::addRowToTable() {
 		mainBox->remove(*nothingAddedYetLabel);
 		nothingAddedYetLabel = nullptr;
 	}
-
 	exerciseTable->attach(*allRows.back()->getUntilLabel(), 0, 1, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back()->getReachedPointsSpin(), 1, 2, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
 	exerciseTable->attach(*allRows.back()->getTotalPointsSpin(), 2, 3, rows + 1, rows + 2, Gtk::EXPAND, Gtk::FILL);
@@ -444,6 +435,6 @@ void ExercisePage::saveChangingsButtonClicked() {
 	}
 }
 
-void ExercisePage::statisticsButtonClicked() {
-	//parentNotebook->set_current_page(parentNotebook->get_n_pages() - 1);
+std::string ExercisePage::getLessonName() const {
+	return curLesson;
 }

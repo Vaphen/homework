@@ -16,6 +16,8 @@ class ExamPage : public Gtk::Frame {
 public:
 	ExamPage();
 	virtual ~ExamPage();
+	void appendLessonToLessonCombo(std::string);
+	void removeLessonFromLessonCombo(std::string);
 private:
 	std::vector<ExamTableRow*> allRows;
 	std::vector<std::vector<std::string> > exams;
@@ -35,6 +37,10 @@ private:
 
 	Gtk::Button *saveChangingsButton;
 	Gtk::Button *resetButton;
+
+	Gtk::ComboBox *lessonCombo;
+	Gtk::TreeModel::ColumnRecord allHeader;
+	Glib::RefPtr<Gtk::ListStore> allLessons;
 
 	Gtk::Button* getDeleteButton();
 

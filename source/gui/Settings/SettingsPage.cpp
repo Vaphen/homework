@@ -12,6 +12,8 @@
 #include "../../sql/SQLiteConnect.h"
 #include "../../fileOperations/ConfigFileParser.h"
 #include "../../fileOperations/BasicFileOps.h"
+#include "../Exercises/ExerciseFrame.h"
+#include "../Exams/ExamPage.h"
 #include "SettingsLessonTable.h"
 #include <gtkmm.h>
 #include <iostream>
@@ -20,10 +22,13 @@
 
 /**
  * SettingsPage: Frame, which contains settings
+ * @param exerciseFrame a reference to the exerciseFrame. needed to add some
+ * 		new lessons to the notebook.
  */
-SettingsPage::SettingsPage(Gtk::Notebook *notebook) :
-		notebook(notebook),
-		lessonTable(new SettingsLessonTable) {
+SettingsPage::SettingsPage(ExerciseFrame &exerciseFrame, ExamPage &examPage) :
+	exerciseFrame(exerciseFrame),
+	examFrame(examPage),
+	lessonTable(new SettingsLessonTable) {
 
 	set_border_width(10);
 
@@ -219,7 +224,7 @@ void SettingsPage::showCenteredWidgets() {
 // Triggered when the save new lesson button was clicked
 /**
  * If the save-button is clicked we try to connect to the database
- * and save the input value; then, we update the notebook and the LessonTable
+ * and save the input value; then, we update the notebook of the ExerciseFrame and the LessonTable
  */
 void SettingsPage::saveNewLessonButtonClicked() {
 	std::string newLesson = newLessonEdit->get_text();
@@ -247,9 +252,8 @@ void SettingsPage::saveNewLessonButtonClicked() {
 		HelpDialogs::showErrorDialog(error);
 	}
 	newLessonEdit->set_text("");
-	ExercisePage *newLessonPage = Gtk::manage(new ExercisePage(newLesson));
-	notebook->insert_page(*newLessonPage, newLesson, notebook->get_n_pages() - 2);
-	notebook->show_all();
+	exerciseFrame.addLessonPage(newLesson);
+	examFrame.appendLessonToLessonCombo(newLesson);
 	lessonTable->appendLesson(newLesson);
 	HelpDialogs::showInfoDialog(SettingsPageLabels::SAVING_SUCCESS_TITLE,
 			SettingsPageLabels::SAVING_SUCCESS_MESSAGE);
@@ -282,10 +286,8 @@ void SettingsPage::deleteButtonClicked() {
 		 * connect to the Database and try to delete the lesson
 		 */
 		SQLiteConnect connection;
-		std::vector<std::string> lessons = {};
 
 		try {
-			lessons = connection.getLessons();
 			connection.deleteLesson(std::string(selectedLesson));
 			connection.deleteSpecificLessonTable(std::string(selectedLesson));
 		} catch (ERRORS &error) {
@@ -297,22 +299,12 @@ void SettingsPage::deleteButtonClicked() {
 		// if sql-delete was successfull, we can delete it from the table
 		lessonTable->deleteSelectedLesson();
 
-		/*
-		 * there is no way to delete notebook-page by its label.
-		 * we need to iterate through all lessons to check if it's
-		 * the deleted one
-		 */
-		for(int i = 0; i < lessons.size(); i++) {
-			if(lessons.at(i) == selectedLesson) {
-				notebook->remove_page(i);
-				break;
-			}
-		}
-		if(lessons.size() == 0) {
-			notebook->remove_page(notebook->get_n_pages());
-		}
+		// remove page from notebook
+		exerciseFrame.removeLessonPage(selectedLesson);
 
-		notebook->show_all();
+		// remove lesson from combobox of exams
+		examFrame.removeLessonFromLessonCombo(selectedLesson);
+
 		break;
 	}
 	default:

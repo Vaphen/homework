@@ -36,7 +36,7 @@ ExamTableRow::ExamTableRow(std::vector<std::string> row) :
 /// Constructor for new, not yet in database existing exam
 /**
  * This constructor should only be called if a new exercise has been added.
- * All values are set to a default value, except the until-value, the id and the lessonName-value
+ * All values are set to a default value, except the semester, id and the lessonName-value
  * @param until string of the date when the exam must be written
  * @param id The id of the test in the database
  * @param lesson name of the exam-lesson
@@ -44,8 +44,7 @@ ExamTableRow::ExamTableRow(std::vector<std::string> row) :
 ExamTableRow::ExamTableRow(const unsigned int& semester, int id, const std::string &lesson) :
 			stateChanged(false) {
 	idInSqlDB = id;
-	toDoUntilTimestamp = timeOpts.getUnixTimeFormat(timeOpts.getCurDay(),
-			timeOpts.getCurMonth(), timeOpts.getCurYear());
+	toDoUntilTimestamp = "0";
 	this->semester = semester;
 	isAdmited = false;
 	hasPassed = false;
@@ -71,7 +70,6 @@ void ExamTableRow::initializeWidgets() {
 	daySpin->set_editable(false);
 	daySpin->set_range(1, timeOpts.getDaysInMonth(timeOpts.getCurMonth(), timeOpts.getCurYear()));
 	daySpin->set_increments(1, 1);
-	daySpin->set_value(timeOpts.getDayOfUnixTimestamp(toDoUntilTimestamp));
 	daySpin->set_size_request(40, 25);
 	daySpin->signal_changed().connect(sigc::mem_fun(*this, &ExamTableRow::changeState));
 
@@ -79,20 +77,29 @@ void ExamTableRow::initializeWidgets() {
 	monthSpin->set_editable(false);
 	monthSpin->set_range(1, 12);
 	monthSpin->set_increments(1, 1);
-	monthSpin->set_value(timeOpts.getMonthOfUnixTimestamp(toDoUntilTimestamp));
 	monthSpin->signal_changed().connect(sigc::mem_fun(*this, &ExamTableRow::examDateChanged));
 	monthSpin->set_size_request(40, 25);
 	monthSpin->signal_changed().connect(sigc::mem_fun(*this, &ExamTableRow::changeState));
 
 	yearSpin->set_max_length(4);
 	yearSpin->set_editable(false);
-	yearSpin->set_range(timeOpts.getCurYear(), timeOpts.getCurYear() + 100);
+	yearSpin->set_range((timeOpts.getCurYear() - 1), timeOpts.getCurYear() + 100);
 	yearSpin->set_increments(1, 1);
-	yearSpin->set_value(timeOpts.getYearOfUnixTimestamp(toDoUntilTimestamp));
 	yearSpin->signal_changed().connect(sigc::mem_fun(*this, &ExamTableRow::examDateChanged));
 	yearSpin->set_size_request(80, 25);
 	yearSpin->signal_changed().connect(sigc::mem_fun(*this, &ExamTableRow::changeState));
 
+	if(toDoUntilTimestamp == "0") {
+		yearSpin->set_text("----");
+		monthSpin->set_text("--");
+		monthSpin->set_sensitive(false);
+		daySpin->set_text("--");
+		daySpin->set_sensitive(false);
+	} else {
+		daySpin->set_value(timeOpts.getDayOfUnixTimestamp(toDoUntilTimestamp));
+		monthSpin->set_value(timeOpts.getMonthOfUnixTimestamp(toDoUntilTimestamp));
+		yearSpin->set_value(timeOpts.getYearOfUnixTimestamp(toDoUntilTimestamp));
+	}
 
 
 	Gtk::Label *firstPoint = Gtk::manage(new Gtk::Label("."));
@@ -249,6 +256,25 @@ void ExamTableRow::examDateChanged() {
 
 	unsigned int newMonth = monthSpin->get_value_as_int();
 	unsigned int newYear = yearSpin->get_value_as_int();
+
+	// show dashes (meaning there is no entry) if yearspinvalue is lower than current year
+	if(yearSpin->get_value_as_int() < timeOpts.getCurYear()) {
+		daySpin->set_text("--");
+		daySpin->set_sensitive(false);
+		monthSpin->set_text("--");
+		monthSpin->set_sensitive(false);
+		yearSpin->set_text("----");
+		return;
+	}
+
+	// changing from no date inserted to current date
+	if(yearSpin->get_value_as_int() == timeOpts.getCurYear() && daySpin->get_text() == "--" &&
+			monthSpin->get_text() == "--") {
+		daySpin->set_value(timeOpts.getCurDay());
+		daySpin->set_sensitive(true);
+		monthSpin->set_value(timeOpts.getCurMonth());
+		monthSpin->set_sensitive(true);
+	}
 
 	if(monthSpin->get_value_as_int() > timeOpts.getCurMonth()) {
 		// the year is the current, but the month isnt. change day spin range

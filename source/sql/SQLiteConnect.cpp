@@ -216,7 +216,7 @@ void SQLiteConnect::addNewExam(const unsigned int semester, const std::string le
 			timeConverter.getCurMonth(), timeConverter.getCurYear());
 	std::string insertQuery = "INSERT INTO " + Database::MARK_TABLE + " VALUES (" +
 							  "NULL, " +
-							  "'" + std::to_string(currentUnixTimestamp) + "', " +
+							  "'0', " +
 							  "'" + lesson + "', " +
 							  std::to_string(semester) + ", " +
 							  "0, " +

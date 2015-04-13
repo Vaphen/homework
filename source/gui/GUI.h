@@ -9,33 +9,32 @@
 
 #include <string>
 #include <gtkmm.h>
+#include "Exercises/ExerciseFrame.h"
 #include "Settings/SettingsPage.h"
 #include "Statistics/StatisticsPage.h"
 #include "Exams/ExamPage.h"
 #include "../sql/SQLiteConnect.h"
 #include "../constants/constants.h"
 
-#define WINDOW_TITLE "Homework"
-#define NOTEBOOK_WELCOME "Start"
-#define NOTEBOOK_SETTINGS "Einstellungen"
+#define WINDOW_TITLE "UMP - (U)niversitäts (M)anagement (P)rogramm"
 
 class GUI : public Gtk::Window {
 public:
 	GUI();
 	virtual ~GUI();
 	void addLessonPage(std::string&);
-protected:
+private:
+	SQLiteConnect connection;
+	std::vector<std::string> allLessons;
 	/*
 	 * Widgets
 	 */
 	Gtk::VBox *vbox;
 	Gtk::EventBox *pageBox;
-	Gtk::Notebook *notebook;
-	SettingsPage *settings_frame;
 	ExamPage *exam_frame;
+	ExerciseFrame *exercise_frame;
+	SettingsPage *settings_frame;
 	StatisticsPage *statistics_frame;
-private:
-	SQLiteConnect connection;
 
 	Gtk::EventBox *settingsMenueButton;
 	Gtk::EventBox *statisticsMenueButton;

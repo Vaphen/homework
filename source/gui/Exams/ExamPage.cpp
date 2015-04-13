@@ -22,15 +22,13 @@
 #endif
 
 /*
- * TODO: shorten this class... e.g. outsource the markTable
+ * TODO: add function body of removeLessonFromLessonCombo
  */
 
 /// Constructor for a new Notebook-lesson-page
 /**
  * Initializes all child-widgets, the menuebar, the markTable and the
  * new exercise box
- * @param pageTitle the title of the new Frame (visible in top left corner)
- * @param *parentNotebook a pointer to the notebook the side was added to
  */
 ExamPage::ExamPage() {
 	set_label(MarkPageLabels::FRAME_HEADER);
@@ -74,6 +72,7 @@ void ExamPage::initializeWidgets() {
 	tableScroller = Gtk::manage(new Gtk::ScrolledWindow);
 	saveChangingsButton = Gtk::manage(new Gtk::Button);
 	resetButton = Gtk::manage(new Gtk::Button);
+	lessonCombo = Gtk::manage(new Gtk::ComboBox);
 
 	/*exerciseUntilDaySpin = Gtk::manage(new Gtk::SpinButton);
 	exerciseUntilMonthSpin = Gtk::manage(new Gtk::SpinButton);
@@ -135,7 +134,6 @@ void ExamPage::initializeNewExerciseBox() {
 	Gtk::Label *examSemesterLabel = Gtk::manage(new Gtk::Label(MarkPageLabels::EXAM_SEMESTER_LABEL));
 	Gtk::SpinButton *semesterSpin = Gtk::manage(new Gtk::SpinButton);
 	Gtk::Label *examLessonLabel = Gtk::manage(new Gtk::Label(MarkPageLabels::EXAM_LESSON_LABEL));
-	Gtk::ComboBox *lessonCombo = Gtk::manage(new Gtk::ComboBox);
 	Gtk::Button *saveNewExamButton = Gtk::manage(new Gtk::Button(MarkPageLabels::SAVE_NEW_EXAM));
 
 	examSemesterLabel->set_padding(10, 10);
@@ -147,26 +145,22 @@ void ExamPage::initializeNewExerciseBox() {
 
 	examLessonLabel->set_padding(10, 10);
 
-	Gtk::TreeModel::ColumnRecord allHeader;
-	Glib::RefPtr<Gtk::ListStore> allLessons;
+	// set required properties
 	allHeader.add(lessonHeader);
 	lessonCombo->set_model(allLessons = Gtk::ListStore::create(allHeader));
+
 	std::vector<std::string> allLessonsVec  = {};
 	try {
 		allLessonsVec = connection.getLessons();
 	}catch(ERRORS &error) {
 		HelpDialogs::showErrorDialog(error);
 	}
-	for(unsigned int i = 0; i < allLessonsVec.size(); i++) {
-		Gtk::TreeModel::Row newRow = *(allLessons->append());
-		newRow[lessonHeader] = allLessonsVec.at(i);
-	}
+	for(unsigned int i = 0; i < allLessonsVec.size(); i++)
+		appendLessonToLessonCombo(allLessonsVec.at(i));
 
 	// in case that there is no lesson
-	if(allLessonsVec.size() == 0) {
-		Gtk::TreeModel::Row newRow = *(allLessons->append());
-		newRow[lessonHeader] = "---";
-	}
+	if(allLessonsVec.size() == 0)
+		appendLessonToLessonCombo("---");
 
 	lessonCombo->pack_start(lessonHeader);
 	lessonCombo->set_active(0);
@@ -371,7 +365,7 @@ void ExamPage::addNothingAddedYetLabelToTable() {
 	Pango::FontDescription fdesc;
 	fdesc.set_size(15 * PANGO_SCALE);
 	nothingAddedYetLabel->modify_font(fdesc);
-	nothingAddedYetLabel->set_markup(MarkPageLabels::NO_EXERCISE_ADDED_LABEL);
+	nothingAddedYetLabel->set_markup(ExamPageLabels::NO_EXAM_ADDED_LABEL);
 	mainBox->pack_end(*nothingAddedYetLabel, Gtk::PACK_SHRINK, 10);
 	mainBox->show_all();
 
@@ -388,13 +382,15 @@ void ExamPage::saveChangingsButtonClicked() {
 			bool newHasPassed = curRow->getHasPassedButton()->get_active();
 			float newMark = curRow->getMarkSpin()->get_value();
 
+
 			unsigned short updatedDay = curRow->getDaySpin()->get_value_as_int();
 			unsigned short updatedMonth = curRow->getMonthSpin()->get_value_as_int();
 			unsigned short updatedYear = curRow->getYearSpin()->get_value_as_int();
 
 			TimeConvert timeOpts;
-			unsigned int newUntilTimestamp = timeOpts.getUnixTimeFormat(updatedDay,
-								updatedMonth, updatedYear);
+			unsigned int newUntilTimestamp = ((updatedYear < timeOpts.getCurYear()) ? 0 :
+					timeOpts.getUnixTimeFormat(updatedDay, updatedMonth, updatedYear));
+
 
 
 			// update curRow properties for reset button
@@ -419,3 +415,14 @@ void ExamPage::saveChangingsButtonClicked() {
 		}
 	}
 }
+
+void ExamPage::appendLessonToLessonCombo(std::string newLesson) {
+	// set required properties
+	Gtk::TreeModel::Row newRow = *(allLessons->append());
+	newRow[lessonHeader] = newLesson;
+}
+
+void ExamPage::removeLessonFromLessonCombo(std::string lessonToRemove) {
+	//allLessons->erase(lessonToRemove);
+}
+
