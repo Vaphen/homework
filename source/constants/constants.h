@@ -9,7 +9,6 @@
 
 #include <string>
 #include <ctime>
-#include <iostream>
 #include <iomanip>
 #include <map>
 #include <gtkmm.h>
@@ -18,7 +17,6 @@
 #define DELETE_ICO "./src/delete.png"
 #define OPENDIR_ICO "./src/openDir.png"
 #define OPENDIR_ICO_SMALL "./src/openDirSmall.png"
-#define SAVE_ENVIRONMENT_BUTTON_ICO "./src/save_btn.png"
 #define SAVE_ICO "./src/save.png"
 #define RESET_CHANGES_ICO "./src/resetChanges.png"
 #define OPEN_PDF_ICO "./src/openPdf.png"
@@ -35,7 +33,7 @@ static const Gdk::Color secundaryColor("#09c700");
 	static const std::string FOLDER_PATH = "./uni/";
 #elif defined(_WIN32) || defined(WIN32)
 	static const std::string FILEMANAGER = "explorer";
-	static const std::string FOLDER_PATH = "\\uni\\";
+	static const std::string FOLDER_PATH = "./uni/";
 #endif
 
 enum class MENUE_ENTRIES { LESSONS, SETTINGS, STATISTICS, EXAMS };

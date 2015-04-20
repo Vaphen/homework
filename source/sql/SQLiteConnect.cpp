@@ -8,7 +8,6 @@
 #include "SQLiteConnect.h"
 #include "../constants/constants.h"
 #include "../helpers/TimeConvert.h"
-#include <iostream>
 #include <string>
 #include <vector>
 #include "../requiredDependencies/sqlite/sqlite3.h"

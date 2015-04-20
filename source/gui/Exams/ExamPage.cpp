@@ -13,12 +13,12 @@
 #include "../../fileOperations/ConfigFileParser.h"
 #include "../../fileOperations/BasicFileOps.h"
 #include "ExamTableRow.h"
-#include <iostream>
 #include <gtkmm.h>
 #include <string>
 
 #if defined(_WIN32) || defined(WIN32)
 	#define nullptr 0x00
+	#include "../../helpers/conversions.h"
 #endif
 
 /*
@@ -149,7 +149,7 @@ void ExamPage::initializeNewExerciseBox() {
 	allHeader.add(lessonHeader);
 	lessonCombo->set_model(allLessons = Gtk::ListStore::create(allHeader));
 
-	std::vector<std::string> allLessonsVec  = {};
+	std::vector<std::string> allLessonsVec;
 	try {
 		allLessonsVec = connection.getLessons();
 	}catch(ERRORS &error) {
@@ -157,10 +157,6 @@ void ExamPage::initializeNewExerciseBox() {
 	}
 	for(unsigned int i = 0; i < allLessonsVec.size(); i++)
 		appendLessonToLessonCombo(allLessonsVec.at(i));
-
-	// in case that there is no lesson
-	if(allLessonsVec.size() == 0)
-		appendLessonToLessonCombo("---");
 
 	lessonCombo->pack_start(lessonHeader);
 	lessonCombo->set_active(0);
@@ -249,6 +245,10 @@ void ExamPage::saveNewExamButtonClicked(Gtk::SpinButton *semesterSpin, Gtk::Comb
 		Gtk::TreeModel::iterator iter = lessonCombo->get_active();
 		Gtk::TreeModel::Row row = *iter;
 		Glib::ustring selectedLesson = row[lessonHeader];
+		if(selectedLesson == "") {
+			HelpDialogs::showErrorDialog(ExamPageLabels::NO_LESSON_SELECTED_TITLE, ExamPageLabels::NO_LESSON_SELECTED_TEXT);
+			return;
+		}
 		connection.addNewExam(semesterSpin->get_value_as_int(), selectedLesson);
 		ExamTableRow *newRow = new ExamTableRow(semesterSpin->get_value_as_int(),
 				((allRows.size() == 0) ? 1 : allRows.back()->getID() + 1),
@@ -420,9 +420,19 @@ void ExamPage::appendLessonToLessonCombo(std::string newLesson) {
 	// set required properties
 	Gtk::TreeModel::Row newRow = *(allLessons->append());
 	newRow[lessonHeader] = newLesson;
+
+	// select the new added row
+	lessonCombo->set_active(newRow);
 }
 
 void ExamPage::removeLessonFromLessonCombo(std::string lessonToRemove) {
-	//allLessons->erase(lessonToRemove);
+	Gtk::TreeModel::Children children = allLessons->children();
+	for(Gtk::TreeModel::Children::iterator iter = children.begin(); iter != children.end(); ++iter)
+	{
+	  Gtk::TreeModel::Row row = *iter;
+	  if(row[lessonHeader] == lessonToRemove) {
+		  allLessons->erase(row);
+	  }
+	}
 }
 

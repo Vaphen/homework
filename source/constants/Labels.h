@@ -59,6 +59,8 @@ namespace MarkTableRowLabels {
 
 namespace ExamPageLabels {
 	static const std::string NO_EXAM_ADDED_LABEL = "Es wurden noch keine Klausuren hinzugefügt.";
+	static const std::string NO_LESSON_SELECTED_TITLE = "Es wurde kein Fach für die Klausur angegeben.";
+	static const std::string NO_LESSON_SELECTED_TEXT = "Fügen Sie Fächer unter 'Einstellungen' hinzu und wählen Sie diese dann aus.";
 }
 
 namespace LessonTableRowLabels {

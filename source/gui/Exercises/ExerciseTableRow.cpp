@@ -15,7 +15,6 @@
 #include "../../helpers/TimeConvert.h"
 #include <string>
 #include <gtkmm.h>
-#include <iostream>
 #include "ExercisePage.h"
 
 /// Constructor for new row (from SQL-Query)

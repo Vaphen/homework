@@ -10,7 +10,6 @@
 #include "../helpers/HelpDialogs.h"
 #include "../fileOperations/BasicFileOps.h"
 #include <gtkmm.h>
-#include <iostream>
 
 #if defined(_WIN32) || defined(WIN32)
 	#define nullptr 0x00
@@ -26,7 +25,7 @@ GUI::GUI() :
 		statistics_frame(new StatisticsPage) {
 
 	set_title(WINDOW_TITLE);
-	set_default_icon_from_file("./src/logo.png");
+	set_default_icon_from_file("./src/logo_bg.png");
 
 	initializeMenueBar();
 

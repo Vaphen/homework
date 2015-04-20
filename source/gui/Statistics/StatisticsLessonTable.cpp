@@ -10,7 +10,6 @@
 #include "../../constants/constants.h"
 #include "../../sql/SQLiteConnect.h"
 #include "../../helpers/TimeConvert.h"
-#include <iostream>
 
 #if defined(_WIN32) || defined(WIN32)
 	#include "../../helpers/conversions.h"

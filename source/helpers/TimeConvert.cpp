@@ -6,7 +6,6 @@
  */
 
 #include "TimeConvert.h"
-#include <iostream>
 #include <ctime>
 
 #if defined(_WIN32) || defined(WIN32)
@@ -93,7 +92,6 @@ unsigned int TimeConvert::getDayOfUnixTimestamp(std::string unixTimestamp) {
 	std::string sday = day;
 	if(sday.at(0) == '0')
 		sday = sday.substr(1, 2);
-	std::cout << sday << std::endl;
 	return std::stoi(sday);
 }
 
@@ -106,7 +104,6 @@ unsigned int TimeConvert::getMonthOfUnixTimestamp(std::string unixTimestamp) {
 	std::string smonth = month;
 	if(smonth.at(0) == '0')
 		smonth = smonth.substr(1, 2);
-	std::cout << smonth << std::endl;
 	return std::stoi(smonth);
 }
 

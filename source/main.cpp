@@ -1,27 +1,30 @@
 //main.cpp
+//#include "constants/constants.h"
 #include "gui/GUI.h"
 #include "fileOperations/BasicFileOps.h"
 #include "sql/SQLiteConnect.h"
 #include "helpers/HelpDialogs.h"
 #include <gtkmm.h>
-#include <iostream>
-#if defined(_WIN32) || defined(WIN32)
-	#define OS "WindowsCompiled"
-#else
-	#define OS "LinuxCompiled"
-#endif
-
-using namespace Gtk;
 
 void initializeEnvironment() {
 	BasicFileOps fileManager;
-	if(!fileManager.isFileExistant(CONFIG_FILE)) {
-		fileManager.callConfigParser().createDefaultConfigFile();
+
+	try {
+		if(!fileManager.isFileExistant(CONFIG_FILE)) {
+			fileManager.callConfigParser().createDefaultConfigFile();
+		}
+
+		if(!fileManager.isFileExistant(FOLDER_PATH)) {
+			fileManager.createFolder(FOLDER_PATH);
+		}
+	} catch (FILE_ERRORS &error) {
+		// need this check because if folder alreadz exists, everything is allright
+		if(error != FILE_ERRORS::FOLDER_ALREADY_EXISTANT) {
+			HelpDialogs::showErrorDialog(error);
+			exit(0);
+		}
 	}
 
-	if(!fileManager.isFileExistant(FOLDER_PATH)) {
-		fileManager.createFolder(FOLDER_PATH);
-	}
 
 	SQLiteConnect connection;
 	try {
@@ -34,10 +37,10 @@ void initializeEnvironment() {
 }
 
 int main(int argc, char *argv[]) {
-	initializeEnvironment();
-	std::cout << OS << std::endl;
 	Gtk::Main kit(argc, argv);
+	initializeEnvironment();
 	GUI rootGUI;
 	Gtk::Main::run(rootGUI);
+
 	return 0;
 }

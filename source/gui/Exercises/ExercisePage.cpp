@@ -13,7 +13,6 @@
 #include "../../helpers/TimeConvert.h"
 #include "../../fileOperations/ConfigFileParser.h"
 #include "../../fileOperations/BasicFileOps.h"
-#include <iostream>
 #include <gtkmm.h>
 #include <string>
 #include "ExerciseTableRow.h"

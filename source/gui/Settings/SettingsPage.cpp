@@ -16,7 +16,6 @@
 #include "../Exams/ExamPage.h"
 #include "SettingsLessonTable.h"
 #include <gtkmm.h>
-#include <iostream>
 #include <boost/regex.hpp>
 #include "../Exercises/ExercisePage.h"
 
@@ -97,8 +96,7 @@ void SettingsPage::initializeEnvironmentSettings() {
 	Gtk::Label *fileDirPathLabel = Gtk::manage(new Gtk::Label(SettingsPageLabels::PATH_TO_DIR_LABEL));
 	Gtk::Button *chooseFileDirPathButton = Gtk::manage(new Gtk::Button);
 	Gtk::Image *openDirIco = Gtk::manage(new Gtk::Image(OPENDIR_ICO_SMALL));
-	Gtk::Image *saveButtonIco = Gtk::manage(new Gtk::Image(SAVE_ENVIRONMENT_BUTTON_ICO));
-	Gtk::Button *saveEnvironmentSettings = Gtk::manage(new Gtk::Button);
+	Gtk::Button *saveEnvironmentSettings = Gtk::manage(new Gtk::Button(SettingsPageLabels::SAVE_ENVIRONMENT_SETTINGS));
 	Gtk::HBox *fileDirPathBox = Gtk::manage(new Gtk::HBox);
 
 	Gtk::HSeparator *firstSeparator = Gtk::manage(new Gtk::HSeparator);
@@ -159,10 +157,7 @@ void SettingsPage::initializeEnvironmentSettings() {
 	fileManagerBox->pack_start(*fileManagerPathEdit, Gtk::PACK_SHRINK, false, 0);
 	fileManagerBox->pack_start(*chooseFileManagerButton, Gtk::PACK_SHRINK, false, 0);
 
-	saveEnvironmentSettings->set_relief(Gtk::RELIEF_NONE);
-	saveEnvironmentSettings->set_image(*saveButtonIco);
 	saveEnvironmentSettings->signal_clicked().connect(sigc::mem_fun(*this, &SettingsPage::saveEnvironmentSettingsClicked));
-
 
 	environmentSettingsVBox->set_border_width(10);
 	environmentSettingsVBox->pack_start(*fileDirPathLabel, Gtk::PACK_SHRINK, false, 0);
