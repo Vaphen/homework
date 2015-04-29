@@ -110,12 +110,18 @@ void GUI::initializeMenueBar() {
 	menueSeparatorBox->set_size_request(7, 50);
 	menueSeparatorBox->modify_bg(Gtk::STATE_NORMAL, secundaryColor);
 
+	TimeConvert timeConverter;
+	Gtk::Label *dateLabel = Gtk::manage(new Gtk::Label("Heutiges Datum:\n" +
+			timeConverter.getGermanDateFormat(timeConverter.getCurDay(),
+			timeConverter.getCurMonth(), timeConverter.getCurYear())));
+	dateLabel->set_padding(10, 0);
 	menueBox->pack_start(*lessonsMenueButton, Gtk::PACK_SHRINK, 0);
 	menueBox->pack_start(*settingsMenueButton, Gtk::PACK_SHRINK, 0);
 	menueBox->pack_start(*statisticsMenueButton, Gtk::PACK_SHRINK, 0);
 	menueBox->pack_start(*marksMenueButton, Gtk::PACK_SHRINK, 0);
 	menueBox->pack_start(*menueSeparatorBox, Gtk::PACK_SHRINK, 0);
 	menueBox->pack_start(*logo, Gtk::PACK_EXPAND_PADDING, 0);
+	menueBox->pack_start(*dateLabel, Gtk::PACK_SHRINK, 0);
 
 
 
